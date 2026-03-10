@@ -56,12 +56,12 @@ export default function Dashboard() {
                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="hsl(221 83% 53%)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(221 83% 53%)" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="hsl(142 71% 45%)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(142 71% 45%)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -71,8 +71,8 @@ export default function Dashboard() {
                     contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     formatter={(value: number) => formatCurrency(value)}
                   />
-                  <Area type="monotone" dataKey="revenue" name="Receita" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
-                  <Area type="monotone" dataKey="profit" name="Lucro" stroke="hsl(var(--chart-1))" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" />
+                  <Area type="monotone" dataKey="revenue" name="Receita" stroke="hsl(221 83% 53%)" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                  <Area type="monotone" dataKey="profit" name="Lucro" stroke="hsl(142 71% 45%)" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
