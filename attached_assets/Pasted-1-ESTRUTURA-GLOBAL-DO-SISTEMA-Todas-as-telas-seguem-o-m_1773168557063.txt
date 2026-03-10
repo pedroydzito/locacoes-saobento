@@ -1,0 +1,543 @@
+1. ESTRUTURA GLOBAL DO SISTEMA
+
+Todas as telas seguem o mesmo layout base.
+
+Layout
+
+Sidebar esquerda:
+
+Dashboard
+
+Obras & Serviços
+
+Máquinas
+
+Operadores
+
+Fretes
+
+Financeiro
+
+Relatórios
+
+Topbar:
+
+campo de busca global
+
+notificações
+
+avatar usuário
+
+Busca global
+
+Busca por:
+
+cliente
+
+máquina
+
+operador
+
+serviço
+
+OS
+
+Resultado abre diretamente a página do item.
+
+2. DASHBOARD (VISÃO GERAL)
+
+Objetivo:
+
+mostrar saúde operacional e financeira da empresa
+
+Estrutura da tela
+
+Seções:
+
+1️⃣ KPIs principais
+2️⃣ Gráfico financeiro
+3️⃣ Utilização das máquinas
+4️⃣ Serviços recentes
+5️⃣ Alertas operacionais
+
+2.1 KPIs PRINCIPAIS
+
+Cards:
+
+Faturamento do mês
+
+Mostra:
+
+valor total faturado
+
+variação vs mês anterior
+
+Clique abre:
+
+→ Relatório financeiro mensal
+
+Lucro estimado
+
+Cálculo:
+
+lucro = faturamento
+      - diesel
+      - operador
+      - custo máquina
+
+Clique abre:
+
+→ relatório de lucratividade
+
+Horas trabalhadas
+
+Total horas de todas máquinas.
+
+Clique abre:
+
+→ relatório de uso da frota.
+
+Diesel consumido
+
+Total litros no mês.
+
+Clique abre:
+
+→ relatório de consumo.
+
+2.2 GRÁFICO RECEITA VS LUCRO
+
+Gráfico:
+
+Linha dupla:
+
+receita
+
+lucro
+
+Filtros:
+
+mês
+
+trimestre
+
+ano
+
+Hover mostra:
+
+receita
+
+lucro
+
+margem %
+
+2.3 USO POR MÁQUINA
+
+Gráfico horizontal.
+
+Ordenado por:
+
+horas trabalhadas.
+
+Clique na máquina abre:
+
+→ Página da máquina
+
+2.4 SERVIÇOS RECENTES
+
+Tabela pequena:
+
+colunas:
+
+OS
+
+cliente
+
+máquina
+
+operador
+
+valor
+
+status
+
+Clique abre:
+
+→ detalhe do serviço
+
+2.5 ALERTAS OPERACIONAIS
+
+Lista automática.
+
+Exemplos:
+
+máquina parada > 7 dias
+
+operador sem serviço
+
+diesel acima da média
+
+serviço com prejuízo
+
+Cada alerta abre relatório relacionado.
+
+3. OBRAS & SERVIÇOS
+
+Tela já está boa.
+
+Adicionar:
+
+clique na OS
+
+abre página do serviço
+
+Página de serviço
+
+Seções:
+
+informações
+
+cliente
+
+máquina
+
+operador
+
+data
+
+horas
+
+diesel
+
+custos
+
+calculado automaticamente:
+
+custo operador
+
+custo máquina
+
+diesel
+
+lucro
+
+mostrar:
+
+valor total
+custos
+lucro
+margem
+timeline
+
+histórico:
+
+criado
+
+atualizado
+
+concluído
+
+Botões
+
+Editar serviço
+Duplicar serviço
+Excluir serviço
+
+4. MÁQUINAS
+
+Lista já mostrada.
+
+Clique na máquina abre:
+
+Página da máquina
+
+Seções:
+
+resumo
+
+horas totais
+
+lucro total
+
+consumo médio
+
+gráfico
+
+uso da máquina ao longo do tempo.
+
+serviços feitos
+
+lista de serviços da máquina.
+
+operadores que usaram
+
+lista de operadores.
+
+Botões
+
+Editar máquina
+Adicionar manutenção
+Ver histórico
+
+5. OPERADORES
+
+Lista atual.
+
+Clique no operador abre:
+
+Página operador
+
+Seções:
+
+resumo
+
+salário
+
+horas no mês
+
+custo médio hora
+
+gráfico
+
+horas trabalhadas por mês.
+
+serviços feitos
+
+lista completa.
+
+6. FRETES (NOVA DEFINIÇÃO COMPLETA)
+
+Hoje essa tela está vazia.
+
+Ela deve controlar transporte de máquinas.
+
+Tela Fretes
+
+Tabela:
+
+colunas:
+
+ID
+
+Data
+
+Máquina
+
+Origem
+
+Destino
+
+Motorista
+
+Valor
+
+Status
+
+Botão
+
+Nova Frete
+
+abre modal.
+
+Modal Novo Frete
+
+Campos:
+
+Data
+Máquina
+Origem
+Destino
+Motorista
+Valor
+Observações
+
+Status frete
+
+planejado
+
+em andamento
+
+concluído
+
+Clique no frete
+
+abre detalhe do frete
+
+Página detalhe frete
+
+Seções:
+
+dados
+
+máquina
+origem
+destino
+motorista
+
+custos
+
+valor frete.
+
+histórico
+
+status updates.
+
+7. FINANCEIRO
+
+Tela já boa.
+
+Adicionar:
+
+filtros
+
+período
+
+categoria
+
+conta
+
+Clique em transação
+
+abre detalhe da transação
+
+Página transação
+
+dados:
+
+data
+descrição
+categoria
+conta
+valor
+
+Botões
+
+Editar
+Excluir
+
+8. RELATÓRIOS (REESTRUTURAR TOTALMENTE)
+
+Hoje está igual dashboard.
+
+Deve ser uma central de análise.
+
+Tela Relatórios
+
+Grid de relatórios.
+
+Cards:
+
+rentabilidade por máquina
+
+rentabilidade por cliente
+
+produtividade operadores
+
+consumo diesel
+
+faturamento mensal
+
+margem por serviço
+
+Exemplo
+Relatório: rentabilidade por máquina
+
+Gráfico:
+
+ranking de lucro.
+
+Tabela:
+
+máquina
+horas
+receita
+custos
+lucro
+
+Relatório: cliente
+
+ranking clientes por faturamento.
+
+Relatório: operadores
+
+produtividade operadores.
+
+Relatório diesel
+
+diesel por máquina.
+
+Exportação
+
+Todos relatórios devem permitir:
+
+Exportar:
+
+Excel
+
+PDF
+
+9. INTERAÇÕES IMPORTANTES
+Ao clicar em qualquer item
+
+sempre abrir página detalhe.
+
+Nunca apenas expandir tabela.
+
+Botão adicionar
+
+sempre abre:
+
+modal ou página dedicada.
+
+Confirmações
+
+ações críticas:
+
+excluir
+
+cancelar
+
+mostrar:
+
+modal confirmação.
+
+Estados visuais
+
+mostrar:
+
+loading
+
+vazio
+
+erro
+
+Exemplo estado vazio
+
+"No services yet
+Create your first service"
+
+10. NOTIFICAÇÕES
+
+Sistema deve mostrar:
+
+serviço com prejuízo
+
+máquina parada
+
+operador sem serviço
+
+diesel alto
+
+11. MELHORIAS FUTURAS
+
+módulos possíveis:
+
+manutenção máquinas
+
+controle peças
+
+app operador
+
+GPS máquinas
+
+integração contábil

@@ -94,9 +94,21 @@ export const mockTransactions = Array.from({ length: 20 }).map((_, i) => ({
   type: i % 4 === 0 ? "saida" : "entrada",
   amount: i % 4 === 0 ? 1500 + (i * 100) : 5000 + (i * 500),
   date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
-  description: i % 4 === 0 ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i].id}`,
+  description: i % 4 === 0 ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i]?.id || 'N/A'}`,
   account: accountsList[i % accountsList.length],
   category: i % 4 === 0 ? "Diesel" : "Serviços"
+}));
+
+export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
+  id: `FRT-${1000 + i}`,
+  date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
+  machine: mockMachines[i % mockMachines.length].name,
+  origin: ["Pátio Central", "Obra Alpha", "Fazenda Boa Vista", "Pátio Central", "Rio Verde"][i % 5],
+  destination: ["Obra Alpha", "Fazenda Boa Vista", "Rio Verde", "Aparecida de Goiânia", "Pátio Central"][i % 5],
+  driver: ["Roberto", "Carlos", "Juliano"][i % 3],
+  value: 800 + (i * 150),
+  status: i < 2 ? "planejado" : i < 4 ? "em_andamento" : "concluido",
+  notes: ""
 }));
 
 export const kpis = {

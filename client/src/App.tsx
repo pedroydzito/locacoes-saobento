@@ -10,6 +10,8 @@ import Clients from "@/pages/Clients";
 import Machines from "@/pages/Machines";
 import Operators from "@/pages/Operators";
 import Finance from "@/pages/Finance";
+import Freights from "@/pages/Freights";
+import Reports from "@/pages/Reports";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,10 +23,8 @@ function Router() {
       <Route path="/maquinas" component={Machines} />
       <Route path="/operadores" component={Operators} />
       <Route path="/financeiro" component={Finance} />
-      
-      {/* Other routes can map to Dashboard for now to simulate the skeleton */}
-      <Route path="/fretes" component={Dashboard} />
-      <Route path="/relatorios" component={Dashboard} />
+      <Route path="/fretes" component={Freights} />
+      <Route path="/relatorios" component={Reports} />
       <Route component={NotFound} />
     </Switch>
   );
