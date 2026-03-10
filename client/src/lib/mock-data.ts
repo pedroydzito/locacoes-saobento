@@ -22,7 +22,7 @@ export const accountsList = [
 
 // Enhanced Mock Data structures following the prompt's exact specs
 export const mockMachines = machinesList.map((name, i) => ({
-  id: \`maq-\${i}\`,
+  id: `maq-${i}`,
   name,
   model: name.includes("220") ? "220" : name.includes("700J") ? "700J" : "Standard",
   type: name.includes("ESCAV") || name.includes("SANNY") ? "Escavadeira" : 
@@ -37,7 +37,7 @@ export const mockMachines = machinesList.map((name, i) => ({
 }));
 
 export const mockOperators = operatorsList.map((name, i) => ({
-  id: \`op-\${i}\`,
+  id: `op-${i}`,
   name,
   salary: 2500 + (i * 200),
   machine_assigned: mockMachines[i % mockMachines.length].name,
@@ -46,9 +46,9 @@ export const mockOperators = operatorsList.map((name, i) => ({
 }));
 
 export const mockClients = clientsList.map((name, i) => ({
-  id: \`cli-\${i}\`,
+  id: `cli-${i}`,
   name,
-  phone: \`(62) 99999-\${1000 + i}\`,
+  phone: `(62) 99999-${1000 + i}`,
   city: ["Goiânia", "Aparecida de Goiânia", "Rio Verde", "Anápolis"][i % 4],
   notes: "Cliente preferencial",
   total_billed: 15000 + (i * 5000),
@@ -69,7 +69,7 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   const profit = value - cost_machine - cost_operator - cost_diesel;
 
   return {
-    id: \`SRV-\${1000 + i}\`,
+    id: `SRV-${1000 + i}`,
     client: client.name,
     machine: machine.name,
     operator: operator.name,
@@ -90,11 +90,11 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
 });
 
 export const mockTransactions = Array.from({ length: 20 }).map((_, i) => ({
-  id: \`tx-\${i}\`,
+  id: `tx-${i}`,
   type: i % 4 === 0 ? "saida" : "entrada",
   amount: i % 4 === 0 ? 1500 + (i * 100) : 5000 + (i * 500),
   date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
-  description: i % 4 === 0 ? "Pagamento Diesel" : \`Recebimento Serviço \${mockServices[i].id}\`,
+  description: i % 4 === 0 ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i].id}`,
   account: accountsList[i % accountsList.length],
   category: i % 4 === 0 ? "Diesel" : "Serviços"
 }));
