@@ -1,0 +1,521 @@
+VISÃO GERAL DO PRODUTO
+
+Criar um sistema web interno para gestão completa de locação de máquinas, substituindo as planilhas atuais e centralizando:
+
+obras
+
+máquinas
+
+operadores
+
+horas trabalhadas
+
+diesel
+
+fretes
+
+faturamento
+
+fluxo de caixa
+
+salários
+
+rentabilidade por máquina
+
+O sistema deverá permitir:
+
+registrar serviços
+
+controlar uso das máquinas
+
+calcular custos
+
+acompanhar lucro por obra
+
+gerar relatórios financeiros
+
+OBJETIVO DO PRODUTO
+
+Resolver problemas atuais:
+
+informações espalhadas em várias planilhas
+
+risco de erro manual
+
+dificuldade de visualizar lucro real
+
+dificuldade de acompanhar máquinas
+
+falta de histórico centralizado
+
+O sistema deve permitir:
+
+✔ gestão operacional
+✔ gestão financeira
+✔ controle de máquinas
+✔ controle de operadores
+✔ visão de lucratividade
+
+DESIGN EXECUTION CONTRACT (OBRIGATÓRIO)
+
+Toda interface do sistema deve seguir as regras:
+
+1 Identidade
+
+O sistema deve parecer:
+
+SaaS profissional
+
+moderno
+
+premium
+
+não parecer planilha transformada em site
+
+2 Filosofia visual
+
+Crafted over Assembled
+
+Cada elemento deve ter:
+
+bordas arredondadas
+
+sombras suaves
+
+espaçamento generoso
+
+profundidade visual
+
+3 Hierarquia
+
+Interface deve usar:
+
+títulos grandes
+
+subtítulos claros
+
+cards
+
+separação por seções
+
+Nunca layouts densos.
+
+4 Profundidade
+
+Interface não deve ser plana.
+
+Usar:
+
+shadow-sm
+
+hover effects
+
+backdrop blur
+
+animações leves
+
+5 Micro-interações
+
+Todos elementos clicáveis devem ter:
+
+hover
+focus
+transition
+
+Exemplo:
+
+transition-all duration-200 ease-out
+ARQUITETURA DO SISTEMA
+
+Arquitetura recomendada:
+
+Frontend
+
+React
+
+Tailwind
+
+Component based UI
+
+Backend
+
+Node.js
+
+API REST
+
+Banco
+
+PostgreSQL
+
+Storage
+
+AWS S3 (documentos)
+
+Auth
+
+JWT
+
+Login Google opcional
+
+MÓDULOS DO SISTEMA
+
+O sistema terá 6 módulos principais.
+
+MÓDULO 1 — AUTENTICAÇÃO
+
+Tela de login
+
+Opções:
+
+Login email
+
+Login Google
+
+Criar conta
+
+Esqueci senha
+
+Papéis:
+
+Admin
+Financeiro
+Operador
+
+MÓDULO 2 — CLIENTES
+
+Cadastro de clientes.
+
+Campos:
+
+nome
+
+telefone
+
+cidade
+
+observações
+
+Histórico do cliente:
+
+serviços realizados
+
+máquinas usadas
+
+faturamento total
+
+MÓDULO 3 — MÁQUINAS
+
+Cadastro completo de máquinas.
+
+Campos:
+
+nome
+
+modelo
+
+tipo
+
+ano
+
+custo por hora
+
+consumo médio diesel
+
+Exemplo:
+
+Escavadeira 220
+Sanny
+700J
+Caminhão 2544
+
+Tela da máquina mostra:
+
+horas trabalhadas
+
+clientes atendidos
+
+lucro gerado
+
+MÓDULO 4 — OPERADORES
+
+Cadastro de operadores.
+
+Campos:
+
+nome
+
+salário
+
+máquina associada
+
+custo hora
+
+Histórico:
+
+horas trabalhadas
+
+serviços feitos
+
+custo gerado
+
+MÓDULO 5 — SERVIÇOS / OBRAS
+
+Tela principal do sistema.
+
+Cadastro de serviço.
+
+Campos:
+
+cliente
+
+data
+
+máquina
+
+operador
+
+horas trabalhadas
+
+diesel
+
+frete
+
+valor cobrado
+
+observações
+
+O sistema calcula automaticamente:
+
+custo diesel
+
+custo operador
+
+custo máquina
+
+lucro
+
+MÓDULO 6 — FRETES
+
+Controle de transporte de máquinas.
+
+Campos:
+
+máquina
+
+origem
+
+destino
+
+valor
+
+data
+
+MÓDULO 7 — FINANCEIRO
+
+Submódulos:
+
+Fluxo de caixa
+
+Entradas
+
+serviços
+
+pagamentos
+
+Saídas
+
+diesel
+
+salários
+
+manutenção
+
+Contas bancárias
+
+Sicoob
+
+Banco do Brasil
+
+Dinheiro
+
+Boletos
+
+Controle de cobrança.
+
+MÓDULO 8 — RELATÓRIOS
+
+Relatórios principais:
+
+Máquina mais lucrativa
+
+ranking de máquinas
+
+Lucro por cliente
+
+ranking de clientes
+
+Horas trabalhadas
+
+por máquina
+
+Custos operacionais
+
+diesel
+salários
+manutenção
+
+DASHBOARD PRINCIPAL
+
+Tela inicial com:
+
+Cards:
+
+Faturamento do mês
+Horas trabalhadas
+Lucro estimado
+Diesel consumido
+
+Gráficos:
+
+Receita mensal
+Uso das máquinas
+Top clientes
+
+BANCO DE DADOS (ENTIDADES)
+
+Tabelas principais:
+
+Users
+
+id
+name
+email
+role
+
+Clients
+
+id
+name
+phone
+city
+
+Machines
+
+id
+name
+model
+type
+cost_hour
+
+Operators
+
+id
+name
+salary
+
+Services
+
+id
+client_id
+machine_id
+operator_id
+hours
+diesel
+value
+
+Freights
+
+id
+machine_id
+origin
+destination
+price
+
+Transactions
+
+id
+type
+amount
+date
+description
+
+AUTOMAÇÕES IMPORTANTES
+
+O sistema deve calcular automaticamente:
+
+Lucro do serviço
+
+lucro = valor
+      - diesel
+      - custo operador
+      - custo máquina
+RELATÓRIOS AVANÇADOS
+
+rentabilidade por máquina
+
+custo médio diesel
+
+produtividade operador
+
+histórico completo de obras
+
+PERMISSÕES
+
+Admin
+
+acesso total
+
+Financeiro
+
+financeiro
+
+relatórios
+
+Operador
+
+registrar serviços
+
+DOCUMENTOS OBRIGATÓRIOS DO PROJETO
+
+Toda implementação deve gerar:
+
+README.md
+
+Arquitetura.md
+
+Modelo-de-Dados.md
+
+Regras-de-Negocio.md
+
+Design-System.md
+
+EXPANSÕES FUTURAS
+
+Módulos futuros:
+
+manutenção de máquinas
+
+controle de peças
+
+app mobile para operadores
+
+GPS de máquinas
+
+integração contábil
+
+RESULTADO FINAL
+
+Esse sistema substituirá:
+
+4 planilhas grandes
+
+controles manuais
+
+cálculos manuais
+
+E entregará:
+
+✔ controle total das operações
+✔ controle financeiro real
+✔ visão de lucro por máquina
+✔ histórico completo da empresa
