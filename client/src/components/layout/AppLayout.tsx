@@ -35,7 +35,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Tractor className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg tracking-tight">HeavyRent</span>
+            <span className="font-bold text-lg tracking-tight">Locações</span>
           </div>
         </div>
 
@@ -72,7 +72,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
       </aside>
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 flex items-center justify-between px-6 border-b border-border/50 bg-background/80 backdrop-blur-md z-10 sticky top-0">
