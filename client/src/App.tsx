@@ -6,6 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Services from "@/pages/Services";
+import Clients from "@/pages/Clients";
+import Machines from "@/pages/Machines";
+import Operators from "@/pages/Operators";
+import Finance from "@/pages/Finance";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,11 +17,13 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/servicos" component={Services} />
+      <Route path="/clientes" component={Clients} />
+      <Route path="/maquinas" component={Machines} />
+      <Route path="/operadores" component={Operators} />
+      <Route path="/financeiro" component={Finance} />
+      
       {/* Other routes can map to Dashboard for now to simulate the skeleton */}
-      <Route path="/maquinas" component={Dashboard} />
-      <Route path="/operadores" component={Dashboard} />
       <Route path="/fretes" component={Dashboard} />
-      <Route path="/financeiro" component={Dashboard} />
       <Route path="/relatorios" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

@@ -1,0 +1,3165 @@
+
+
+--- FILE: attached_assets/APONTAMENTO_DE_MAQUINAS_PROVALIA_1773166355765.xlsx ---
+Sheets: 220 NOVA ESCAV, 220 ANTIGA  ESCAV, SANNY, 700J novo A, 700J Nova , Caminhão 2544, Caminhão 1513, 12B Pá Carregadeira , Trator 7D1, MAQ DO JOÃO, STRADA PRETA , STRADA BRANCA , Moto , D150
+
+Sheet: 220 NOVA ESCAV
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [
+    "Apontamentos Máquina: Escavadeira Hidráulica 220 Nova "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: 220 ANTIGA  ESCAV
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [
+    "Apontamentos Máquina: Escavadeira Hidráulica 220 Antiga  04"
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: SANNY
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    ","
+  ],
+  [
+    null,
+    " Apontamentos Máquina "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: 700J novo A
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [
+    "Apontamentos Máquina: Trator Esteira 7D2 "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: 700J Nova 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    " "
+  ],
+  [
+    null,
+    "Apontamentos Máquina: Escavadeira Hidráulica 220 Nova "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: Caminhão 2544
+Rows: 1048
+Sample data (first 5 rows):
+[
+  [
+    " "
+  ],
+  [
+    null,
+    "Apontamentos: Carreta 1938 Beto "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: Caminhão 1513
+Rows: 247
+Sample data (first 5 rows):
+[
+  [
+    "Data ",
+    "Hora Inicio",
+    "Hora término ",
+    "Almoco",
+    "Total de horas dia",
+    "Cliente",
+    "Local ",
+    "Diesel "
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    0
+  ],
+  [
+    45810,
+    0.375,
+    0.75,
+    0.041666666666666664,
+    0.3333333333,
+    "Lucas ",
+    "Campestre ",
+    150
+  ],
+  [
+    45811,
+    0.2916666666666667,
+    0.75,
+    0.041666666666666664,
+    0.4166666667,
+    "Lucas ",
+    "Campestre ",
+    150
+  ],
+  [
+    45812,
+    0.5416666666666666,
+    0.6666666666666666,
+    0.041666666666666664,
+    0.08333333333,
+    "Lucas ",
+    "Campestre ",
+    231
+  ]
+]
+
+Sheet: 12B Pá Carregadeira 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [
+    "Apontamentos Máquina: Pá Carrgadeira "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: Trator 7D1
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "     bg"
+  ],
+  [
+    null,
+    null,
+    "Apontamentos Máquina: Trator Esteira 7D1 "
+  ],
+  [],
+  [],
+  []
+]
+
+Sheet: MAQ DO JOÃO
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Apontamentos Máquina: Máquina do João "
+  ],
+  [],
+  [],
+  [],
+  [
+    "Data Inicio ",
+    "Data término ",
+    "Cliente ",
+    "Colaborador",
+    "Horimetro Inicial",
+    "Horimetro Final ",
+    "Horas Realizadas ",
+    "Consumo ",
+    "Diesel Un",
+    "Valor H",
+    "Valor total ",
+    "Serviço Realizado/Local "
+  ]
+]
+
+Sheet: STRADA PRETA 
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    "Apontamentos: Veiculo leve "
+  ],
+  [],
+  [],
+  [],
+  [
+    "Data Lançamento ",
+    "Colaborador",
+    "km Inicial",
+    "km Final ",
+    "km Realizadas ",
+    "Consumo",
+    "Serviço Realizado/Local "
+  ]
+]
+
+Sheet: STRADA BRANCA 
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    "Apontamentos: Veiculo leve "
+  ],
+  [],
+  [],
+  [],
+  [
+    "Data Lançamento ",
+    "Colaborador",
+    "km Inicial",
+    "km Final ",
+    "km Realizadas ",
+    "Consumo",
+    "Serviço Realizado/Local "
+  ]
+]
+
+Sheet: Moto 
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    "Apontamentos: MOTO "
+  ],
+  [],
+  [],
+  [],
+  [
+    "Data Lançamento ",
+    "Colaborador",
+    "km Inicial",
+    "km Final ",
+    "km Realizadas ",
+    "Consumo ",
+    "Serviço Realizado/Local "
+  ]
+]
+
+Sheet: D150
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Apontamentos Máquina: Escavadeira Hidráulica 220 Nova "
+  ],
+  [],
+  [],
+  [],
+  [
+    "Data Inicio ",
+    "Data término ",
+    "Cliente ",
+    "Colaborador",
+    "Horimetro Inicial",
+    "Horimetro Final ",
+    "Horas Realizadas ",
+    "Consumo ",
+    "Valor ",
+    "Serviço Realizado/Local "
+  ]
+]
+
+
+--- FILE: attached_assets/Planilha_de_lançamentos_Locações(1)_1773166355766.xlsm ---
+Sheets: Dinheiro, Sicoob, BB, DFC Locações 2024, DFC Locações 2025, Validacao, Boletos Cobranca , Relação parcial - Lívia, DRE Safra Cereais 22_23, DRE Safrinha Cereais 22_23, DRE Cons. Cereais 22_23, DRE Safra Cereais 23_24
+
+Sheet: Dinheiro
+Rows: 2177
+Sample data (first 5 rows):
+[
+  [],
+  [
+    null,
+    null,
+    null,
+    0
+  ],
+  [
+    "Data",
+    "Chave",
+    "Data Compra ",
+    "Valor",
+    "Descrição",
+    "Categoria",
+    "Tipo",
+    "Local",
+    "Ano",
+    "Saldo",
+    "Centro de Custos"
+  ],
+  [],
+  []
+]
+
+Sheet: Sicoob
+Rows: 3489
+Sample data (first 5 rows):
+[
+  [],
+  [
+    null,
+    null,
+    null,
+    19573.29
+  ],
+  [
+    "Data",
+    "Chave",
+    "Data Compra ",
+    "Valor",
+    "Descrição",
+    "Categoria",
+    "Tipo",
+    "Local",
+    "Ano",
+    "Saldo",
+    "Centro de Custos"
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    "-",
+    null,
+    null,
+    null,
+    null,
+    -107250.88
+  ],
+  [
+    45613,
+    "2024 - 11",
+    45597,
+    -8.7,
+    "Tag Carros ",
+    "Gastos com veículos",
+    "Locações ",
+    "Locações ",
+    2024,
+    -107259.58,
+    "Rateio "
+  ]
+]
+
+Sheet: BB
+Rows: 1199
+Sample data (first 5 rows):
+[
+  [
+    ";ç"
+  ],
+  [
+    null,
+    null,
+    "Subtotal",
+    null,
+    -102789.09
+  ],
+  [
+    null,
+    "Data Pg",
+    "Chave",
+    "Data Lan ",
+    "Valor",
+    "Descrição",
+    "Categoria",
+    "Tipo",
+    "Local",
+    "Ano",
+    "Saldo"
+  ],
+  [
+    null,
+    null,
+    "1899 - 12",
+    null,
+    null,
+    null,
+    null,
+    "Locações ",
+    "Locações ",
+    2024,
+    0
+  ],
+  [
+    null,
+    45618,
+    "2024 - 11",
+    45618,
+    22000,
+    "Cheque ***",
+    null,
+    null,
+    null,
+    null,
+    22000
+  ]
+]
+
+Sheet: DFC Locações 2024
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "2024 - 10",
+    "2024 - 11",
+    "2024 - 12"
+  ],
+  [
+    "Locações ",
+    "Out",
+    "Nov",
+    "Dez",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!"
+  ],
+  [
+    "Receitas",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!"
+  ],
+  [
+    "Outras Receitas",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!",
+    "#VALUE!"
+  ]
+]
+
+Sheet: DFC Locações 2025
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "2025 - 1",
+    "2025 - 2",
+    "2025 - 3",
+    "2025 - 4",
+    "2025 - 5",
+    "2025 - 6",
+    "2025 - 7",
+    "2025 - 8",
+    "2025 - 9",
+    "2025 - 10",
+    "2025 - 11",
+    "2025 - 12"
+  ],
+  [
+    "Locações ",
+    "Out",
+    "Nov",
+    "Dez",
+    "Out",
+    "Nov",
+    "Dez",
+    "Out",
+    "Nov",
+    "Dez",
+    "Out",
+    "Nov",
+    "Dez",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    -239272.66,
+    -233859.74,
+    -303969.19,
+    -183310.39,
+    -209030.16,
+    -154147.45,
+    -200219.22,
+    -272485.81,
+    -284025.68,
+    -264895.69,
+    -167914.59,
+    -286254.56,
+    -719064.84
+  ],
+  [
+    "Receitas",
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Outras Receitas",
+    0,
+    -1860,
+    -37,
+    1200,
+    40897.19,
+    75712,
+    11000,
+    3688.8,
+    0,
+    1190.33,
+    119438.94,
+    -250.5,
+    120378.77
+  ]
+]
+
+Sheet: Validacao
+Rows: 112
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Contas",
+    "Centro de Custo",
+    "Tipo",
+    "Local",
+    "Ano"
+  ],
+  [
+    null,
+    "Outras Receitas",
+    "Escavadeira Hidráulica 220 Nova",
+    "Locações ",
+    "Locações ",
+    2023
+  ],
+  [
+    null,
+    "Receitas - Escavadeira Hidráulica 220 Nova",
+    "Escavadeira Hidráulica 220 Antiga",
+    null,
+    null,
+    2024
+  ],
+  [
+    null,
+    "Receitas - Escavadeira Hidráulica 220 Antiga",
+    "Escavadeira Sany",
+    null,
+    null,
+    2025
+  ],
+  [
+    null,
+    "Receitas  - Sany",
+    "Trator Esteira 7D1",
+    null,
+    null,
+    2026
+  ]
+]
+
+Sheet: Boletos Cobranca 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "2025 - 10"
+  ],
+  [
+    "Chave ",
+    "Numero do Boelto ",
+    "Valor ",
+    "Parcelas ",
+    "Data emissão ",
+    "Data vencimento",
+    "Cliente ",
+    "Maquina"
+  ],
+  [
+    "2025 - 10",
+    "38-906",
+    66412.09,
+    1,
+    45919,
+    45940,
+    "Bonella - divisa "
+  ],
+  [
+    "2025 - 10",
+    "38-918",
+    11540,
+    1,
+    45926,
+    45932,
+    "JAC - adega climatizadora"
+  ],
+  [
+    "2025 - 11",
+    "1069-16149",
+    19749.2,
+    1,
+    45968,
+    45987,
+    "Bonella"
+  ]
+]
+
+Sheet: Relação parcial - Lívia
+Rows: 896
+Sample data (first 5 rows):
+[
+  [],
+  [
+    "Data  ",
+    "Loja ",
+    "Valor ",
+    "Parcela "
+  ],
+  [
+    null,
+    null,
+    "Acerto Grazi ( Pagamento não sai do caixa imediato "
+  ],
+  [
+    null,
+    "Seguro Escavadeiras ",
+    3650
+  ],
+  [
+    45971,
+    "Seguros 2544 e prancha ",
+    1950
+  ]
+]
+
+Sheet: DRE Safra Cereais 22_23
+Rows: 86
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Milho",
+    "Soja",
+    "Cereais"
+  ],
+  [
+    "Safra 22/23",
+    "Milho",
+    "Soja",
+    "Cereais",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Receitas",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Outras Receitas",
+    0,
+    0,
+    0,
+    0
+  ]
+]
+
+Sheet: DRE Safrinha Cereais 22_23
+Rows: 82
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Trigo",
+    "Feijão",
+    "Cereais"
+  ],
+  [
+    "Safrinha 22/23",
+    "Trigo",
+    "Feijão",
+    "Cereais",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Receitas",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Outras Receitas",
+    0,
+    0,
+    0,
+    0
+  ]
+]
+
+Sheet: DRE Cons. Cereais 22_23
+Rows: 86
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Milho",
+    "Soja",
+    "Trigo",
+    "Feijão",
+    "Cereais"
+  ],
+  [
+    "Safrinha 22/23",
+    "Milho",
+    "Soja",
+    "Trigo",
+    "Feijão",
+    "Cereais",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Receitas",
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Outras Receitas",
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ]
+]
+
+Sheet: DRE Safra Cereais 23_24
+Rows: 82
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Milho",
+    "Soja",
+    "Cereais"
+  ],
+  [
+    "Safra 23/24",
+    "Milho",
+    "Soja",
+    "Cereais",
+    "Acum."
+  ],
+  [
+    "Fluxo de Caixa Operacional",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Receitas",
+    0,
+    0,
+    0,
+    0
+  ],
+  [
+    "Outras Receitas",
+    0,
+    0,
+    0,
+    0
+  ]
+]
+
+
+--- FILE: attached_assets/Salários_Locações__1773166355767.xlsx ---
+Sheets: Salários, 220 nova Anderson , 220 Antiga Silvinho , Sanny, 700J nova , 700J nova Armack , pá carregadeira , Maq D51 - Caio, D51 julio, Caminhão 1513, 7D1,  Carregadeira 12B , 7D2 , Horímetros, ANDERSON, Guri, CLEITON, CAIO, Cristiano, BETO, Samuel , TAMIRINHO, Donizete, Trator D150, Trator João, Mimi, CAETANO, JHON, WENDEL, ROMILDO, JOSIEL, HELIVELTON, Planilha1 (2)
+
+Sheet: Salários
+Rows: 1010
+Sample data (first 5 rows):
+[
+  [
+    "m"
+  ],
+  [],
+  [],
+  [
+    null,
+    "Colaborador ",
+    "Chave ",
+    "Data de pagameno",
+    "Salário/ dia ",
+    "Dias trabalhados ",
+    "Salário mês",
+    "Horas trabalhadas ",
+    "Valor por hora ",
+    "Extra trab",
+    "Valor extra ",
+    "Sab/ Dom/ Feriado",
+    "Adiantamento",
+    "Falta/ Desc",
+    "Valor do Pagamento ",
+    "Pix",
+    "Observação ",
+    "Coluna1"
+  ],
+  [
+    null,
+    null,
+    "12-1899"
+  ]
+]
+
+Sheet: 220 nova Anderson 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    "Dia ",
+    "Chave ",
+    "H inicial ",
+    "H final",
+    "Hora/ Dia ",
+    "Extra ",
+    "Diesel"
+  ],
+  [
+    null,
+    45231,
+    "11-2023",
+    2425,
+    2428,
+    3,
+    -7,
+    400
+  ],
+  [
+    null,
+    45232,
+    "11-2023",
+    2428,
+    2435,
+    7,
+    -3
+  ]
+]
+
+Sheet: 220 Antiga Silvinho 
+Rows: 2000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    "Dia ",
+    "Chave ",
+    "H inicial ",
+    "H final",
+    "Hora/ Dia ",
+    "Extra ",
+    "Diesel "
+  ],
+  [
+    null,
+    45231,
+    "11-2023",
+    5494.3,
+    5500.5,
+    6.2,
+    -3.8
+  ],
+  [
+    null,
+    45232,
+    "11-2023",
+    5500.5,
+    5510.9,
+    10.4,
+    0.4,
+    440
+  ]
+]
+
+Sheet: Sanny
+Rows: 1311
+Sample data (first 5 rows):
+[
+  [
+    null,
+    "Escavadeira 210 "
+  ],
+  [],
+  [
+    null,
+    "Data ",
+    "chave ",
+    "H incial",
+    "H final",
+    "Total ",
+    "Extra",
+    "Colaborador",
+    "Diesel "
+  ],
+  [
+    null,
+    45231,
+    "11-2023",
+    null,
+    null,
+    0,
+    -10,
+    "Manutenção "
+  ],
+  [
+    null,
+    45232,
+    "11-2023",
+    null,
+    null,
+    0,
+    -10,
+    "Manutenção "
+  ]
+]
+
+Sheet: 700J nova 
+Rows: 632
+Sample data (first 5 rows):
+[
+  [
+    null,
+    45463,
+    "6-2024",
+    72,
+    80.5,
+    8.5,
+    -1.5,
+    "Caio"
+  ],
+  [
+    null,
+    45464,
+    "6-2024",
+    80.5,
+    88.8,
+    8.3,
+    -1.7,
+    "Caio"
+  ],
+  [
+    null,
+    45465,
+    "6-2024",
+    88.8,
+    94,
+    5.2,
+    -4.8,
+    "Caio"
+  ],
+  [
+    null,
+    45466,
+    "6-2024",
+    null,
+    null,
+    0,
+    -10,
+    "Caio"
+  ],
+  [
+    null,
+    45467,
+    "6-2024",
+    94,
+    102,
+    8,
+    -2,
+    "Caio"
+  ]
+]
+
+Sheet: 700J nova Armack 
+Rows: 400
+Sample data (first 5 rows):
+[
+  [
+    " "
+  ],
+  [],
+  [
+    null,
+    45748,
+    "4-2025",
+    1817.9,
+    1828.3,
+    10.4,
+    0.4,
+    100,
+    "7d2",
+    "Osmar "
+  ],
+  [
+    null,
+    45749,
+    "4-2025",
+    1828.3,
+    1839,
+    10.7,
+    0.7,
+    230,
+    "7d2",
+    "Osmar "
+  ],
+  [
+    null,
+    45750,
+    "4-2025",
+    1839,
+    1849.6,
+    10.6,
+    0.6,
+    null,
+    "7d2",
+    "Osmar "
+  ]
+]
+
+Sheet: pá carregadeira 
+Rows: 302
+Sample data (first 5 rows):
+[
+  [
+    45962,
+    "11-2025",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45963,
+    "11-2025",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45964,
+    "11-2025",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45965,
+    "11-2025",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45966,
+    "11-2025",
+    null,
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: Maq D51 - Caio
+Rows: 987
+Sample data (first 5 rows):
+[
+  [],
+  [
+    null,
+    null,
+    "12-1899",
+    223.9,
+    234,
+    10.1,
+    0.1
+  ],
+  [
+    null,
+    null,
+    "12-1899",
+    234,
+    239.9,
+    5.9,
+    -4.1
+  ],
+  [
+    45903,
+    null,
+    "12-1899",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45904,
+    null,
+    "12-1899",
+    null,
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: D51 julio
+Rows: 143
+Sample data (first 5 rows):
+[
+  [
+    45627,
+    "12-2024",
+    "",
+    null,
+    0,
+    -10
+  ],
+  [
+    45628,
+    "12-2024",
+    2086,
+    2088.3,
+    2.3,
+    -7.7
+  ],
+  [
+    45629,
+    "12-2024",
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    45630,
+    "12-2024",
+    "",
+    null,
+    0,
+    -10
+  ],
+  [
+    45631,
+    "12-2024",
+    "",
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: Caminhão 1513
+Rows: 64
+Sample data (first 5 rows):
+[
+  [
+    45717,
+    "3-2025",
+    0,
+    null,
+    0,
+    -10
+  ],
+  [
+    45718,
+    "3-2025",
+    "",
+    null,
+    0,
+    -10
+  ],
+  [
+    45748,
+    "4-2025",
+    "",
+    null,
+    0,
+    -10
+  ],
+  [
+    45749,
+    "4-2025",
+    "",
+    null,
+    0,
+    -10
+  ],
+  [
+    45750,
+    "4-2025",
+    "",
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: 7D1
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    "Dia ",
+    "Chave ",
+    "H inicial ",
+    "H final",
+    "Hora/ Dia ",
+    "Extra ",
+    "Colaborador ",
+    "Diesel "
+  ],
+  [
+    45231,
+    "11-2023",
+    7306.9,
+    7314.3,
+    7.4,
+    -2.6,
+    "Guri "
+  ],
+  [
+    45231,
+    "11-2023",
+    7314.3,
+    7315.5,
+    1.2,
+    -8.8,
+    "Guri ",
+    180
+  ]
+]
+
+Sheet:  Carregadeira 12B 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    "Dia ",
+    "Chave ",
+    "H inicial ",
+    "H final",
+    "Hora/ Dia ",
+    "Extra ",
+    "Coluna12",
+    "máquina "
+  ],
+  [
+    null,
+    45231,
+    "11-2023",
+    1516,
+    1517.1,
+    1.1,
+    -8.9
+  ],
+  [
+    null,
+    45232,
+    "11-2023",
+    1517.1,
+    1526.2,
+    9.1,
+    -0.9
+  ]
+]
+
+Sheet: 7D2 
+Rows: 1001
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    "Dia ",
+    "Chave ",
+    "H inicial ",
+    "H final",
+    "Hora/ Dia ",
+    "Extra ",
+    "Diesel "
+  ],
+  [
+    45231,
+    "11-2023",
+    7306.9,
+    7314.3,
+    7.4,
+    -2.6
+  ],
+  [
+    45231,
+    "11-2023",
+    7314.3,
+    7315.5,
+    1.2,
+    -8.8,
+    180
+  ]
+]
+
+Sheet: Horímetros
+Rows: 621
+Sample data (first 5 rows):
+[
+  [
+    2023
+  ],
+  [
+    null,
+    "Anderson",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Silvinho",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Caio",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Samuel ",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Tamiro",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Mimi",
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Sirlânio - Guri"
+  ],
+  [],
+  [],
+  [
+    "Setembro ",
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras"
+  ]
+]
+
+Sheet: ANDERSON
+Rows: 998
+Sample data (first 5 rows):
+[
+  [
+    null,
+    44713,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    1819,
+    null,
+    "sabados",
+    "data",
+    "h. inicial",
+    "h final",
+    "total"
+  ],
+  [
+    null,
+    "SALARIO",
+    2000,
+    null,
+    "HORIMETRO FINAL",
+    2039,
+    null,
+    null,
+    44716,
+    null,
+    null,
+    0
+  ],
+  [
+    null,
+    "COMISSÃO/H",
+    3300,
+    null,
+    "TOTAL HORA ",
+    220,
+    null,
+    null,
+    44723,
+    null,
+    null,
+    0
+  ],
+  [
+    null,
+    "H.EXTRA",
+    0,
+    null,
+    "VALOR DA HORA",
+    15,
+    null,
+    null,
+    44730,
+    1929.5,
+    1939.1,
+    9.6
+  ],
+  [
+    null,
+    "SABADOS",
+    200,
+    null,
+    "HORA EXTRA",
+    null,
+    null,
+    null,
+    44737,
+    1988.3,
+    1999,
+    10.7
+  ]
+]
+
+Sheet: Guri
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Julho - Pix:3597287575 Guri"
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    6581.2,
+    null,
+    "Julho"
+  ],
+  [
+    null,
+    45108,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    6770.4,
+    null,
+    "SALARIO",
+    1041
+  ],
+  [
+    null,
+    45109,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    111.9,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: CLEITON
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    null,
+    null,
+    "01/11/2022 CLITON",
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    410.5,
+    null,
+    "inicial",
+    "final ",
+    "total",
+    "extras"
+  ],
+  [
+    null,
+    null,
+    "SALARIO",
+    2000,
+    null,
+    "HORIMETRO FINAL",
+    637,
+    null,
+    410.5,
+    419.5,
+    9,
+    -1
+  ],
+  [
+    null,
+    null,
+    "COMISSÃO/H",
+    2265,
+    null,
+    "TOTAL HORA ",
+    226.5,
+    null,
+    419.5,
+    428.5,
+    9,
+    -1
+  ],
+  [
+    null,
+    null,
+    "H.EXTRA",
+    50,
+    null,
+    "VALOR DA HORA",
+    10,
+    null,
+    428.5,
+    437.5,
+    9,
+    -1
+  ],
+  [
+    null,
+    null,
+    "SABADOS",
+    400,
+    null,
+    "HORA EXTRA",
+    5,
+    null,
+    437.5,
+    447.5,
+    10,
+    0
+  ]
+]
+
+Sheet: CAIO
+Rows: 998
+Sample data (first 5 rows):
+[
+  [
+    44713,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    2133
+  ],
+  [
+    "SALARIO",
+    1000,
+    null,
+    "HORIMETRO FINAL",
+    2363
+  ],
+  [
+    "COMISSÃO/H",
+    1610,
+    null,
+    "TOTAL HORA ",
+    230
+  ],
+  [
+    "H.EXTRA",
+    49,
+    null,
+    "VALOR DA HORA",
+    7
+  ],
+  [
+    "SABADOS",
+    200,
+    null,
+    "HORA EXTRA",
+    7
+  ]
+]
+
+Sheet: Cristiano
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Agosto"
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "Agosto"
+  ],
+  [
+    null,
+    45139,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO",
+    3600
+  ],
+  [
+    null,
+    45140,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    1,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: BETO
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    "AGOSTO"
+  ],
+  [
+    null,
+    "AGOSTO",
+    null,
+    null,
+    null,
+    "CRISTIANO"
+  ],
+  [
+    null,
+    "SALARIO",
+    3500,
+    null,
+    null,
+    1200
+  ],
+  [
+    null,
+    "ADIANTAMENTO",
+    1000
+  ],
+  [
+    null,
+    "A RECEBER",
+    2500
+  ]
+]
+
+Sheet: Samuel 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Maio "
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "MAIO CLEITON"
+  ],
+  [
+    null,
+    45047,
+    619.8,
+    626.6,
+    6.8,
+    -3.2,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO",
+    1700
+  ],
+  [
+    null,
+    45048,
+    626.6,
+    690,
+    63.4,
+    53.4,
+    null,
+    "TOTAL HORA ",
+    null,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: TAMIRINHO
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Abril "
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "ABRIL TAMIRINHO "
+  ],
+  [
+    null,
+    45017,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO"
+  ],
+  [
+    null,
+    45018,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    null,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: Donizete
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Julho"
+  ],
+  [],
+  [
+    null,
+    "Data",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "Agosto"
+  ],
+  [
+    null,
+    45139,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO"
+  ],
+  [
+    null,
+    45140,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    111.5,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: Trator D150
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Agosto"
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "Agosto"
+  ],
+  [
+    null,
+    45078,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO",
+    2000
+  ],
+  [
+    null,
+    45079,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    null,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: Trator João
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Julho"
+  ],
+  [],
+  [
+    null,
+    "DA+B3:F31TA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "Janeiro"
+  ],
+  [
+    null,
+    45108,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO",
+    2000
+  ],
+  [
+    null,
+    45109,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    31,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+Sheet: Mimi
+Rows: 999
+Sample data (first 5 rows):
+[
+  [
+    "Agosto"
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    1864,
+    null,
+    "Agosto"
+  ],
+  [
+    null,
+    45139,
+    1864,
+    1869,
+    5,
+    -5,
+    null,
+    "HORIMETRO FINAL",
+    2114,
+    null,
+    "SALARIO",
+    2000
+  ],
+  [
+    null,
+    45140,
+    1869,
+    1880,
+    11,
+    1,
+    null,
+    "TOTAL HORA ",
+    250,
+    null,
+    "ADIANTAMENTO",
+    1300
+  ]
+]
+
+Sheet: CAETANO
+Rows: 998
+Sample data (first 5 rows):
+[
+  [
+    44774,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    42.4
+  ],
+  [
+    "SALARIO",
+    2000,
+    null,
+    "HORIMETRO FINAL",
+    285.1
+  ],
+  [
+    "COMISSÃO/H",
+    3640.5,
+    null,
+    "TOTAL HORA ",
+    242.7
+  ],
+  [
+    "H.EXTRA",
+    0,
+    null,
+    "VALOR DA HORA",
+    15
+  ],
+  [
+    "SABADOS",
+    500,
+    null,
+    "HORA EXTRA"
+  ]
+]
+
+Sheet: JHON
+Rows: 998
+Sample data (first 5 rows):
+[
+  [
+    44713,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    9729.2,
+    null,
+    "sabados",
+    "data",
+    "h. inicial",
+    "h final",
+    "total"
+  ],
+  [
+    "SALARIO",
+    1600,
+    null,
+    "HORIMETRO FINAL",
+    9935.3,
+    null,
+    null,
+    44716,
+    9759.1,
+    9770.9,
+    11.8
+  ],
+  [
+    "COMISSÃO/H",
+    1648.8,
+    null,
+    "TOTAL HORA ",
+    206.1,
+    null,
+    null,
+    44723,
+    9816.3,
+    9826.3,
+    10
+  ],
+  [
+    "H.EXTRA",
+    65.1,
+    null,
+    "VALOR DA HORA",
+    8,
+    null,
+    null,
+    44730,
+    9846.9,
+    9857.1,
+    10.2
+  ],
+  [
+    "SABADOS",
+    300,
+    null,
+    "HORA EXTRA",
+    9.3,
+    null,
+    null,
+    44737,
+    9891.2,
+    9894.3,
+    3.1
+  ]
+]
+
+Sheet: WENDEL
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    44713,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    4524.5,
+    null,
+    "sabados",
+    "data",
+    "h. inicial",
+    "h final",
+    "total"
+  ],
+  [
+    "SALARIO",
+    1600,
+    null,
+    "HORIMETRO FINAL",
+    4761.6,
+    null,
+    null,
+    44716,
+    4555.7,
+    4565.7,
+    10
+  ],
+  [
+    "COMISSÃO/H",
+    1659.7,
+    null,
+    "TOTAL HORA ",
+    237.1,
+    null,
+    null,
+    44723,
+    4597.7,
+    4607.7,
+    10
+  ]
+]
+
+Sheet: ROMILDO
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "ROMILDO FEVEREIRO",
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "inicial",
+    "final ",
+    "total",
+    "extras"
+  ],
+  [
+    "SALARIO",
+    0,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "COMISSÃO/H",
+    0,
+    null,
+    "TOTAL HORA ",
+    0,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "H.EXTRA",
+    0,
+    null,
+    "VALOR DA HORA",
+    8,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "SABADOS",
+    0,
+    null,
+    "HORA EXTRA",
+    null,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: JOSIEL
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [
+    null,
+    44835,
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    3010.9,
+    null,
+    "inicial",
+    "final ",
+    "total",
+    "extras"
+  ],
+  [
+    null,
+    "SALARIO",
+    2000,
+    null,
+    "HORIMETRO FINAL",
+    3137.6,
+    null,
+    3010.9,
+    3015.3,
+    4.4,
+    -5.6
+  ],
+  [
+    null,
+    "COMISSÃO/H",
+    1487,
+    null,
+    "TOTAL HORA ",
+    148.7,
+    null,
+    3015.3,
+    3017.3,
+    2,
+    -8
+  ],
+  [
+    null,
+    "H.EXTRA",
+    29,
+    null,
+    "VALOR DA HORA",
+    10,
+    null,
+    3017.3,
+    3028.3,
+    11,
+    1
+  ]
+]
+
+Sheet: HELIVELTON
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "dezembro Helivelton",
+    null,
+    null,
+    "HORIMETRO INICIAL",
+    60.3,
+    null,
+    "inicial",
+    "final ",
+    "total",
+    "extras"
+  ],
+  [
+    "SALARIO",
+    1800,
+    null,
+    "HORIMETRO FINAL",
+    84.2,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "COMISSÃO/H",
+    191.2,
+    null,
+    "TOTAL HORA ",
+    23.9,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "H.EXTRA",
+    0,
+    null,
+    "VALOR DA HORA",
+    8,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ],
+  [
+    "SABADOS",
+    0,
+    null,
+    "HORA EXTRA",
+    null,
+    null,
+    null,
+    null,
+    0,
+    -10
+  ]
+]
+
+Sheet: Planilha1 (2)
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    "Janeiro  "
+  ],
+  [],
+  [
+    null,
+    "DATA",
+    "INICIO",
+    "FINAL ",
+    "TOTAL",
+    "extras",
+    null,
+    "HORIMETRO INICIAL",
+    null,
+    null,
+    "Janeiro"
+  ],
+  [
+    null,
+    45078,
+    null,
+    null,
+    0,
+    -10,
+    null,
+    "HORIMETRO FINAL",
+    null,
+    null,
+    "SALARIO",
+    2000
+  ],
+  [
+    null,
+    45079,
+    "",
+    null,
+    0,
+    -10,
+    null,
+    "TOTAL HORA ",
+    null,
+    null,
+    "ADIANTAMENTO"
+  ]
+]
+
+
+--- FILE: attached_assets/Serviço_Locações_1773166355767.xlsx ---
+Sheets: Geral, Filipe , Terra Verde , Gabriel- Bielzinho , Bonella, Marçal, Demarch, Geovani Reis , Antenor, Claré, Leandro Reis, Deivid, Compestre, Josual, Valdeci , Frete 
+
+Sheet: Geral
+Rows: 997
+Sample data (first 5 rows):
+[
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Diesel",
+    "Valor do Diesel",
+    "$ Diesel"
+  ],
+  [
+    null,
+    null,
+    45951,
+    45958,
+    "Tião - Arrumar terreno plantio de café ",
+    10796.8,
+    10836.8,
+    40,
+    350,
+    14000,
+    null,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    "220 Silvinho ",
+    0,
+    null,
+    0,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    0,
+    null,
+    0,
+    null,
+    0
+  ]
+]
+
+Sheet: Filipe 
+Rows: 999
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $",
+    null,
+    null,
+    "Litros "
+  ],
+  [
+    null,
+    null,
+    45926,
+    45930,
+    "Jardim ",
+    1403.27,
+    1433.98,
+    30.71,
+    350,
+    10748.5,
+    null,
+    5.55,
+    0,
+    null,
+    null,
+    1000
+  ]
+]
+
+Sheet: Terra Verde 
+Rows: 997
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Cliente ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $",
+    null,
+    null,
+    "Litros "
+  ],
+  [
+    null,
+    null,
+    45994,
+    46021,
+    "Fazenda Faria - Terra Verde ",
+    11111,
+    11280,
+    169,
+    350,
+    59150,
+    2099,
+    5.69,
+    11943.31
+  ]
+]
+
+Sheet: Gabriel- Bielzinho 
+Rows: 0
+Sample data (first 5 rows):
+[]
+
+Sheet: Bonella
+Rows: 979
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Bonela ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    null,
+    null,
+    45916,
+    45967,
+    "700J Marcelo - Faz mimosa ",
+    3214.7,
+    3224,
+    9.3,
+    400,
+    3720,
+    1488,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    45931,
+    45961,
+    "700J Marcelo - Faz mimosa ",
+    3327,
+    3581,
+    254,
+    400,
+    101600,
+    3067
+  ]
+]
+
+Sheet: Marçal
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    " "
+  ],
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    null,
+    null,
+    45985,
+    45989,
+    "700J A  Wendel - Marçal ",
+    7397,
+    7451,
+    54,
+    400,
+    21600,
+    360,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    45992,
+    45994,
+    "700J A  Wendel - Marçal ",
+    7451,
+    7471.1,
+    20.1,
+    400,
+    8040,
+    280,
+    null,
+    0
+  ]
+]
+
+Sheet: Demarch
+Rows: 0
+Sample data (first 5 rows):
+[]
+
+Sheet: Geovani Reis 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [],
+  [
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    45931,
+    45944,
+    "Giovani Reis ",
+    10693.8,
+    10751.1,
+    57.3,
+    380,
+    21774,
+    1590,
+    5.47,
+    8697.3
+  ]
+]
+
+Sheet: Antenor
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    45936,
+    45959,
+    "Atenor Rabelo - São Francisco ",
+    6840.4,
+    7007.5,
+    167.1,
+    380,
+    63498,
+    2872,
+    5.61,
+    16111.92
+  ],
+  [
+    null,
+    null,
+    "220 A- Anderson ",
+    0,
+    null,
+    0,
+    null,
+    0
+  ]
+]
+
+Sheet: Claré
+Rows: 0
+Sample data (first 5 rows):
+[]
+
+Sheet: Leandro Reis
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Outubro "
+  ],
+  [
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    45931,
+    45961,
+    "Leandro Reis - Maria Vitoria ",
+    7006,
+    7251.1,
+    245.1,
+    400,
+    98040,
+    3145,
+    null,
+    0
+  ]
+]
+
+Sheet: Deivid
+Rows: 0
+Sample data (first 5 rows):
+[]
+
+Sheet: Compestre
+Rows: 999
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    null,
+    null,
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    null,
+    null,
+    45932,
+    45932,
+    "Sergio e Fernando Campestre -  220 Anderson - mercearia",
+    6837.5,
+    6839,
+    1.5,
+    380,
+    570,
+    null,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    0,
+    null,
+    0,
+    null,
+    0
+  ]
+]
+
+Sheet: Josual
+Rows: 0
+Sample data (first 5 rows):
+[]
+
+Sheet: Valdeci 
+Rows: 1000
+Sample data (first 5 rows):
+[
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Receitas"
+  ],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    45896,
+    20000,
+    "Pix"
+  ],
+  [
+    "Data inicio",
+    "Data final",
+    "Cliente e serviço ",
+    "Hora inicial",
+    "Hora final",
+    "Total horas",
+    null,
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    45917,
+    35000,
+    "Pix"
+  ],
+  [
+    46041,
+    46051,
+    "Valdeci ",
+    7541.6,
+    7600,
+    58.4,
+    380,
+    22192,
+    null,
+    null,
+    0,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    50000,
+    "Cheque ",
+    "Passado para o Calil "
+  ],
+  [
+    46055,
+    46069,
+    "220 - Anderson - Campo do meio ",
+    7600,
+    7673.3,
+    73.3,
+    380,
+    27854,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    50000,
+    "Cheque"
+  ]
+]
+
+Sheet: Frete 
+Rows: 996
+Sample data (first 5 rows):
+[
+  [],
+  [],
+  [
+    "Data ",
+    "Maquina ",
+    "Cliente e destino ",
+    "Km Inicial ",
+    "Km Final",
+    "Km total ",
+    "R$/Km",
+    null,
+    "Litros ",
+    "Diesel $",
+    "Valor $"
+  ],
+  [
+    46018,
+    "Trator ",
+    "Giovane Reis  - Três Pontas ",
+    956292.6,
+    956463.8,
+    171.2,
+    15,
+    2568,
+    null,
+    null,
+    0
+  ],
+  [
+    null,
+    null,
+    "Transportar trator para Três Pontas ",
+    0,
+    null,
+    0,
+    null,
+    0
+  ]
+]

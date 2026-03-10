@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { recentServices } from "@/lib/mock-data";
+import { mockServices } from "@/lib/mock-data";
 import { Search, Plus, Filter, MoreHorizontal, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -62,7 +62,7 @@ export default function Services() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {recentServices.map((service) => (
+                {mockServices.map((service) => (
                   <tr key={service.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="p-4 font-medium text-primary">{service.id}</td>
                     <td className="p-4 text-muted-foreground">{new Date(service.date).toLocaleDateString('pt-BR')}</td>

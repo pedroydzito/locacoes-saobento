@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { kpis, revenueData, machineUsageData, recentServices } from "@/lib/mock-data";
+import { kpis, revenueData, machineUsageData, mockServices } from "@/lib/mock-data";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { DollarSign, Clock, TrendingUp, Droplet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -120,7 +120,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentServices.slice(0, 4).map((service, i) => (
+                {mockServices.slice(0, 4).map((service, i) => (
                   <tr key={service.id} className="border-b border-border/10 hover:bg-muted/50 transition-colors">
                     <td className="py-3">{new Date(service.date).toLocaleDateString('pt-BR')}</td>
                     <td className="py-3 font-medium">{service.client}</td>
