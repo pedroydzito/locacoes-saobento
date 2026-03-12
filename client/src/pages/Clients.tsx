@@ -1,13 +1,40 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockClients } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ActionModal } from "@/components/ui/action-modal";
+import { ClientForm } from "@/components/forms/ClientForm";
 
 export default function Clients() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este cliente?")) {
+      // Logic to delete would go here
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -18,7 +45,7 @@ export default function Clients() {
           <p className="text-muted-foreground mt-1">Gerencie a carteira de clientes e construtoras.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="shadow-sm hover:shadow-md transition-all active:scale-95">
+          <Button onClick={handleAdd} className="shadow-sm hover:shadow-md transition-all active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Cliente
           </Button>
@@ -63,9 +90,23 @@ export default function Clients() {
                     </td>
                     <td className="p-4 text-right font-medium text-primary">{formatCurrency(client.total_billed)}</td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(client)}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(client.id)} className="text-destructive focus:bg-destructive/10">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -74,6 +115,14 @@ export default function Clients() {
           </div>
         </CardContent>
       </Card>
+
+      <ActionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingItem ? "Editar Cliente" : "Novo Cliente"}
+      >
+        <ClientForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
     </div>
   );
 }

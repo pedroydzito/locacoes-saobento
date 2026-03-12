@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockFreights } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal, MapPin } from "lucide-react";
+import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ActionModal } from "@/components/ui/action-modal";
+import { FreightForm } from "@/components/forms/FreightForm";
 
 export default function Freights() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
@@ -23,6 +30,27 @@ export default function Freights() {
     }
   };
 
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este frete?")) {
+      // Logic
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalOpen(false);
+  };
+
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -31,7 +59,7 @@ export default function Freights() {
           <p className="text-muted-foreground mt-1">Controle de transporte e movimentação de máquinas.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="shadow-sm hover:shadow-md transition-all active:scale-95">
+          <Button onClick={handleAdd} className="shadow-sm hover:shadow-md transition-all active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Frete
           </Button>
@@ -82,9 +110,23 @@ export default function Freights() {
                       {getStatusBadge(freight.status)}
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(freight)}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(freight.id)} className="text-destructive focus:bg-destructive/10">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -93,6 +135,14 @@ export default function Freights() {
           </div>
         </CardContent>
       </Card>
+
+      <ActionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingItem ? "Editar Frete" : "Novo Frete"}
+      >
+        <FreightForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
     </div>
   );
 }

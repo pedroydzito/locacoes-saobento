@@ -1,13 +1,40 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockServices } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ActionModal } from "@/components/ui/action-modal";
+import { ServiceForm } from "@/components/forms/ServiceForm";
 
 export default function Services() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este serviço?")) {
+      // Logic to delete would go here
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -22,7 +49,7 @@ export default function Services() {
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button className="shadow-sm hover:shadow-md transition-all active:scale-95">
+          <Button onClick={handleAdd} className="shadow-sm hover:shadow-md transition-all active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Serviço
           </Button>
@@ -79,9 +106,23 @@ export default function Services() {
                       </Badge>
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(service)}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(service.id)} className="text-destructive focus:bg-destructive/10">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -90,13 +131,21 @@ export default function Services() {
           </div>
         </CardContent>
         <div className="p-4 border-t border-border/50 bg-muted/10 flex items-center justify-between text-sm text-muted-foreground">
-          <span>Mostrando 1 a 5 de 142 serviços</span>
+          <span>Mostrando 1 a {mockServices.length} de {mockServices.length} serviços</span>
           <div className="flex gap-1">
             <Button variant="outline" size="sm" disabled>Anterior</Button>
             <Button variant="outline" size="sm">Próximo</Button>
           </div>
         </div>
       </Card>
+
+      <ActionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingItem ? "Editar Serviço" : "Novo Serviço"}
+      >
+        <ServiceForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
     </div>
   );
 }

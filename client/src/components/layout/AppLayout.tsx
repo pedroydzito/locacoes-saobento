@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useLocation as useWouterLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Tractor,
@@ -61,15 +61,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         <div className="p-4 border-t border-border/50">
-          <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors cursor-pointer">
-            <Avatar className="w-9 h-9 border border-border/50">
-              <AvatarFallback className="bg-primary/10 text-primary">AD</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">Admin Silva</span>
-              <span className="text-xs text-muted-foreground">Administrador</span>
+          <Link href="/perfil">
+            <div className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors cursor-pointer ${location === '/perfil' ? 'bg-muted' : 'hover:bg-muted'}`}>
+              <Avatar className="w-9 h-9 border border-border/50">
+                <AvatarFallback className="bg-primary/10 text-primary">AD</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">Admin Silva</span>
+                <span className="text-xs text-muted-foreground">Administrador</span>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
       {/* Main Content */}

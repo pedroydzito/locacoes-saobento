@@ -12,6 +12,7 @@ import Operators from "@/pages/Operators";
 import Finance from "@/pages/Finance";
 import Freights from "@/pages/Freights";
 import Reports from "@/pages/Reports";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/financeiro" component={Finance} />
       <Route path="/fretes" component={Freights} />
       <Route path="/relatorios" component={Reports} />
+      <Route path="/perfil" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );

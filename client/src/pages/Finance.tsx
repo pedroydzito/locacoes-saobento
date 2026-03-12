@@ -1,12 +1,39 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockTransactions, kpis } from "@/lib/mock-data";
-import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal } from "lucide-react";
+import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ActionModal } from "@/components/ui/action-modal";
+import { FinanceForm } from "@/components/forms/FinanceForm";
 
 export default function Finance() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const handleAdd = (type: 'entrada' | 'saida') => {
+    setEditingItem({ type });
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este lançamento?")) {
+      // Logic to delete
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalOpen(false);
   };
 
   const totalEntradas = mockTransactions.filter(t => t.type === 'entrada').reduce((acc, curr) => acc + curr.amount, 0);
@@ -20,10 +47,10 @@ export default function Finance() {
           <p className="text-muted-foreground mt-1">Controle de caixa, faturamento e despesas.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white shadow-sm transition-all">
+          <Button variant="outline" onClick={() => handleAdd('saida')} className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white shadow-sm transition-all">
             Nova Saída
           </Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all">
+          <Button onClick={() => handleAdd('entrada')} className="bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all">
             Nova Entrada
           </Button>
         </div>
@@ -96,9 +123,23 @@ export default function Finance() {
                       {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(tx)}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(tx.id)} className="text-destructive focus:bg-destructive/10">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -107,6 +148,14 @@ export default function Finance() {
           </div>
         </CardContent>
       </Card>
+
+      <ActionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingItem?.id ? "Editar Lançamento" : editingItem?.type === 'entrada' ? "Nova Entrada" : "Nova Saída"}
+      >
+        <FinanceForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
     </div>
   );
 }

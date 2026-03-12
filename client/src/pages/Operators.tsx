@@ -1,13 +1,40 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockOperators } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ActionModal } from "@/components/ui/action-modal";
+import { OperatorForm } from "@/components/forms/OperatorForm";
 
 export default function Operators() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este operador?")) {
+      // Logic
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -18,7 +45,7 @@ export default function Operators() {
           <p className="text-muted-foreground mt-1">Gestão da equipe de operadores e horímetros.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="shadow-sm hover:shadow-md transition-all active:scale-95">
+          <Button onClick={handleAdd} className="shadow-sm hover:shadow-md transition-all active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Operador
           </Button>
@@ -61,9 +88,23 @@ export default function Operators() {
                     <td className="p-4 text-right font-medium">{op.hours_worked}h</td>
                     <td className="p-4 text-center">{op.services_done}</td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(op)}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(op.id)} className="text-destructive focus:bg-destructive/10">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -72,6 +113,14 @@ export default function Operators() {
           </div>
         </CardContent>
       </Card>
+
+      <ActionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingItem ? "Editar Operador" : "Novo Operador"}
+      >
+        <OperatorForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
     </div>
   );
 }
