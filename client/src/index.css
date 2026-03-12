@@ -54,12 +54,12 @@
 }
 
 :root {
-  /* Marca Fazenda São Bento */
-  --primary: 103 57% 17%;
+  /* Marca Locações São Bento */
+  --primary: 209 52% 29%; /* Azul escuro #233e66 */
   --primary-foreground: 0 0% 98%;
   
-  --secondary: 28 83% 52%;
-  --secondary-foreground: 0 0% 10%;
+  --secondary: 204 43% 45%; /* Azul médio #42789f */
+  --secondary-foreground: 0 0% 98%;
   
   /* Interface Base */
   --background: 60 9% 96%;
@@ -77,30 +77,30 @@
   --muted: 60 5% 92%;
   --muted-foreground: 215 16% 47%;
   
-  --accent: 60 5% 92%;
+  --accent: 46 88% 52%; /* Amarelo #f1c40f */
   --accent-foreground: 222 47% 11%;
   
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
   
-  --ring: 103 57% 17%;
+  --ring: 209 52% 29%;
   
   /* Status Semânticos */
   --success: 103 57% 28%;
   --success-subtle: 103 57% 94%;
   --success-text: 103 52% 24%;
   
-  --warning: 38 92% 50%;
-  --warning-subtle: 38 92% 95%;
-  --warning-text: 38 76% 34%;
+  --warning: 46 88% 52%; /* Amarelo #f1c40f */
+  --warning-subtle: 46 88% 95%;
+  --warning-text: 46 76% 34%;
   
-  --info: 217 91% 60%;
-  --info-subtle: 217 91% 95%;
-  --info-text: 217 79% 40%;
+  --info: 204 43% 45%; /* Azul médio #42789f */
+  --info-subtle: 204 43% 95%;
+  --info-text: 204 43% 30%;
   
-  --chart-1: 103 57% 17%;
-  --chart-2: 28 83% 52%;
-  --chart-3: 217 91% 60%;
+  --chart-1: 209 52% 29%;
+  --chart-2: 46 88% 52%;
+  --chart-3: 204 43% 45%;
   --chart-4: 38 92% 50%;
   --chart-5: 0 72% 51%;
   

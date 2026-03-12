@@ -34,10 +34,10 @@ export default function MobileBottomNav() {
           return (
             <Link key={item.name} href={item.href}>
               <div className="flex flex-col items-center justify-center w-16 h-full cursor-pointer relative pt-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors ${isActive ? "bg-primary/10 text-[#1b431e]" : "text-muted-foreground"}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors ${isActive ? "bg-primary/10 text-[#233e66]" : "text-muted-foreground"}`}>
                   <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
                 </div>
-                <span className={`text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-1 ${isActive ? "text-[#1b431e] font-bold" : "text-muted-foreground"}`}>
+                <span className={`text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-1 ${isActive ? "text-[#233e66] font-bold" : "text-muted-foreground"}`}>
                   {item.name}
                 </span>
               </div>
@@ -49,10 +49,10 @@ export default function MobileBottomNav() {
           className="flex flex-col items-center justify-center w-16 h-full cursor-pointer pt-2"
           onClick={() => setIsMenuOpen(true)}
         >
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors ${isMenuOpen ? "bg-primary/10 text-[#1b431e]" : "text-muted-foreground"}`}>
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 transition-colors ${isMenuOpen ? "bg-primary/10 text-[#233e66]" : "text-muted-foreground"}`}>
             <MoreHorizontal className="w-5 h-5" strokeWidth={isMenuOpen ? 2.5 : 2} />
           </div>
-          <span className={`text-[10px] font-medium ${isMenuOpen ? "text-[#1b431e] font-bold" : "text-muted-foreground"}`}>
+          <span className={`text-[10px] font-medium ${isMenuOpen ? "text-[#233e66] font-bold" : "text-muted-foreground"}`}>
             Mais
           </span>
         </div>
@@ -62,7 +62,7 @@ export default function MobileBottomNav() {
         <SheetContent side="bottom" className="rounded-t-3xl px-4 pb-8 pt-4 max-h-[92vh] sm:max-w-md mx-auto">
           <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
           <SheetHeader className="text-left mb-6">
-            <SheetTitle className="text-xl font-display font-bold text-[#1b431e]">Mais opções</SheetTitle>
+            <SheetTitle className="text-xl font-display font-bold text-[#233e66]">Mais opções</SheetTitle>
           </SheetHeader>
           
           {userRole === 'admin' && (
@@ -73,11 +73,11 @@ export default function MobileBottomNav() {
                   <Link key={item.name} href={item.href} onClick={() => setIsMenuOpen(false)}>
                     <div className="flex flex-col items-center gap-2 group cursor-pointer">
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
-                        isActive ? 'bg-[#1b431e]/10 text-[#1b431e] border border-[#1b431e]/20' : 'bg-muted text-muted-foreground border border-transparent group-hover:bg-muted/80'
+                        isActive ? 'bg-[#233e66]/10 text-[#233e66] border border-[#233e66]/20' : 'bg-muted text-muted-foreground border border-transparent group-hover:bg-muted/80'
                       }`}>
                         <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                       </div>
-                      <span className={`text-xs font-medium text-center ${isActive ? 'text-[#1b431e] font-bold' : 'text-foreground'}`}>
+                      <span className={`text-xs font-medium text-center ${isActive ? 'text-[#233e66] font-bold' : 'text-foreground'}`}>
                         {item.name}
                       </span>
                     </div>
@@ -97,7 +97,7 @@ export default function MobileBottomNav() {
               }}
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#1b431e]/10 text-[#1b431e] flex items-center justify-center font-bold font-display">
+                <div className="w-10 h-10 rounded-full bg-[#233e66]/10 text-[#233e66] flex items-center justify-center font-bold font-display">
                   {userRole === 'admin' ? 'U' : 'O'}
                 </div>
                 <div>

@@ -57,15 +57,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex h-screen w-full bg-[#f8f9fa] overflow-hidden font-sans">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden sm:flex w-64 flex-col bg-[#1b431e] text-white">
+      <aside className="hidden sm:flex w-64 flex-col bg-[#233e66] text-white">
         <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 overflow-hidden relative flex-shrink-0 rounded-full bg-white/5">
-              <img src="/logo-color.png" alt="Logo Fazenda São Bento" className="absolute top-0 left-0 w-full h-[135%] object-cover object-top" />
+            <div className="w-12 h-12 overflow-hidden relative flex-shrink-0">
+              <img src="/locacoes-sao-bento.png" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Fazenda</span>
-              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#e87c2b]">São Bento</span>
+              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Locações</span>
+              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#f1c40f]">São Bento</span>
               <span className="text-[10px] tracking-widest text-[#7a957a] font-bold uppercase mt-0.5">LOCAÇÕES</span>
             </div>
           </div>
@@ -80,10 +80,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Link key={item.name} href={item.href}>
                   <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
                     isActive 
-                      ? "bg-[#255529] text-white font-medium shadow-sm" 
-                      : "text-white/70 hover:bg-[#255529]/50 hover:text-white"
+                      ? "bg-[#42789f] text-white font-medium shadow-sm" 
+                      : "text-white/70 hover:bg-[#42789f]/50 hover:text-white"
                   }`}>
-                    <item.icon className={`w-5 h-5 ${isActive ? "text-[#d5a05b]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+                    <item.icon className={`w-5 h-5 ${isActive ? "text-[#f1c40f]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
                     <span className="text-sm font-medium">{item.name}</span>
                   </div>
                 </Link>
@@ -100,10 +100,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   <Link key={item.name} href={item.href}>
                     <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
                       isActive 
-                        ? "bg-[#255529] text-white font-medium shadow-sm" 
-                        : "text-white/70 hover:bg-[#255529]/50 hover:text-white"
+                        ? "bg-[#42789f] text-white font-medium shadow-sm" 
+                        : "text-white/70 hover:bg-[#42789f]/50 hover:text-white"
                     }`}>
-                      <item.icon className={`w-5 h-5 ${isActive ? "text-[#d5a05b]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <item.icon className={`w-5 h-5 ${isActive ? "text-[#f1c40f]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
                       <span className="text-sm font-medium">{item.name}</span>
                     </div>
                   </Link>
@@ -115,14 +115,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-[#255529] border border-[#d5a05b]/30 flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 rounded-full bg-[#42789f] border border-[#f1c40f]/30 flex items-center justify-center text-white font-bold text-sm">
               {userRole === 'admin' ? 'U' : 'O'}
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold text-white truncate">
                 Usuário Google
               </span>
-              <span className="text-xs text-[#d5a05b] truncate mt-0.5 font-medium">
+              <span className="text-xs text-[#f1c40f] truncate mt-0.5 font-medium">
                 {userRole === 'admin' ? 'Admin' : 'Operador'}
               </span>
             </div>
@@ -139,13 +139,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
           <div className="flex items-center gap-2 sm:hidden">
-            <div className="w-8 h-8 overflow-hidden relative flex-shrink-0 rounded-full">
-              <img src="/logo-color.png" alt="Logo Fazenda São Bento" className="absolute top-0 left-0 w-full h-[135%] object-cover object-top" />
+            <div className="w-8 h-8 overflow-hidden relative flex-shrink-0">
+              <img src="/locacoes-sao-bento.png" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
-                 <span className="font-bold text-sm leading-none font-display text-[#1b431e]">Fazenda</span>
-                 <span className="font-bold text-sm leading-none font-display text-[#e87c2b]">São Bento</span>
+                 <span className="font-bold text-sm leading-none font-display text-[#233e66]">Locações</span>
+                 <span className="font-bold text-sm leading-none font-display text-[#f1c40f]">São Bento</span>
               </div>
             </div>
           </div>
