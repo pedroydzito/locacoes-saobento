@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockTransactions, kpis } from "@/lib/mock-data";
+import { mockTransactions } from "@/lib/mock-data";
 import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
@@ -43,111 +43,152 @@ export default function Finance() {
     <div className="space-y-6 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
-          <p className="text-muted-foreground mt-1">Controle de caixa, faturamento e despesas.</p>
+          <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Financeiro</h1>
+          <p className="text-sm text-muted-foreground mt-1">Controle de caixa, faturamento e despesas.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => handleAdd('saida')} className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white shadow-sm transition-all">
+        <div className="flex items-center gap-3 hidden sm:flex">
+          <Button variant="outline" onClick={() => handleAdd('saida')} className="border-destructive/20 text-destructive hover:bg-destructive hover:text-white shadow-sm transition-all rounded-xl h-10">
             Nova Saída
           </Button>
-          <Button onClick={() => handleAdd('entrada')} className="bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all">
+          <Button onClick={() => handleAdd('entrada')} className="bg-[hsl(var(--success))] hover:bg-[hsl(var(--success-text))] text-white shadow-sm transition-all rounded-xl h-10">
             Nova Entrada
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-border/50 shadow-sm">
+      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 gap-4 snap-x snap-mandatory hide-scrollbar">
+        <Card className="min-w-[260px] sm:min-w-0 snap-center shrink-0 border-border rounded-2xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Atual (Estimado)</CardTitle>
+            <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Saldo Atual</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalEntradas - totalSaidas)}</div>
+            <div className="text-2xl font-bold font-mono">{formatCurrency(totalEntradas - totalSaidas)}</div>
           </CardContent>
         </Card>
-        <Card className="border-emerald-200 bg-emerald-50/30 shadow-sm">
+        <Card className="min-w-[260px] sm:min-w-0 snap-center shrink-0 border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success-subtle))] rounded-2xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-700 flex items-center gap-2">
-              <ArrowUpRight className="w-4 h-4" />
+            <CardTitle className="text-sm font-bold text-[hsl(var(--success-text))] uppercase tracking-wide flex items-center gap-2">
+              <ArrowDownRight className="w-4 h-4" />
               Entradas no Mês
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-700">{formatCurrency(totalEntradas)}</div>
+            <div className="text-2xl font-bold font-mono text-[hsl(var(--success-text))]">{formatCurrency(totalEntradas)}</div>
           </CardContent>
         </Card>
-        <Card className="border-rose-200 bg-rose-50/30 shadow-sm">
+        <Card className="min-w-[260px] sm:min-w-0 snap-center shrink-0 border-destructive/20 bg-destructive/5 rounded-2xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-rose-700 flex items-center gap-2">
-              <ArrowDownRight className="w-4 h-4" />
+            <CardTitle className="text-sm font-bold text-destructive uppercase tracking-wide flex items-center gap-2">
+              <ArrowUpRight className="w-4 h-4" />
               Saídas no Mês
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-rose-700">{formatCurrency(totalSaidas)}</div>
+            <div className="text-2xl font-bold font-mono text-destructive">{formatCurrency(totalSaidas)}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-border/50 shadow-sm">
-        <div className="p-4 border-b border-border/50 bg-muted/20 flex gap-4 items-center">
+      <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border bg-card flex gap-4 items-center">
           <div className="relative max-w-md w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Buscar lançamentos..." 
-              className="pl-9 border-border/50 bg-white"
+              className="pl-9 border-border bg-card rounded-xl h-10"
             />
           </div>
         </div>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-border/50 bg-muted/10 text-muted-foreground">
-                  <th className="p-4 font-medium">Data</th>
-                  <th className="p-4 font-medium">Descrição</th>
-                  <th className="p-4 font-medium">Categoria</th>
-                  <th className="p-4 font-medium">Conta</th>
-                  <th className="p-4 font-medium text-right">Valor</th>
-                  <th className="p-4"></th>
+        
+        {/* Tabela Desktop */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="border-b border-border bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide font-bold">
+                <th className="p-4">Data</th>
+                <th className="p-4">Descrição</th>
+                <th className="p-4">Categoria</th>
+                <th className="p-4">Conta</th>
+                <th className="p-4 text-right">Valor</th>
+                <th className="p-4 w-[52px]"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60 bg-card">
+              {mockTransactions.map((tx) => (
+                <tr key={tx.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(tx)}>
+                  <td className="p-4 text-muted-foreground font-mono">{new Date(tx.date).toLocaleDateString('pt-BR')}</td>
+                  <td className="p-4 font-bold text-foreground">{tx.description}</td>
+                  <td className="p-4 text-muted-foreground">
+                    <span className="bg-muted px-2.5 py-1 rounded-md text-xs font-medium">{tx.category}</span>
+                  </td>
+                  <td className="p-4 text-muted-foreground">{tx.account}</td>
+                  <td className={`p-4 text-right font-bold font-mono ${tx.type === 'entrada' ? 'text-[hsl(var(--success-text))]' : 'text-destructive'}`}>
+                    {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  </td>
+                  <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full text-muted-foreground hover:text-foreground">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEdit(tx)} className="rounded-lg cursor-pointer">
+                          <Edit className="w-4 h-4 mr-2" /> Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(tx.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
+                          <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {mockTransactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-muted/30 transition-colors group">
-                    <td className="p-4 text-muted-foreground">{new Date(tx.date).toLocaleDateString('pt-BR')}</td>
-                    <td className="p-4 font-medium">{tx.description}</td>
-                    <td className="p-4 text-muted-foreground">{tx.category}</td>
-                    <td className="p-4 text-muted-foreground">{tx.account}</td>
-                    <td className={`p-4 text-right font-medium ${tx.type === 'entrada' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
-                    </td>
-                    <td className="p-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(tx)}>
-                            <Edit className="w-4 h-4 mr-2" /> Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDelete(tx.id)} className="text-destructive focus:bg-destructive/10">
-                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Cards Mobile */}
+        <div className="sm:hidden divide-y divide-border/60 bg-card">
+          {mockTransactions.map((tx) => (
+            <div key={tx.id} className="p-4 touch-card" onClick={() => handleEdit(tx)}>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground text-base leading-tight truncate">{tx.description}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-1">{new Date(tx.date).toLocaleDateString('pt-BR')}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold font-mono text-base ${tx.type === 'entrada' ? 'text-[hsl(var(--success-text))]' : 'text-destructive'}`}>
+                    {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-border/50">
+                <span className="bg-muted px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground">{tx.category}</span>
+                <span className="text-sm text-muted-foreground">{tx.account}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
+
+      {/* FABs Mobile (Principal + Secundário) */}
+      <div className="sm:hidden fixed bottom-[5.5rem] right-4 z-40 flex flex-col items-end gap-3">
+        <button
+          onClick={() => handleAdd('saida')}
+          className="w-12 h-12 bg-card border-2 border-destructive text-destructive rounded-full shadow-lg flex items-center justify-center hover:bg-destructive/10 transition-all active:scale-95"
+        >
+          <ArrowUpRight className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => handleAdd('entrada')}
+          className="w-14 h-14 bg-[hsl(var(--success))] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[hsl(var(--success-text))] transition-all active:scale-95"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
 
       <ActionModal 
         isOpen={isModalOpen} 
