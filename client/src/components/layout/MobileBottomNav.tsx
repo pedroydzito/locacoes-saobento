@@ -1,26 +1,30 @@
 import { Link, useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { Wheat, Truck, Tractor, LayoutDashboard, Menu, Fuel, Package, Users, X } from "lucide-react";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { Truck, Tractor, LayoutDashboard, Menu, Users, Pickaxe, DollarSign, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const mainNavItems = [
   { name: "Início", href: "/", icon: LayoutDashboard },
-  { name: "Colheita", href: "/colheita", icon: Wheat },
-  { name: "Transporte", href: "/fretes", icon: Truck },
+  { name: "Obras & Serv", href: "/servicos", icon: Pickaxe },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
+  { name: "Fretes", href: "/fretes", icon: Truck },
 ];
 
 const secondaryNavItems = [
-  { name: "Abastecimento", href: "/abastecimento", icon: Fuel },
-  { name: "Estoque", href: "/estoque", icon: Package },
-  { name: "Caminhões", href: "/caminhoes", icon: Truck },
-  { name: "Usuários", href: "/operadores", icon: Users },
+  { name: "Operadores", href: "/operadores", icon: Users },
+  { name: "Financeiro", href: "/financeiro", icon: DollarSign },
+  { name: "Relatórios", href: "/relatorios", icon: FileText },
 ];
 
 export default function MobileBottomNav() {
   const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState("operador");
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem("userRole") || "operador");
+  }, []);
 
   return (
     <>
@@ -38,7 +42,7 @@ export default function MobileBottomNav() {
                   />
                 )}
                 <item.icon className={`w-6 h-6 mb-1 transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-[10px] font-medium ${isActive ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                <span className={`text-[10px] font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-1 ${isActive ? "text-primary font-bold" : "text-muted-foreground"}`}>
                   {item.name}
                 </span>
               </div>
@@ -64,34 +68,36 @@ export default function MobileBottomNav() {
             <SheetTitle className="text-xl font-display font-bold">Mais opções</SheetTitle>
           </SheetHeader>
           
-          <div className="grid grid-cols-4 gap-4">
-            {secondaryNavItems.map((item) => {
-              const isActive = location === item.href;
-              return (
-                <Link key={item.name} href={item.href} onClick={() => setIsMenuOpen(false)}>
-                  <div className="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
-                      isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-transparent group-hover:bg-muted/80'
-                    }`}>
-                      <item.icon className="w-6 h-6" />
+          {userRole === 'admin' && (
+            <div className="grid grid-cols-3 gap-4">
+              {secondaryNavItems.map((item) => {
+                const isActive = location === item.href;
+                return (
+                  <Link key={item.name} href={item.href} onClick={() => setIsMenuOpen(false)}>
+                    <div className="flex flex-col items-center gap-2 group cursor-pointer">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
+                        isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-transparent group-hover:bg-muted/80'
+                      }`}>
+                        <item.icon className="w-6 h-6" />
+                      </div>
+                      <span className={`text-xs font-medium text-center ${isActive ? 'text-primary font-bold' : 'text-foreground'}`}>
+                        {item.name}
+                      </span>
                     </div>
-                    <span className={`text-xs font-medium text-center ${isActive ? 'text-primary font-bold' : 'text-foreground'}`}>
-                      {item.name}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
           
           <div className="mt-8 pt-6 border-t border-border">
             <Link href="/perfil" onClick={() => setIsMenuOpen(false)}>
               <div className="flex items-center gap-4 bg-muted/50 p-4 rounded-2xl">
                 <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold font-display">
-                  AS
+                  {userRole === 'admin' ? 'AS' : 'OP'}
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-foreground">Admin Silva</p>
+                  <p className="font-bold text-sm text-foreground">{userRole === 'admin' ? 'Admin Silva' : 'Operador'}</p>
                   <p className="text-xs text-muted-foreground">Ver perfil</p>
                 </div>
               </div>

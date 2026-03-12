@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Services from "@/pages/Services";
-import Clients from "@/pages/Clients";
 import Machines from "@/pages/Machines";
 import Operators from "@/pages/Operators";
 import Finance from "@/pages/Finance";
@@ -15,6 +14,26 @@ import Reports from "@/pages/Reports";
 import Profile from "@/pages/Profile";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+
+function ProtectedRoute({ component: Component, allowedRoles }: { component: any, allowedRoles?: string[] }) {
+  const [location, setLocation] = useLocation();
+  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+  const userRole = localStorage.getItem("userRole") || "operador";
+
+  useEffect(() => {
+    if (!isAuthenticated && location !== '/login') {
+      setLocation('/login');
+    } else if (isAuthenticated && allowedRoles && !allowedRoles.includes(userRole)) {
+      setLocation('/');
+    }
+  }, [isAuthenticated, location, setLocation, userRole, allowedRoles]);
+
+  if (!isAuthenticated) return null;
+  if (allowedRoles && !allowedRoles.includes(userRole)) return null;
+
+  return <Component />;
+}
 
 function Router() {
   const [location] = useLocation();
@@ -26,15 +45,17 @@ function Router() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/servicos" component={Services} />
-        <Route path="/clientes" component={Clients} />
-        <Route path="/maquinas" component={Machines} />
-        <Route path="/operadores" component={Operators} />
-        <Route path="/financeiro" component={Finance} />
-        <Route path="/fretes" component={Freights} />
-        <Route path="/relatorios" component={Reports} />
-        <Route path="/perfil" component={Profile} />
+        <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
+        <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
+        <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
+        <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
+        
+        {/* Gestão - Apenas Admin */}
+        <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />
+        <Route path="/financeiro" component={() => <ProtectedRoute component={Finance} allowedRoles={['admin']} />} />
+        <Route path="/relatorios" component={() => <ProtectedRoute component={Reports} allowedRoles={['admin']} />} />
+        
+        <Route path="/perfil" component={() => <ProtectedRoute component={Profile} />} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

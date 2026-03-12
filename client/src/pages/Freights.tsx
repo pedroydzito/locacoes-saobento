@@ -50,6 +50,8 @@ export default function Freights() {
     setIsModalOpen(false);
   };
 
+  const userRole = localStorage.getItem("userRole") || "operador";
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -121,10 +123,14 @@ export default function Freights() {
                         <DropdownMenuItem onClick={() => handleEdit(freight)} className="rounded-lg cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" /> Editar
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDelete(freight.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
-                          <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                        </DropdownMenuItem>
+                        {userRole === 'admin' && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDelete(freight.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
+                              <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
