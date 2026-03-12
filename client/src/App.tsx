@@ -11,7 +11,6 @@ import Operators from "@/pages/Operators";
 import Finance from "@/pages/Finance";
 import Freights from "@/pages/Freights";
 import Reports from "@/pages/Reports";
-import Profile from "@/pages/Profile";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
@@ -49,13 +48,13 @@ function Router() {
         <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
         <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
         <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
+        <Route path="/caminhoes" component={() => <ProtectedRoute component={Freights} />} />
         
         {/* Gestão - Apenas Admin */}
         <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />
         <Route path="/financeiro" component={() => <ProtectedRoute component={Finance} allowedRoles={['admin']} />} />
         <Route path="/relatorios" component={() => <ProtectedRoute component={Reports} allowedRoles={['admin']} />} />
         
-        <Route path="/perfil" component={() => <ProtectedRoute component={Profile} />} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

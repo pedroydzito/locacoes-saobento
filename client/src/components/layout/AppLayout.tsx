@@ -2,8 +2,8 @@ import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Users, Tractor, Wheat, Package,
-  Truck, Fuel, Settings, Menu, Bell, ShieldAlert, DollarSign, FileText, Pickaxe
+  Home, Users, Tractor,
+  Truck, Menu, Bell, Droplet, Package, Wheat, LogOut
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,16 +14,17 @@ interface AppLayoutProps {
 }
 
 const mainNavItems = [
-  { name: "Início", href: "/", icon: LayoutDashboard },
-  { name: "Obras & Serv", href: "/servicos", icon: Pickaxe },
+  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Colheita", href: "/servicos", icon: Wheat },
+  { name: "Transporte", href: "/fretes", icon: Truck },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
-  { name: "Fretes", href: "/fretes", icon: Truck },
+  { name: "Abastecimento", href: "/financeiro", icon: Droplet },
+  { name: "Estoque", href: "/relatorios", icon: Package },
 ];
 
 const secondaryNavItems = [
-  { name: "Operadores", href: "/operadores", icon: Users },
-  { name: "Financeiro", href: "/financeiro", icon: DollarSign },
-  { name: "Relatórios", href: "/relatorios", icon: FileText },
+  { name: "Caminhões", href: "/caminhoes", icon: Truck },
+  { name: "Usuários", href: "/operadores", icon: Users },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
@@ -55,30 +56,34 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-[#f8f9fa] overflow-hidden font-sans">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden sm:flex w-64 flex-col border-r border-border bg-card">
-        <div className="h-16 flex items-center px-6 border-b border-border">
+      <aside className="hidden sm:flex w-64 flex-col bg-[#1b431e] text-white">
+        <div className="h-20 flex items-center px-6 pt-4">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-lg font-display tracking-tight text-foreground">São Bento</span>
+            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-10 h-10 object-contain filter drop-shadow-md brightness-0 invert" />
+            <div className="flex flex-col">
+              <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">Fazenda</span>
+              <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">São Bento</span>
+              <span className="text-[10px] tracking-widest text-[#d5a05b] uppercase mt-0.5">Agronegócios</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4">
-          <div className="space-y-1 mb-8">
-            <p className="px-3 text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Operação</p>
+        <div className="flex-1 overflow-y-auto py-8 px-4">
+          <div className="space-y-1 mb-10">
+            <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Módulos</p>
             {mainNavItems.map((item) => {
               const isActive = location === item.href;
               return (
                 <Link key={item.name} href={item.href}>
-                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+                  <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
                     isActive 
-                      ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-[#255529] text-white font-medium shadow-sm" 
+                      : "text-white/70 hover:bg-[#255529]/50 hover:text-white"
                   }`}>
-                    <item.icon className={`w-5 h-5 ${isActive ? "text-primary-foreground" : ""}`} />
-                    <span className="text-sm">{item.name}</span>
+                    <item.icon className={`w-5 h-5 ${isActive ? "text-[#d5a05b]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+                    <span className="text-sm font-medium">{item.name}</span>
                   </div>
                 </Link>
               );
@@ -87,18 +92,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {userRole === 'admin' && (
             <div className="space-y-1">
-              <p className="px-3 text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Gestão</p>
+              <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Administração</p>
               {secondaryNavItems.map((item) => {
                 const isActive = location === item.href;
                 return (
                   <Link key={item.name} href={item.href}>
-                    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+                    <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
                       isActive 
-                        ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-[#255529] text-white font-medium shadow-sm" 
+                        : "text-white/70 hover:bg-[#255529]/50 hover:text-white"
                     }`}>
-                      <item.icon className={`w-5 h-5 ${isActive ? "text-primary-foreground" : ""}`} />
-                      <span className="text-sm">{item.name}</span>
+                      <item.icon className={`w-5 h-5 ${isActive ? "text-[#d5a05b]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <span className="text-sm font-medium">{item.name}</span>
                     </div>
                   </Link>
                 );
@@ -107,44 +112,47 @@ export default function AppLayout({ children }: AppLayoutProps) {
           )}
         </div>
 
-        <div className="p-4 border-t border-border">
-          <Link href="/perfil">
-            <div className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors cursor-pointer ${location === '/perfil' ? 'bg-muted' : 'hover:bg-muted'}`}>
-              <Avatar className="w-10 h-10 border border-border">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                  {userRole === 'admin' ? 'AS' : 'OP'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold text-foreground truncate">
-                  {userRole === 'admin' ? 'Admin Silva' : 'Operador'}
-                </span>
-                <span className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
-                  <ShieldAlert className="w-3 h-3 text-primary" />
-                  {userRole === 'admin' ? 'Administrador' : 'Operador'}
-                </span>
-              </div>
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-[#255529] border border-[#d5a05b]/30 flex items-center justify-center text-white font-bold text-sm">
+              {userRole === 'admin' ? 'U' : 'O'}
             </div>
-          </Link>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-white truncate">
+                Usuário Google
+              </span>
+              <span className="text-xs text-[#d5a05b] truncate mt-0.5 font-medium">
+                {userRole === 'admin' ? 'Admin' : 'Operador'}
+              </span>
+            </div>
+          </div>
+          
+          <button onClick={handleLogout} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium w-full px-2">
+            <LogOut className="w-4 h-4" />
+            Sair do sistema
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-border bg-card/80 backdrop-blur-md z-10 sticky top-0">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-8 h-8 object-contain sm:hidden" />
-            <h1 className="font-bold text-lg font-display tracking-tight text-foreground sm:hidden">São Bento</h1>
+        <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
+          <div className="flex items-center gap-3 sm:hidden">
+            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-8 h-8 object-contain" />
           </div>
+          
+          <div className="hidden sm:flex items-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+            <Menu className="w-5 h-5" />
+          </div>
+          
           <div className="flex items-center gap-3 ml-auto">
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground hover:bg-muted rounded-full w-10 h-10">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-secondary rounded-full border-2 border-card"></span>
-            </Button>
+            <div className="w-8 h-8 rounded-full bg-primary/10 sm:hidden flex items-center justify-center text-primary font-bold text-xs">
+               {userRole === 'admin' ? 'U' : 'O'}
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 sm:pb-8">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
