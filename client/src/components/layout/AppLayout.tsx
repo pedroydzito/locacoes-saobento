@@ -58,18 +58,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <div className="flex h-screen w-full bg-[#f8f9fa] overflow-hidden font-sans">
       {/* Sidebar (Desktop) */}
       <aside className="hidden sm:flex w-64 flex-col bg-[#1b431e] text-white">
-        <div className="h-20 flex items-center px-6 pt-4">
+        <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-10 h-10 object-contain filter drop-shadow-md brightness-0 invert" />
+            <div className="w-12 h-12 overflow-hidden relative flex-shrink-0 rounded-full bg-white/5">
+              <img src="/logo-color.png" alt="Logo Fazenda São Bento" className="absolute top-0 left-0 w-full h-[135%] object-cover object-top" />
+            </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">Fazenda</span>
-              <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">São Bento</span>
-              <span className="text-[10px] tracking-widest text-[#d5a05b] uppercase mt-0.5">Agronegócios</span>
+              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Fazenda</span>
+              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#e87c2b]">São Bento</span>
+              <span className="text-[10px] tracking-widest text-[#7a957a] font-bold uppercase mt-0.5">LOCAÇÕES</span>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-8 px-4">
+        <div className="flex-1 overflow-y-auto py-6 px-4">
           <div className="space-y-1 mb-10">
             <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Operação</p>
             {mainNavItems.map((item) => {
@@ -136,8 +138,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
-          <div className="flex items-center gap-3 sm:hidden">
-            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-8 h-8 object-contain" />
+          <div className="flex items-center gap-2 sm:hidden">
+            <div className="w-8 h-8 overflow-hidden relative flex-shrink-0 rounded-full">
+              <img src="/logo-color.png" alt="Logo Fazenda São Bento" className="absolute top-0 left-0 w-full h-[135%] object-cover object-top" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1">
+                 <span className="font-bold text-sm leading-none font-display text-[#1b431e]">Fazenda</span>
+                 <span className="font-bold text-sm leading-none font-display text-[#e87c2b]">São Bento</span>
+              </div>
+            </div>
           </div>
           
           <div className="hidden sm:flex items-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors">

@@ -46,19 +46,22 @@ export default function Auth() {
              backgroundColor: 'hsl(var(--primary))'
            }}>
         
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="mb-6 rounded-full flex items-center justify-center w-32 h-32 md:w-40 md:h-40">
-            <img src="/logo.png" alt="Logo Fazenda São Bento" className="w-full h-full object-contain filter drop-shadow-xl" />
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="mb-6 w-32 h-32 md:w-40 md:h-40 overflow-hidden relative flex-shrink-0 rounded-full drop-shadow-2xl">
+             <img src="/logo-color.png" alt="Logo Fazenda São Bento" className="absolute top-0 left-0 w-full h-[135%] object-cover object-top" />
           </div>
           
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-4">
-              Fazenda São Bento
+            <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-1">
+              Fazenda <span className="text-[#e87c2b]">São Bento</span>
             </h1>
-            <p className="text-white/80 text-base max-w-xs mx-auto font-medium">
-              Gestão agrícola inteligente, do plantio à colheita.
+            <p className="text-[#8f9b90] text-sm tracking-widest font-bold uppercase mb-6">
+              LOCAÇÕES
             </p>
-            <div className="w-8 h-1 bg-[hsl(var(--secondary))] mx-auto mt-6 rounded-full" />
+            <p className="text-white/80 text-base max-w-xs mx-auto font-medium">
+              Gestão inteligente de frota e serviços.
+            </p>
+            <div className="w-8 h-1 bg-[#e87c2b] mx-auto mt-6 rounded-full" />
           </div>
         </div>
 
