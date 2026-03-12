@@ -1,21 +1,20 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Truck, Tractor, Home, Users, Droplet, Package, Wheat, MoreHorizontal, LogOut } from "lucide-react";
+import { Truck, Tractor, Home, Users, Pickaxe, DollarSign, FileText, MoreHorizontal, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const mainNavItems = [
   { name: "Início", href: "/", icon: Home },
-  { name: "Colheita", href: "/servicos", icon: Wheat },
-  { name: "Transporte", href: "/fretes", icon: Truck },
+  { name: "Obras", href: "/servicos", icon: Pickaxe },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
+  { name: "Fretes", href: "/fretes", icon: Truck },
 ];
 
 const secondaryNavItems = [
-  { name: "Abastecimento", href: "/financeiro", icon: Droplet },
-  { name: "Estoque", href: "/relatorios", icon: Package },
-  { name: "Caminhões", href: "/caminhoes", icon: Truck },
-  { name: "Usuários", href: "/operadores", icon: Users },
+  { name: "Operadores", href: "/operadores", icon: Users },
+  { name: "Financeiro", href: "/financeiro", icon: DollarSign },
+  { name: "Relatórios", href: "/relatorios", icon: FileText },
 ];
 
 export default function MobileBottomNav() {

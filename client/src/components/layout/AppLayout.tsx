@@ -2,8 +2,8 @@ import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
-  Home, Users, Tractor,
-  Truck, Menu, Bell, Droplet, Package, Wheat, LogOut
+  Home, Users, Tractor, Pickaxe, DollarSign, FileText,
+  Truck, Menu, Bell, LogOut
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,17 +14,16 @@ interface AppLayoutProps {
 }
 
 const mainNavItems = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Colheita", href: "/servicos", icon: Wheat },
-  { name: "Transporte", href: "/fretes", icon: Truck },
+  { name: "Início", href: "/", icon: Home },
+  { name: "Obras & Serviços", href: "/servicos", icon: Pickaxe },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
-  { name: "Abastecimento", href: "/financeiro", icon: Droplet },
-  { name: "Estoque", href: "/relatorios", icon: Package },
+  { name: "Fretes", href: "/fretes", icon: Truck },
 ];
 
 const secondaryNavItems = [
-  { name: "Caminhões", href: "/caminhoes", icon: Truck },
-  { name: "Usuários", href: "/operadores", icon: Users },
+  { name: "Operadores", href: "/operadores", icon: Users },
+  { name: "Financeiro", href: "/financeiro", icon: DollarSign },
+  { name: "Relatórios", href: "/relatorios", icon: FileText },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
@@ -72,7 +71,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         <div className="flex-1 overflow-y-auto py-8 px-4">
           <div className="space-y-1 mb-10">
-            <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Módulos</p>
+            <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Operação</p>
             {mainNavItems.map((item) => {
               const isActive = location === item.href;
               return (
@@ -92,7 +91,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {userRole === 'admin' && (
             <div className="space-y-1">
-              <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Administração</p>
+              <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Gestão</p>
               {secondaryNavItems.map((item) => {
                 const isActive = location === item.href;
                 return (

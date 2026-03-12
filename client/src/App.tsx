@@ -48,7 +48,6 @@ function Router() {
         <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
         <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
         <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
-        <Route path="/caminhoes" component={() => <ProtectedRoute component={Freights} />} />
         
         {/* Gestão - Apenas Admin */}
         <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />
