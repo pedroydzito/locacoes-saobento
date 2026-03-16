@@ -48,7 +48,7 @@ export default function Auth() {
         
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="mb-6 w-32 h-32 md:w-40 md:h-40 overflow-hidden relative flex-shrink-0">
-             <img src="/logo-dark.png" alt="Logo Locações São Bento" className="w-full h-full object-contain scale-125" />
+             <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
           </div>
           
           <div>
