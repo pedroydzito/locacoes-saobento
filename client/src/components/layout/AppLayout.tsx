@@ -61,11 +61,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 overflow-hidden relative flex-shrink-0">
-              <img src="/locacoes-sao-bento.png" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Locações</span>
-              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#f1c40f]">São Bento</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">São</span>
+                <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#f1c40f]">Bento</span>
+              </div>
               <span className="text-[10px] tracking-widest text-[#7a957a] font-bold uppercase mt-0.5">LOCAÇÕES</span>
             </div>
           </div>
@@ -140,12 +143,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
           <div className="flex items-center gap-2 sm:hidden">
             <div className="w-8 h-8 overflow-hidden relative flex-shrink-0">
-              <img src="/locacoes-sao-bento.png" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
                  <span className="font-bold text-sm leading-none font-display text-[#233e66]">Locações</span>
-                 <span className="font-bold text-sm leading-none font-display text-[#f1c40f]">São Bento</span>
+                 <span className="font-bold text-sm leading-none font-display text-[#233e66]">São</span>
+                 <span className="font-bold text-sm leading-none font-display text-[#f1c40f]">Bento</span>
               </div>
             </div>
           </div>

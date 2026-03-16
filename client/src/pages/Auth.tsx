@@ -48,12 +48,12 @@ export default function Auth() {
         
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="mb-6 w-32 h-32 md:w-40 md:h-40 overflow-hidden relative flex-shrink-0">
-             <img src="/locacoes-sao-bento.png" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+             <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
           </div>
           
           <div>
             <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-1">
-              Locações <span className="text-[#f1c40f]">São Bento</span>
+              Locações <span className="text-white">São</span> <span className="text-[#f1c40f]">Bento</span>
             </h1>
             <p className="text-[#a5b4fc] text-sm tracking-widest font-bold uppercase mb-6">
               LOCAÇÕES
