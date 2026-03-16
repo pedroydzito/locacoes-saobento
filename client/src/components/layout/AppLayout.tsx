@@ -61,7 +61,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 overflow-hidden relative flex-shrink-0">
-              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+              <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Locações</span>
