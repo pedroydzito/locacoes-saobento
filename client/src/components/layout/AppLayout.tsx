@@ -61,7 +61,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 overflow-hidden relative flex-shrink-0">
-              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+              <img src="/logo-dark.png" alt="Logo Locações São Bento" className="w-full h-full object-contain scale-[1.5]" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Locações</span>
@@ -143,7 +143,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
           <div className="flex items-center gap-2 sm:hidden">
             <div className="w-8 h-8 overflow-hidden relative flex-shrink-0">
-              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+              <img src="/logo-light.png" alt="Logo Locações São Bento" className="w-full h-full object-contain scale-[1.5]" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
