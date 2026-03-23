@@ -2,16 +2,22 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockFreights } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2 } from "lucide-react";
+import { mockFreights, machinesList } from "@/lib/mock-data";
+import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
 import { FreightForm } from "@/components/forms/FreightForm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Freights() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [machineFilter, setMachineFilter] = useState("all");
+
+  const filteredFreights = mockFreights.filter(f => 
+    machineFilter === "all" || f.machine === machineFilter
+  );
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -60,6 +66,10 @@ export default function Freights() {
           <p className="text-sm text-muted-foreground mt-1">Controle de movimentação de máquinas entre obras.</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" className="border-border rounded-xl h-10 shadow-sm transition-all hidden sm:flex">
+            <FileDown className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
           <Button onClick={handleAdd} className="rounded-xl h-10 px-5 shadow-sm transition-all hidden sm:flex active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Frete
@@ -68,14 +78,30 @@ export default function Freights() {
       </div>
 
       <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-card">
-          <div className="relative max-w-md w-full">
+        <div className="p-4 border-b border-border bg-card flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="relative max-w-sm w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Buscar por máquina, origem ou destino..." 
               className="pl-9 border-border bg-card rounded-xl h-10"
             />
           </div>
+          <Select value={machineFilter} onValueChange={setMachineFilter}>
+            <SelectTrigger className="w-full sm:w-[220px] border-border rounded-xl h-10 shadow-sm bg-card [&>div]:flex [&>div]:items-center [&>div]:gap-2">
+              <div>
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <SelectValue placeholder="Filtrar por Máquina" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">Todas as Máquinas</SelectItem>
+              {machinesList.map((machine) => (
+                <SelectItem key={machine} value={machine}>
+                  {machine}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         {/* Tabela Desktop */}
@@ -94,7 +120,7 @@ export default function Freights() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {mockFreights.map((freight) => (
+              {filteredFreights.map((freight) => (
                 <tr key={freight.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(freight)}>
                   <td className="p-4 font-bold text-primary font-mono">{freight.id}</td>
                   <td className="p-4 text-muted-foreground font-mono">{new Date(freight.date).toLocaleDateString('pt-BR')}</td>
@@ -142,7 +168,7 @@ export default function Freights() {
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {mockFreights.map((freight) => (
+          {filteredFreights.map((freight) => (
             <div key={freight.id} className="p-4 touch-card" onClick={() => handleEdit(freight)}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex-1 min-w-0">

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockMachines } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { mockMachines, mockServices } from "@/lib/mock-data";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
 import { MachineForm } from "@/components/forms/MachineForm";
@@ -12,6 +12,42 @@ import { Badge } from "@/components/ui/badge";
 export default function Machines() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [typeFilter, setTypeFilter] = useState("all");
+
+  const parseTime = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours + (minutes / 60);
+  };
+
+  const machinesWithStats = mockMachines.map(machine => {
+    const machineServices = mockServices.filter(s => s.machine === machine.name);
+    
+    const calculatedHours = machineServices.reduce((acc, curr) => {
+      if (curr.hora_inicial && curr.hora_final) {
+        const start = parseTime(curr.hora_inicial);
+        const end = parseTime(curr.hora_final);
+        let diff = end - start;
+        if (diff < 0) diff += 24;
+        return acc + diff;
+      }
+      return acc + (curr.hours || 0);
+    }, 0);
+
+    const calculatedProfit = machineServices.reduce((acc, curr) => acc + (curr.profit || 0), 0);
+
+    return {
+      ...machine,
+      hours_worked: Number(calculatedHours.toFixed(1)),
+      profit_generated: calculatedProfit
+    };
+  });
+
+  const machineTypes = Array.from(new Set(mockMachines.map(m => m.type)));
+
+  const filteredMachines = machinesWithStats.filter(machine => 
+    typeFilter === "all" || machine.type === typeFilter
+  );
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -47,6 +83,10 @@ export default function Machines() {
           <p className="text-sm text-muted-foreground mt-1">Controle de equipamentos, custos e rentabilidade.</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" className="border-border rounded-xl h-10 shadow-sm transition-all hidden sm:flex">
+            <FileDown className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
           <Button onClick={handleAdd} className="rounded-xl h-10 px-5 shadow-sm transition-all hidden sm:flex active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Nova Máquina
@@ -55,14 +95,34 @@ export default function Machines() {
       </div>
 
       <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-card">
-          <div className="relative max-w-md w-full">
+        <div className="p-4 border-b border-border bg-card flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="relative max-w-sm sm:max-w-md w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Buscar máquina..." 
               className="pl-9 border-border bg-card rounded-xl h-10"
             />
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="border-border rounded-xl h-10 shadow-sm w-full sm:w-auto">
+                <Filter className="w-4 h-4 mr-2" />
+                {typeFilter === "all" ? "Filtrar por Tipo" : typeFilter}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuLabel>Tipo de Máquina</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setTypeFilter("all")} className="rounded-lg cursor-pointer">
+                Todos os tipos
+              </DropdownMenuItem>
+              {machineTypes.map(type => (
+                <DropdownMenuItem key={type} onClick={() => setTypeFilter(type)} className="rounded-lg cursor-pointer">
+                  {type}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         {/* Tabela Desktop */}
@@ -80,7 +140,7 @@ export default function Machines() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {mockMachines.map((machine) => (
+              {filteredMachines.map((machine) => (
                 <tr key={machine.id} className="hover:bg-muted/30 transition-colors group">
                   <td className="p-4 font-bold text-foreground">{machine.name}</td>
                   <td className="p-4 text-muted-foreground">
@@ -121,7 +181,7 @@ export default function Machines() {
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {mockMachines.map((machine) => (
+          {filteredMachines.map((machine) => (
             <div key={machine.id} className="p-4 touch-card" onClick={() => handleEdit(machine)}>
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div className="flex-1 min-w-0">

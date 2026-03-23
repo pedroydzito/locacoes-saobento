@@ -12,6 +12,7 @@ import Finance from "@/pages/Finance";
 import Freights from "@/pages/Freights";
 import Reports from "@/pages/Reports";
 import Auth from "@/pages/Auth";
+import Clients from "@/pages/Clients";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -48,6 +49,7 @@ function Router() {
         <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
         <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
         <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
+        <Route path="/clientes" component={() => <ProtectedRoute component={Clients} />} />
         
         {/* Gestão - Apenas Admin */}
         <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />

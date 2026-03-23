@@ -13,6 +13,8 @@ export default function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
+  const sortedClients = [...mockClients].sort((a, b) => a.name.localeCompare(b.name));
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
@@ -69,26 +71,22 @@ export default function Clients() {
             <thead>
               <tr className="border-b border-border bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide font-bold">
                 <th className="p-4">Nome</th>
+                <th className="p-4">CPF/CNPJ</th>
                 <th className="p-4">Telefone</th>
+                <th className="p-4">E-mail</th>
                 <th className="p-4">Cidade</th>
-                <th className="p-4">Máquinas Mais Usadas</th>
                 <th className="p-4 text-right">Faturamento Total</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {mockClients.map((client) => (
+              {sortedClients.map((client) => (
                 <tr key={client.id} className="hover:bg-muted/30 transition-colors group">
                   <td className="p-4 font-bold text-foreground">{client.name}</td>
+                  <td className="p-4 text-muted-foreground font-mono">{client.cpf_cnpj}</td>
                   <td className="p-4 text-muted-foreground font-mono">{client.phone}</td>
+                  <td className="p-4 text-muted-foreground truncate max-w-[150px]">{client.email}</td>
                   <td className="p-4 text-muted-foreground">{client.city}</td>
-                  <td className="p-4">
-                    <div className="flex gap-1.5 flex-wrap">
-                      {client.machines_used.map((m, i) => (
-                        <Badge key={i} variant="outline" className="text-xs bg-white rounded-full text-muted-foreground font-medium border-border">{m}</Badge>
-                      ))}
-                    </div>
-                  </td>
                   <td className="p-4 text-right font-bold font-mono text-primary">{formatCurrency(client.total_billed)}</td>
                   <td className="p-4 text-right">
                     <DropdownMenu>
@@ -117,7 +115,7 @@ export default function Clients() {
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {mockClients.map((client) => (
+          {sortedClients.map((client) => (
             <div key={client.id} className="p-4 touch-card" onClick={() => handleEdit(client)}>
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div className="flex-1 min-w-0">
@@ -128,14 +126,12 @@ export default function Clients() {
                   <p className="font-bold font-mono text-primary text-base">{formatCurrency(client.total_billed)}</p>
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-3">
-                <p className="text-sm text-muted-foreground font-mono">{client.phone}</p>
-                <div className="flex gap-1">
-                  {client.machines_used.slice(0, 2).map((m, i) => (
-                    <div key={i} className="w-2 h-2 rounded-full bg-secondary" title={m} />
-                  ))}
-                  {client.machines_used.length > 2 && <div className="w-2 h-2 rounded-full bg-muted-foreground" />}
+              <div className="flex flex-col mt-3 gap-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-muted-foreground font-mono">{client.cpf_cnpj}</p>
+                  <p className="text-sm text-muted-foreground font-mono">{client.phone}</p>
                 </div>
+                <p className="text-sm text-muted-foreground truncate">{client.email}</p>
               </div>
             </div>
           ))}

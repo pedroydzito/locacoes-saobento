@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { mockAccounts } from "@/lib/mock-data";
 
 interface FinanceFormProps {
   onSave: () => void;
@@ -48,10 +49,9 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
               <SelectValue placeholder="Selecione a conta" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="Sicoob">Sicoob</SelectItem>
-              <SelectItem value="Banco do Brasil">Banco do Brasil</SelectItem>
-              <SelectItem value="Dinheiro">Dinheiro</SelectItem>
-              <SelectItem value="Boletos Cobrança">Boletos Cobrança</SelectItem>
+              {mockAccounts.map(acc => (
+                <SelectItem key={acc.id} value={acc.name}>{acc.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

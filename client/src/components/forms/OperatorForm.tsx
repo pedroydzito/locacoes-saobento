@@ -1,6 +1,10 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { mockMachines } from "@/lib/mock-data";
 
 interface OperatorFormProps {
   onSave: () => void;
@@ -9,6 +13,19 @@ interface OperatorFormProps {
 }
 
 export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProps) {
+  const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
+  const sortedMachines = [...mockMachines].map(m => m.name).sort();
+
+  useEffect(() => {
+    if (initialData?.machine_assigned) {
+      if (Array.isArray(initialData.machine_assigned)) {
+        setSelectedMachines(initialData.machine_assigned);
+      } else if (typeof initialData.machine_assigned === 'string') {
+        setSelectedMachines([initialData.machine_assigned]);
+      }
+    }
+  }, [initialData]);
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -22,8 +39,35 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
           <Input id="salary" type="number" defaultValue={initialData?.salary} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="machine" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina Principal</Label>
-          <Input id="machine" defaultValue={initialData?.machine_assigned} placeholder="Máquina padrão" className="h-11 sm:h-10 rounded-xl" />
+          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina Principal</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-11 sm:h-10 rounded-xl w-full justify-start text-left font-normal bg-card overflow-hidden">
+                <span className="truncate">
+                  {selectedMachines.length === 0 ? "Selecione as máquinas" : 
+                   selectedMachines.length === 1 ? selectedMachines[0] : 
+                   `${selectedMachines.length} máquina(s) selecionada(s)`}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <ScrollArea className="h-60">
+                {sortedMachines.map(machine => (
+                  <DropdownMenuCheckboxItem
+                    key={machine}
+                    checked={selectedMachines.includes(machine)}
+                    onCheckedChange={(checked) => {
+                      setSelectedMachines(prev =>
+                        checked ? [...prev, machine] : prev.filter(m => m !== machine)
+                      )
+                    }}
+                  >
+                    {machine}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

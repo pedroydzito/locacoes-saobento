@@ -2,16 +2,29 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockServices } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2 } from "lucide-react";
+import { mockServices, mockClients, mockMachines } from "@/lib/mock-data";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, DollarSign } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
 import { ServiceForm } from "@/components/forms/ServiceForm";
+import { CostManager } from "@/components/forms/CostManager";
 
 export default function Services() {
+  const [services, setServices] = useState<any[]>(mockServices);
+  const [selectedClient, setSelectedClient] = useState<string>("all");
+  const [selectedMachine, setSelectedMachine] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [managingCostService, setManagingCostService] = useState<any>(null);
+
+  const calculateServiceProfit = (service: any) => {
+    const totalCosts = (service.additionalCosts || []).reduce((acc: number, curr: any) => acc + curr.value, 0);
+    return service.value - totalCosts;
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -27,6 +40,23 @@ export default function Services() {
     setIsModalOpen(true);
   };
 
+  const handleManageCosts = (service: any) => {
+    setManagingCostService(service);
+    setIsCostModalOpen(true);
+  };
+
+  const handleUpdateService = (updatedService: any) => {
+    updatedService.profit = calculateServiceProfit(updatedService);
+    
+    setServices((prev) => 
+      prev.map(s => s.id === updatedService.id ? updatedService : s)
+    );
+    setManagingCostService(updatedService);
+    
+    const idx = mockServices.findIndex(s => s.id === updatedService.id);
+    if (idx !== -1) mockServices[idx] = updatedService;
+  };
+
   const handleDelete = (id: string) => {
     if (confirm("Tem certeza que deseja excluir este serviço?")) {
       // Logic to delete would go here
@@ -38,6 +68,15 @@ export default function Services() {
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
+
+  const sortedClients = [...mockClients].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedMachines = [...mockMachines].sort((a, b) => a.name.localeCompare(b.name));
+
+  const filteredServices = services.filter((service) => {
+    const matchClient = selectedClient === "all" || service.client === selectedClient;
+    const matchMachine = selectedMachine === "all" || service.machine === selectedMachine;
+    return matchClient && matchMachine;
+  });
 
   return (
     <div className="space-y-6 pb-8">
@@ -59,7 +98,7 @@ export default function Services() {
       </div>
 
       <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-card flex flex-col sm:flex-row gap-4 justify-between">
+        <div className="p-4 border-b border-border bg-card flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative max-w-sm w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
@@ -67,10 +106,30 @@ export default function Services() {
               className="pl-9 border-border bg-card rounded-xl h-10"
             />
           </div>
-          <Button variant="outline" className="border-border rounded-xl h-10 shadow-sm w-full sm:w-auto">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtros Avançados
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Select value={selectedMachine} onValueChange={setSelectedMachine}>
+              <SelectTrigger className="h-10 rounded-xl w-full sm:w-[180px] border-border bg-card text-sm">
+                <SelectValue placeholder="Filtrar por Máquina" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
+                <SelectItem value="all" className="cursor-pointer">Todas as Máquinas</SelectItem>
+                {sortedMachines.map((m) => (
+                  <SelectItem key={m.id} value={m.name} className="cursor-pointer">{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedClient} onValueChange={setSelectedClient}>
+              <SelectTrigger className="h-10 rounded-xl w-full sm:w-[180px] border-border bg-card text-sm">
+                <SelectValue placeholder="Filtrar por Cliente" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
+                <SelectItem value="all" className="cursor-pointer">Todos os Clientes</SelectItem>
+                {sortedClients.map((c) => (
+                  <SelectItem key={c.id} value={c.name} className="cursor-pointer">{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         {/* Tabela Desktop */}
@@ -83,7 +142,8 @@ export default function Services() {
                 <th className="p-4">Cliente / Obra</th>
                 <th className="p-4">Máquina</th>
                 <th className="p-4">Operador</th>
-                <th className="p-4 text-right">Horas</th>
+                <th className="p-4 text-right">Hora Inicial</th>
+                <th className="p-4 text-right">Hora Final</th>
                 <th className="p-4 text-right">Diesel</th>
                 <th className="p-4 text-right">Valor Total</th>
                 <th className="p-4 text-right">Lucro</th>
@@ -92,14 +152,15 @@ export default function Services() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {mockServices.map((service) => (
+              {filteredServices.map((service) => (
                 <tr key={service.id} className="hover:bg-muted/30 transition-colors group">
                   <td className="p-4 font-bold text-primary font-mono">{service.id}</td>
                   <td className="p-4 text-muted-foreground font-mono">{new Date(service.date).toLocaleDateString('pt-BR')}</td>
                   <td className="p-4 font-bold text-foreground">{service.client}</td>
                   <td className="p-4 text-muted-foreground">{service.machine}</td>
                   <td className="p-4 text-muted-foreground">{service.operator}</td>
-                  <td className="p-4 text-right font-bold font-mono">{service.hours}h</td>
+                  <td className="p-4 text-right font-bold font-mono">{service.hora_inicial || '-'}</td>
+                  <td className="p-4 text-right font-bold font-mono">{service.hora_final || '-'}</td>
                   <td className="p-4 text-right text-muted-foreground font-mono">{service.diesel}L</td>
                   <td className="p-4 text-right font-bold font-mono text-foreground">{formatCurrency(service.value)}</td>
                   <td className="p-4 text-right font-bold font-mono text-[hsl(var(--success-text))]">{formatCurrency(service.profit)}</td>
@@ -120,6 +181,9 @@ export default function Services() {
                         <DropdownMenuItem onClick={() => handleEdit(service)} className="rounded-lg cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" /> Editar
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleManageCosts(service)} className="rounded-lg cursor-pointer">
+                          <DollarSign className="w-4 h-4 mr-2" /> Custos
+                        </DropdownMenuItem>
                         {userRole === 'admin' && (
                           <>
                             <DropdownMenuSeparator />
@@ -139,7 +203,7 @@ export default function Services() {
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {mockServices.map((service) => (
+          {filteredServices.map((service) => (
             <div key={service.id} className="p-4 touch-card" onClick={() => handleEdit(service)}>
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex-1 min-w-0">
@@ -159,7 +223,7 @@ export default function Services() {
                   <p>{service.operator}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">{service.hours}h • {service.diesel}L</p>
+                  <p className="text-sm text-muted-foreground">{service.hora_inicial || '-'} a {service.hora_final || '-'} • {service.diesel}L</p>
                   <p className="font-bold font-mono text-base">{formatCurrency(service.value)}</p>
                 </div>
               </div>
@@ -168,7 +232,7 @@ export default function Services() {
         </div>
 
         <div className="p-4 border-t border-border bg-card flex items-center justify-between text-sm text-muted-foreground">
-          <span>Mostrando {mockServices.length} serviços</span>
+          <span>Mostrando {filteredServices.length} serviços</span>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="rounded-lg h-8" disabled>Anterior</Button>
             <Button variant="outline" size="sm" className="rounded-lg h-8">Próximo</Button>
@@ -190,6 +254,19 @@ export default function Services() {
         title={editingItem ? "Editar Serviço" : "Novo Serviço"}
       >
         <ServiceForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
+      </ActionModal>
+
+      <ActionModal 
+        isOpen={isCostModalOpen} 
+        onClose={() => setIsCostModalOpen(false)} 
+        title={`Custos - OS ${managingCostService?.id}`}
+      >
+        {managingCostService && (
+          <CostManager 
+            service={managingCostService} 
+            onUpdateService={handleUpdateService} 
+          />
+        )}
       </ActionModal>
     </div>
   );

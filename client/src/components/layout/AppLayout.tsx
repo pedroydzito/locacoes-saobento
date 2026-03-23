@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
   Home, Users, Tractor, Pickaxe, DollarSign, FileText,
-  Truck, Menu, Bell, LogOut
+  Truck, Menu, Bell, LogOut, User
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const mainNavItems = [
   { name: "Obras & Serviços", href: "/servicos", icon: Pickaxe },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
   { name: "Fretes", href: "/fretes", icon: Truck },
+  { name: "Clientes", href: "/clientes", icon: User },
 ];
 
 const secondaryNavItems = [

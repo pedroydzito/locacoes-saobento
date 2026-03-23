@@ -2,16 +2,31 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockOperators } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { mockOperators, mockServices, mockMachines } from "@/lib/mock-data";
+import { Search, Plus, MoreHorizontal, Edit, Trash2, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
 import { OperatorForm } from "@/components/forms/OperatorForm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Operators() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [machineFilter, setMachineFilter] = useState("all");
+
+  const sortedMachines = [...mockMachines].map(m => m.name).sort();
+
+  const filteredOperators = mockOperators.filter(op => {
+    const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const machines = Array.isArray(op.machine_assigned) ? op.machine_assigned : [op.machine_assigned];
+    const matchesMachine = machineFilter === "all" || machines.includes(machineFilter);
+    return matchesSearch && matchesMachine;
+  }).map(op => {
+    const servicesCount = mockServices.filter(s => s.operator === op.name).length;
+    return { ...op, services_done: servicesCount };
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -45,6 +60,10 @@ export default function Operators() {
           <p className="text-sm text-muted-foreground mt-1">Gestão da equipe de operadores e horímetros.</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" className="border-border rounded-xl h-10 shadow-sm transition-all hidden sm:flex">
+            <FileDown className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
           <Button onClick={handleAdd} className="rounded-xl h-10 px-5 shadow-sm transition-all hidden sm:flex active:scale-95">
             <Plus className="w-4 h-4 mr-2" />
             Novo Operador
@@ -53,13 +72,28 @@ export default function Operators() {
       </div>
 
       <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-card">
-          <div className="relative max-w-md w-full">
+        <div className="p-4 border-b border-border bg-card flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="relative max-w-md w-full sm:flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Buscar operador..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 border-border bg-card rounded-xl h-10"
             />
+          </div>
+          <div className="w-full sm:w-auto min-w-[200px]">
+            <Select value={machineFilter} onValueChange={setMachineFilter}>
+              <SelectTrigger className="h-10 rounded-xl bg-card border-border">
+                <SelectValue placeholder="Todas as Máquinas" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">Todas as Máquinas</SelectItem>
+                {sortedMachines.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -77,13 +111,27 @@ export default function Operators() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {mockOperators.map((op) => (
+              {filteredOperators.map((op) => {
+                const machines = Array.isArray(op.machine_assigned) ? op.machine_assigned : [op.machine_assigned];
+                const visibleMachines = machines.slice(0, 2);
+                const hiddenCount = machines.length - 2;
+
+                return (
                 <tr key={op.id} className="hover:bg-muted/30 transition-colors group">
                   <td className="p-4 font-bold text-foreground">{op.name}</td>
                   <td className="p-4">
-                    <Badge variant="outline" className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] shadow-none text-xs rounded-full">
-                      {op.machine_assigned}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      {visibleMachines.map(m => (
+                        <Badge key={m} variant="outline" className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] shadow-none text-xs rounded-full">
+                          {m}
+                        </Badge>
+                      ))}
+                      {hiddenCount > 0 && (
+                        <Badge variant="outline" className="bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] shadow-none text-xs rounded-full">
+                          +{hiddenCount}
+                        </Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 text-right text-muted-foreground font-mono">{formatCurrency(op.salary)}</td>
                   <td className="p-4 text-right font-bold font-mono">{op.hours_worked}h</td>
@@ -108,21 +156,36 @@ export default function Operators() {
                     </DropdownMenu>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {mockOperators.map((op) => (
+          {filteredOperators.map((op) => {
+            const machines = Array.isArray(op.machine_assigned) ? op.machine_assigned : [op.machine_assigned];
+            const visibleMachines = machines.slice(0, 2);
+            const hiddenCount = machines.length - 2;
+
+            return (
             <div key={op.id} className="p-4 touch-card" onClick={() => handleEdit(op)}>
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-foreground text-base leading-tight truncate mb-1">{op.name}</p>
-                  <Badge variant="outline" className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] shadow-none text-[10px] rounded-full">
-                    {op.machine_assigned}
-                  </Badge>
+                  <div className="flex flex-wrap gap-1">
+                    {visibleMachines.map(m => (
+                      <Badge key={m} variant="outline" className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] shadow-none text-[10px] rounded-full">
+                        {m}
+                      </Badge>
+                    ))}
+                    {hiddenCount > 0 && (
+                      <Badge variant="outline" className="bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] shadow-none text-[10px] rounded-full">
+                        +{hiddenCount}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground font-medium mb-0.5">Horas Mês</p>
@@ -140,7 +203,8 @@ export default function Operators() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
 

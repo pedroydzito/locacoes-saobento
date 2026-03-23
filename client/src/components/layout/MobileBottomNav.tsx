@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Truck, Tractor, Home, Users, Pickaxe, DollarSign, FileText, MoreHorizontal, LogOut } from "lucide-react";
+import { Truck, Tractor, Home, Users, Pickaxe, DollarSign, FileText, MoreHorizontal, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
@@ -9,6 +9,7 @@ const mainNavItems = [
   { name: "Obras", href: "/servicos", icon: Pickaxe },
   { name: "Máquinas", href: "/maquinas", icon: Tractor },
   { name: "Fretes", href: "/fretes", icon: Truck },
+  { name: "Clientes", href: "/clientes", icon: User },
 ];
 
 const secondaryNavItems = [
