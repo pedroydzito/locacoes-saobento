@@ -21,8 +21,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <LayoutDashboard className="w-7 h-7 text-primary hidden sm:block" />
+          <div className="flex items-center">
             <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Visão Operacional</h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Locações São Bento</p>

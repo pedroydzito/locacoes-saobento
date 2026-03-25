@@ -79,28 +79,27 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
         className={`hidden lg:flex flex-col bg-primary text-primary-foreground shrink-0 z-50 shadow-2xl transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-72"
           }`}
       >
-        <div className={`h-32 flex flex-col items-center justify-between px-6 pt-8 mb-4 relative ${isCollapsed ? "px-2" : ""}`}>
-          {!isCollapsed && (
+        <div className={`h-24 flex items-center justify-between px-4 pt-6 mb-2 relative ${isCollapsed ? "flex-col px-0 gap-4" : ""}`}>
+          {!isCollapsed ? (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center gap-2 overflow-hidden text-center"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3 overflow-hidden"
             >
-              <div className="w-12 h-12 overflow-hidden relative flex-shrink-0 mb-1">
+              <div className="w-10 h-10 overflow-hidden relative flex-shrink-0">
                 <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
               </div>
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">Locações</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">São</span>
-                  <span className="font-bold text-lg leading-tight font-display tracking-tight text-[#FFD700]">Bento</span>
+              <div className="flex flex-col justify-center">
+                <span className="font-bold text-sm leading-none font-display tracking-tight text-white uppercase italic opacity-90">Locações</span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="font-bold text-lg leading-none font-display tracking-tight text-white">São</span>
+                  <span className="font-bold text-lg leading-none font-display tracking-tight text-[#FFD700]">Bento</span>
                 </div>
+                <span className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1 leading-none">Logística</span>
               </div>
             </motion.div>
-          )}
-
-          {isCollapsed && (
-            <div className="w-10 h-10 mx-auto overflow-hidden relative flex-shrink-0 mt-2">
+          ) : (
+            <div className="w-10 h-10 mx-auto overflow-hidden relative flex-shrink-0">
               <img src="/logo-branca2.svg" alt="Logo" className="w-full h-full object-contain" />
             </div>
           )}
@@ -110,9 +109,9 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
               variant="ghost"
               size="icon"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`text-white/40 hover:text-white hover:bg-white/10 h-9 w-9 rounded-xl border border-white/10 transition-all mt-6 ${isCollapsed ? "absolute left-1/2 -translate-x-1/2 mt-20" : ""}`}
+              className={`text-white/40 hover:text-white hover:bg-white/10 h-8 w-8 rounded-lg border border-white/10 transition-all ${isCollapsed ? "" : "ml-auto"}`}
             >
-              {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
             </Button>
           )}
         </div>

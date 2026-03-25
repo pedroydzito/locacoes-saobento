@@ -1,5 +1,5 @@
 # Design System — Locações São Bento
-**Versão 1.4 · Guia Mestre Definitivo · Março 2026**
+**Versão 1.4.3 · Guia Mestre Definitivo · Março 2026**
 
 ---
 
@@ -123,9 +123,11 @@ Utilizar classe `touch-card` para feedback tátil (`active:scale-[0.98]`).
 ## 6. Navegação
 
 ### 6.1 Sidebar (Desktop)
-- **Logo:** Centralizada verticalmente no header.
-- **Toggle:** Ícones `PanelLeftOpen`/`PanelLeftClose` em botão `ghost` bordado.
-- **Active State:** Ícone em **Branco Puro** sobre fundo primário.
+- **Header Structure:** Layout horizontal (flex row).
+- **Logo:** Alinhada à esquerda (`w-10 h-10`).
+- **Marca:** Texto centralizado à esquerda, com "Locações" em caixa alta itálica e "São Bento" em destaque Bold.
+- **Toggle:** Botão de controle posicionado à **Direita** do header (ml-auto).
+- **Active State:** Ícone em Branco Puro sobre fundo primário.
 
 ### 6.2 Bottom Nav (Mobile)
 - **Fundo:** `bg-white` com `pb-safe`.
@@ -133,14 +135,15 @@ Utilizar classe `touch-card` para feedback tátil (`active:scale-[0.98]`).
 
 ### 6.3 Cabeçalhos (Headers)
 **Padrão de Alinhamento Luxo:**
-O ícone de contexto fica à esquerda do título. A descrição deve estar fora do container do título, alinhada horizontalmente com o **início do ícone**.
+O ícone de contexto fica à esquerda do título (Exceção: **Visão Operacional/Início** não utiliza ícone). A descrição deve estar fora do container do título, alinhada horizontalmente com o **início do ícone** (ou título na ausência de ícone).
 ```html
 <div class="flex flex-col">
   <div class="flex items-center gap-3">
+    <!-- Icon hidden on Welcome/Start -->
     <Icon class="text-primary h-7 w-7" />
     <h1 class="font-display">Título</h1>
   </div>
-  <p class="text-muted-foreground">Descrição alinhada ao ícone</p>
+  <p class="text-muted-foreground">Descrição alinhada ao elemento inicial</p>
 </div>
 ```
 
