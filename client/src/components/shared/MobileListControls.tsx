@@ -17,13 +17,13 @@ export function MobileListControls({
   return (
     <div className="sm:hidden flex gap-2 w-full mb-4">
       {onExportClick && (
-        <Button variant="outline" className="flex-1 h-12 border-border shadow-none" onClick={onExportClick}>
+        <Button variant="outline" className="flex-1 h-12 border-border e" onClick={onExportClick}>
           <Download className="w-4 h-4 mr-2" />
           {exportLabel}
         </Button>
       )}
       {onFilterClick && (
-        <Button variant="outline" className="flex-1 h-12 border-border shadow-none" onClick={onFilterClick}>
+        <Button variant="outline" className="flex-1 h-12 border-border e" onClick={onFilterClick}>
           <Filter className="w-4 h-4 mr-2" />
           {filterLabel}
         </Button>

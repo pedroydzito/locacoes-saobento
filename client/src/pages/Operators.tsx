@@ -70,15 +70,15 @@ export default function Operators() {
           <p className="hidden sm:block text-sm text-muted-foreground mt-1">Gestão da equipe de operadores e horímetros.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 shadow-sm transition-all">
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all">
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 shadow-sm transition-all" onClick={() => setIsFilterModalOpen(true)}>
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all" onClick={() => setIsFilterModalOpen(true)}>
             <Filter className="w-4 h-4 mr-2" />
             Filtros
           </Button>
-          <Button onClick={handleAdd} className="rounded-xl h-10 px-5 shadow-sm transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none">
+          <Button onClick={handleAdd} className="rounded-xl h-10 px-5  transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none">
             <Plus className="w-4 h-4 mr-2" />
             Novo Operador
           </Button>
@@ -91,7 +91,7 @@ export default function Operators() {
         filterLabel="Filtrar por Máquina"
       />
 
-      <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
+      <Card className="border-border rounded-2xl  overflow-hidden">
         <div className="p-4 border-b border-border bg-card">
           <div className="relative w-full sm:max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -99,7 +99,7 @@ export default function Operators() {
               placeholder="Buscar operador..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 border-border bg-muted/20 rounded-xl h-10 shadow-none focus-visible:ring-primary/20"
+              className="pl-9 border-border bg-muted/20 rounded-xl h-10 e focus-visible:ring-primary/20"
             />
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function Operators() {
 
       <button
         onClick={handleAdd}
-        className="sm:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all active:scale-95"
+        className="sm:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-primary text-white rounded-full  flex items-center justify-center hover:bg-primary/90 transition-all active:scale-95"
       >
         <Plus className="w-6 h-6" />
       </button>
@@ -227,7 +227,7 @@ export default function Operators() {
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina Principal</label>
             <Select value={machineFilter} onValueChange={setMachineFilter}>
-              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm shadow-none">
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm e">
                 <SelectValue placeholder="Selecione a Máquina" />
               </SelectTrigger>
               <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">

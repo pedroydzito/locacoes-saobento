@@ -14,7 +14,7 @@ const buttonVariants = cva(
            // @replit: no hover, and add primary border
            "bg-primary text-primary-foreground border border-primary-border",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm border-destructive-border",
+          "bg-destructive text-destructive-foreground  border-destructive-border",
         outline:
           "border border-border bg-card hover:bg-muted text-foreground active:scale-[0.98] transition-transform",
         secondary:

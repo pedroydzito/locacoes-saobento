@@ -100,24 +100,24 @@ export default function Finance() {
           <p className="hidden sm:block text-sm text-muted-foreground mt-1">Controle de caixa, faturamento e despesas.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 shadow-sm transition-all">
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all">
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10 shadow-sm transition-all">
+          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all">
             <Wallet className="w-4 h-4 mr-2" />
             Contas
           </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 shadow-sm transition-all" onClick={() => setIsFilterModalOpen(true)}>
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all" onClick={() => setIsFilterModalOpen(true)}>
             <Filter className="w-4 h-4 mr-2" />
             Filtros
           </Button>
           <div className="flex gap-2">
-            <Button onClick={() => handleAdd('entrada')} className="rounded-xl h-10 px-4 shadow-sm transition-all active:scale-95 bg-success text-white hover:bg-success/90">
+            <Button onClick={() => handleAdd('entrada')} className="rounded-xl h-10 px-4  transition-all active:scale-95 bg-success text-white hover:bg-success/90">
               <Plus className="w-4 h-4 mr-1.5" />
               Entrada
             </Button>
-            <Button onClick={() => handleAdd('saida')} className="rounded-xl h-10 px-4 shadow-sm transition-all active:scale-95 bg-destructive text-white hover:bg-destructive/90">
+            <Button onClick={() => handleAdd('saida')} className="rounded-xl h-10 px-4  transition-all active:scale-95 bg-destructive text-white hover:bg-destructive/90">
               <Plus className="w-4 h-4 mr-1.5" />
               Saída
             </Button>
@@ -126,7 +126,7 @@ export default function Finance() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="border-border rounded-2xl shadow-sm overflow-hidden bg-card">
+        <Card className="border-border rounded-2xl  overflow-hidden bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -142,7 +142,7 @@ export default function Finance() {
           </CardContent>
         </Card>
 
-        <Card className="border-border rounded-2xl shadow-sm overflow-hidden bg-card">
+        <Card className="border-border rounded-2xl  overflow-hidden bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -158,7 +158,7 @@ export default function Finance() {
           </CardContent>
         </Card>
 
-        <Card className="border-border rounded-2xl shadow-sm overflow-hidden bg-primary text-primary-foreground hidden lg:block">
+        <Card className="border-border rounded-2xl  overflow-hidden bg-primary text-primary-foreground hidden lg:block">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -181,13 +181,13 @@ export default function Finance() {
         filterLabel="Filtrar Lançamentos"
       />
 
-      <Card className="border-border rounded-2xl shadow-sm overflow-hidden">
+      <Card className="border-border rounded-2xl  overflow-hidden">
         <div className="p-4 border-b border-border bg-card">
           <div className="relative w-full sm:max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar lançamento..."
-              className="pl-9 border-border bg-muted/20 rounded-xl h-10 shadow-none focus-visible:ring-primary/20"
+              className="pl-9 border-border bg-muted/20 rounded-xl h-10 e focus-visible:ring-primary/20"
             />
           </div>
         </div>
@@ -284,14 +284,14 @@ export default function Finance() {
       <div className="sm:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex flex-col gap-2">
         <button
           onClick={() => handleAdd('saida')}
-          className="w-12 h-12 bg-destructive text-white rounded-full shadow-lg flex items-center justify-center hover:bg-destructive/90 transition-all active:scale-95"
+          className="w-12 h-12 bg-destructive text-white rounded-full  flex items-center justify-center hover:bg-destructive/90 transition-all active:scale-95"
           title="Nova Saída"
         >
           <ArrowDownRight className="w-6 h-6" />
         </button>
         <button
           onClick={() => handleAdd('entrada')}
-          className="w-14 h-14 bg-success text-white rounded-full shadow-lg flex items-center justify-center hover:bg-success/90 transition-all active:scale-95"
+          className="w-14 h-14 bg-success text-white rounded-full  flex items-center justify-center hover:bg-success/90 transition-all active:scale-95"
           title="Nova Entrada"
         >
           <Plus className="w-7 h-7" />

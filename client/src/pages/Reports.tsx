@@ -31,7 +31,7 @@ export default function Reports() {
           <p className="text-muted-foreground mt-1">Análises detalhadas de performance e custos.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border shadow-sm transition-all rounded-xl h-10 px-5">
+          <Button variant="outline" className="border-border  transition-all rounded-xl h-10 px-5">
             <Download className="w-4 h-4 mr-2" />
             Exportar Todos (PDF)
           </Button>
@@ -40,7 +40,7 @@ export default function Reports() {
 
       <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 snap-x snap-mandatory hide-scrollbar">
         {reportsList.map((report, i) => (
-          <Card key={i} className="min-w-[260px] sm:min-w-0 snap-center shrink-0 border-border rounded-2xl shadow-sm hover:bg-muted/30 transition-all cursor-pointer group">
+          <Card key={i} className="min-w-[260px] sm:min-w-0 snap-center shrink-0 border-border rounded-2xl  hover:bg-muted/30 transition-all cursor-pointer group">
             <CardContent className="p-5 flex flex-col items-center text-center gap-3">
               <div className={`p-3 rounded-xl ${report.bg} transition-transform group-hover:scale-110`}>
                 <report.icon className={`w-6 h-6 ${report.color}`} />
@@ -55,7 +55,7 @@ export default function Reports() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-        <Card className="border-border rounded-2xl shadow-sm">
+        <Card className="border-border rounded-2xl ">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -82,7 +82,7 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="border-border rounded-2xl shadow-sm">
+        <Card className="border-border rounded-2xl ">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>

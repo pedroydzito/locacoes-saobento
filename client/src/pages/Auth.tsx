@@ -83,7 +83,7 @@ export default function Auth() {
               type="button"
               onClick={handleGoogleLogin}
               variant="outline" 
-              className="w-full h-12 rounded-xl font-bold text-sm bg-card border-border shadow-sm flex items-center justify-center gap-3 hover:bg-muted"
+              className="w-full h-12 rounded-xl font-bold text-sm bg-card border-border  flex items-center justify-center gap-3 hover:bg-muted"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -108,7 +108,7 @@ export default function Auth() {
                 type="button"
                 variant="outline"
                 onClick={() => setShowEmailForm(!showEmailForm)}
-                className="w-full h-12 rounded-xl font-bold text-sm bg-card border-border shadow-sm flex items-center justify-center gap-2 hover:bg-muted transition-all"
+                className="w-full h-12 rounded-xl font-bold text-sm bg-card border-border  flex items-center justify-center gap-2 hover:bg-muted transition-all"
               >
                 Entrar com e-mail e senha
                 {showEmailForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -123,7 +123,7 @@ export default function Auth() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <Card className="border-border shadow-md rounded-2xl p-6 mt-2 bg-card/40">
+                    <Card className="border-border  rounded-2xl p-6 mt-2 bg-card/40">
                       <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">E-mail</Label>
@@ -133,7 +133,7 @@ export default function Auth() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="admin@saobento.com ou operador@..."
-                            className="h-12 rounded-xl bg-card border-border shadow-sm px-4"
+                            className="h-12 rounded-xl bg-card border-border  px-4"
                             required
                           />
                         </div>
@@ -147,14 +147,14 @@ export default function Auth() {
                             id="password"
                             type="password"
                             placeholder="••••••••"
-                            className="h-12 rounded-xl bg-card border-border shadow-sm px-4 font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
+                            className="h-12 rounded-xl bg-card border-border  px-4 font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
                             required
                           />
                         </div>
 
                         <Button
                           type="submit"
-                          className="w-full h-12 rounded-xl font-bold text-base mt-2 shadow-md transition-all active:scale-[0.98]"
+                          className="w-full h-12 rounded-xl font-bold text-base mt-2  transition-all active:scale-[0.98]"
                           disabled={isLoading}
                         >
                           {isLoading ? "Entrando..." : "Entrar"}

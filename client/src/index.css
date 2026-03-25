@@ -8,53 +8,12 @@
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-
-  /* Fazenda São Bento - Status Colors */
-  --color-success: hsl(var(--success));
-  --color-success-subtle: hsl(var(--success-subtle));
-  --color-success-text: hsl(var(--success-text));
-
-  --color-warning: hsl(var(--warning));
-  --color-warning-subtle: hsl(var(--warning-subtle));
-  --color-warning-text: hsl(var(--warning-text));
-
-  --color-info: hsl(var(--info));
-  --color-info-subtle: hsl(var(--info-subtle));
-  --color-info-text: hsl(var(--info-text));
-
-  --color-neutral: hsl(var(--neutral));
-  --color-neutral-subtle: hsl(var(--neutral-subtle));
-  --color-neutral-text: hsl(var(--neutral-text));
-
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+  --shadow-inner: none;
 }
 
 :root {
@@ -115,9 +74,8 @@
   --chart-4: 38 92% 50%;
   --chart-5: 0 72% 51%;
 
-  --radius: 1rem;
-  /* 16px default border radius as specified for cards */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --radius: 1.5rem;
+  /* 24px default border radius as requested for the new flat look */
 }
 
 .dark {

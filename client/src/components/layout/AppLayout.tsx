@@ -76,7 +76,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
     <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
       {/* Sidebar (Desktop) */}
       <aside
-        className={`hidden lg:flex flex-col bg-primary text-primary-foreground shrink-0 z-50 shadow-2xl transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-72"
+        className={`hidden lg:flex flex-col bg-primary text-primary-foreground shrink-0 z-50  transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-72"
           }`}
       >
         <div className={`h-20 flex items-center justify-between px-4 pt-4 mb-1 relative ${isCollapsed ? "flex-col px-0 gap-4" : ""}`}>
@@ -130,7 +130,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
               return (
                 <Link key={item.name} href={item.href}>
                   <div className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group ${isActive
-                      ? "bg-white/12 text-white font-bold shadow-lg"
+                      ? "bg-white/12 text-white font-bold "
                       : "text-white/70 hover:bg-white/5 hover:text-white"
                     } ${isCollapsed ? "justify-center px-0" : ""}`}>
                     <item.icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${getIconColor()}`} strokeWidth={isActive ? 2.5 : 2} />
@@ -156,7 +156,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
               return (
                 <Link key={item.name} href={item.href}>
                   <div className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group ${isActive
-                      ? "bg-white/12 text-white font-bold shadow-lg"
+                      ? "bg-white/12 text-white font-bold "
                       : "text-white/70 hover:bg-white/5 hover:text-white"
                     } ${isCollapsed ? "justify-center px-0" : ""}`}>
                     <item.icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${getIconColor()}`} strokeWidth={isActive ? 2.5 : 2} />

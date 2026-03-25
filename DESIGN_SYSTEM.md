@@ -1,5 +1,5 @@
 # Design System — Locações São Bento
-**Versão 1.4.5 · Guia Mestre Definitivo · Março 2026**
+**Versão 1.5.0 · Guia Mestre Definitivo · Março 2026**
 
 ---
 
@@ -8,9 +8,10 @@
 O Design System da Locações São Bento é a única fonte de verdade para a interface do ecossistema ERP. Ele garante consistência total, padroniza componentes reutilizáveis e define as regras de escala para contextos Desktop e Mobile. Este documento foi projetado para ser portável: ao alterar os tokens de cores básicos, todo o sistema deve se adaptar automaticamente.
 
 **Princípios de design:**
-- **Simplicidade Premium** — Clean UI com foco em dados críticos e remoção de ruído visual.
+- **Flat Design Excellence** — Remoção total de sombras (`Zero Shadow`). A profundidade é dada por bordas semânticas e variações sutis de background.
 - **Mobile-First Nativo** — O mobile possui identidade própria (Bottom Nav, FABs, Sheets), não sendo apenas um desktop reduzido.
 - **Tokens como Lei** — Nenhuma cor, espaçamento ou fonte deve ser hardcoded. Tudo deve derivar de variáveis CSS.
+- **Hyper-Rounded Aesthetics** — Bordas extremamente arredondadas (`--radius: 1.5rem / 24px`) para um visual amigável e moderno.
 - **Alinhamento de Luxo** — Descrições de página alinhadas perfeitamente com os ícones de contexto horizontais.
 
 ---
@@ -88,6 +89,8 @@ Deverão ser usadas exclusivamente via variáveis para garantir portabilidade en
 - **Badges/Pills:** `rounded-full` (9999px).
 
 ### 4.2 Sombras e Efeitos
+- **Zero Shadow Policy:** **Proibido** o uso de classes `shadow-` em qualquer elemento de interface (cards, inputs, modais).
+- **Fronteiras:** O limite entre elementos deve ser definido exclusivamente por `border: 1px solid var(--border)`.
 - **Login/Auth:** Gradiente 160deg com textura de fundo (hatching 4% opacidade).
 - **KPI Cards:** Background `primary/10` para o container do ícone.
 - **Charts:** Stroke Width 3px, Gradients de 20% a 0% opacidade.

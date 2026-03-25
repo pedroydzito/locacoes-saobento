@@ -93,7 +93,7 @@ export function AccountManager({ onChanged }: AccountManagerProps) {
             className="h-10 rounded-xl" 
           />
         </div>
-        <Button onClick={handleAdd} className="h-10 px-4 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
+        <Button onClick={handleAdd} className="h-10 px-4 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90  transition-all">
           <Plus className="w-4 h-4 mr-2" /> Adicionar
         </Button>
       </div>
@@ -104,7 +104,7 @@ export function AccountManager({ onChanged }: AccountManagerProps) {
           const isEditing = editingId === acc.id;
 
           return (
-            <div key={acc.id} className="flex items-center justify-between p-3.5 border border-border bg-card rounded-xl shadow-sm transition-all hover:border-[hsl(var(--primary)/0.3)]">
+            <div key={acc.id} className="flex items-center justify-between p-3.5 border border-border bg-card rounded-xl  transition-all hover:border-[hsl(var(--primary)/0.3)]">
               {isEditing ? (
                 <div className="flex items-center gap-2 flex-1 mr-4">
                   <Input 

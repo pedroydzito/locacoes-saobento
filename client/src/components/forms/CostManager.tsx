@@ -96,7 +96,7 @@ export function CostManager({ service, onUpdateService }: CostManagerProps) {
           <p className="text-sm text-muted-foreground text-center py-4">Nenhum custo adicionado.</p>
         ) : (
           currentCosts.map((cost: any) => (
-            <div key={cost.id} className="flex items-center justify-between p-3 border border-border rounded-xl bg-card shadow-sm">
+            <div key={cost.id} className="flex items-center justify-between p-3 border border-border rounded-xl bg-card ">
               <span className="font-medium text-sm text-foreground">{cost.name}</span>
               <div className="flex items-center gap-3">
                 <span className="font-mono text-sm text-destructive font-bold">-{formatCurrency(cost.value)}</span>
