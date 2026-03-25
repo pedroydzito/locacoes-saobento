@@ -1,0 +1,32 @@
+# Design System - Locações São Bento
+
+Este documento centraliza as diretrizes visuais e técnicas do sistema.
+
+## Cores e Tema (Tailwind CSS v4)
+
+O projeto utiliza o **Tailwind CSS v4**. Todas as cores são definidas como variáveis CSS no `:root` e mapeadas no bloco `@theme` do arquivo `client/src/index.css`.
+
+### Variáveis de Cor Principal
+- `--primary`: Azul escuro (#233e66) - Cor principal da marca.
+- `--secondary`: Azul médio (#42789f).
+- `--accent`: Amarelo (#f1c40f) - Usado para destaques e ações.
+- `--background`: Bege claro/Cinza (#f5f5f4).
+
+### Configuração Técnica (Importante)
+Para que as cores sejam reconhecidas pelo Tailwind v4 como classes utilitárias (ex: `bg-primary`, `text-secondary`, `border-border`), elas devem ser mapeadas no `@theme` da seguinte forma:
+
+```css
+@theme inline {
+  --color-primary: hsl(var(--primary));
+  --color-border: hsl(var(--border));
+  /* ... outras cores ... */
+}
+```
+
+### Tipografia
+- **Display**: DM Sans
+- **Sans**: DM Sans
+- **Mono**: JetBrains Mono
+
+## Componentes
+O sistema utiliza componentes baseados em **Radix UI** e estilizados com Tailwind CSS, seguindo um padrão de bordas arredondadas generosas (`--radius: 1.5rem`).
