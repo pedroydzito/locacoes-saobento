@@ -35,3 +35,8 @@ O sistema utiliza componentes baseados em **Radix UI** e estilizados com Tailwin
 - **Bordas**: Todas as superfícies devem ter `border` ou `border-border` e **nenhuma sombra**.
 - **Arredondamento**: Padrão de bordas arredondadas generosas (`--radius: 1.5rem` ou `rounded-2xl`).
 
+## Gráficos (Data Viz)
+Para manter a consistência com o layout:
+- **Alinhamento**: Os textos do eixo Y devem ser **alinhados à esquerda** (`textAnchor: 'start'`) para ficarem alinhados verticalmente com o título do gráfico.
+- **Margens**: O container do gráfico deve ter margem esquerda zero para que os rótulos iniciem no limite do grid.
+
