@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { kpis, revenueData, machineUsageData, mockServices } from "@/lib/mock-data";
-import { Wheat, DollarSign, Clock, Package, AlertTriangle, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Wheat, DollarSign, Clock, Package, AlertTriangle, ArrowUpRight, ArrowDownRight, LayoutDashboard, Fuel } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
@@ -11,17 +11,22 @@ export default function Dashboard() {
   };
 
   const statCards = [
-    { title: "Faturamento Bruto", value: formatCurrency(kpis.revenue), icon: DollarSign, trend: "+12%", trendUp: true, color: "var(--success)", sub: "Este mês" },
+    { title: "Faturamento Bruto", value: formatCurrency(kpis.revenue), icon: DollarSign, trend: "+12%", trendUp: true, color: "var(--primary)", sub: "Este mês" },
     { title: "Horas Máquina", value: `${kpis.hours}h`, icon: Clock, trend: "+5%", trendUp: true, color: "var(--primary)", sub: "Em operação" },
-    { title: "Diesel Consumido", value: `${kpis.diesel}L`, icon: FuelIcon, trend: "-2%", trendUp: false, color: "var(--secondary)", sub: "Média 15L/h" },
-    { title: "Estoque Colheita", value: "12.4K", icon: Wheat, trend: "+18%", trendUp: true, color: "var(--info)", sub: "Sacas (Soja)" },
+    { title: "Diesel Consumido", value: `${kpis.diesel}L`, icon: Fuel, trend: "-2%", trendUp: false, color: "var(--primary)", sub: "Média 15L/h" },
+    { title: "Estoque Colheita", value: "12.4K", icon: Wheat, trend: "+18%", trendUp: true, color: "var(--primary)", sub: "Sacas (Soja)" },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Visão Operacional</h1>
-        <p className="text-sm text-muted-foreground mt-1">Locações São Bento</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="w-7 h-7 text-primary hidden sm:block" />
+            <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Visão Operacional</h1>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">Locações São Bento</p>
+        </div>
       </div>
 
       {/* KPI Cards (Mobile: scroll horizontal, Desktop: grid) */}
@@ -39,7 +44,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div>
-                <p className="text-2xl font-bold font-mono tracking-tight">{stat.value}</p>
+                <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-sm font-bold text-muted-foreground">{stat.title}</p>
                 </div>
@@ -71,7 +76,7 @@ export default function Dashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-sans)'}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-mono)'}} tickFormatter={(value) => `R$${value/1000}k`} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-sans)'}} tickFormatter={(value) => `R$${value/1000}k`} />
                 <Tooltip 
                   contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.1)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}
                   formatter={(value: number) => formatCurrency(value)}
@@ -113,12 +118,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  );
-}
-
-// Helper icon component since Fuel is imported elsewhere
-function FuelIcon(props: any) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
   );
 }

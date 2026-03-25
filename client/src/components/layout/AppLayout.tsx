@@ -1,16 +1,28 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Users, Tractor, Pickaxe, DollarSign, FileText,
-  Truck, Menu, Bell, LogOut, User
+  Truck, Menu, Bell, LogOut, User, ChevronLeft, ChevronRight, 
+  MoreHorizontal, Settings, PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MobileBottomNav from "./MobileBottomNav";
 
 interface AppLayoutProps {
   children: ReactNode;
+  title?: string;
+  showBack?: boolean;
+  backTo?: string;
 }
 
 const mainNavItems = [
@@ -27,16 +39,21 @@ const secondaryNavItems = [
   { name: "Relatórios", href: "/relatorios", icon: FileText },
 ];
 
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout({ children, title, showBack, backTo }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || "operador");
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) setIsCollapsed(false);
+    };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     // Auth check
     const auth = localStorage.getItem("isAuthenticated");
     if (!auth && location !== '/login') {
@@ -56,129 +73,201 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#f8f9fa] overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden sm:flex w-64 flex-col bg-[#233e66] text-white">
-        <div className="h-24 flex items-center px-6 pt-6 mb-2 border-b border-white/10 pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 overflow-hidden relative flex-shrink-0">
-              <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">Locações</span>
-              <div className="flex items-baseline gap-1">
-                <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-white">São</span>
-                <span className="font-bold text-[18px] leading-tight font-display tracking-tight text-[#f1c40f]">Bento</span>
+      <aside
+        className={`hidden lg:flex flex-col bg-primary text-primary-foreground shrink-0 z-50 shadow-2xl transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-72"
+          }`}
+      >
+        <div className={`h-32 flex flex-col items-center justify-between px-6 pt-8 mb-4 relative ${isCollapsed ? "px-2" : ""}`}>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-2 overflow-hidden text-center"
+            >
+              <div className="w-12 h-12 overflow-hidden relative flex-shrink-0 mb-1">
+                <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
               </div>
-              <span className="text-[10px] tracking-widest text-[#7a957a] font-bold uppercase mt-0.5">LOCAÇÕES</span>
+              <div className="flex flex-col items-center">
+                <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">Locações</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-bold text-lg leading-tight font-display tracking-tight text-white">São</span>
+                  <span className="font-bold text-lg leading-tight font-display tracking-tight text-[#FFD700]">Bento</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {isCollapsed && (
+            <div className="w-10 h-10 mx-auto overflow-hidden relative flex-shrink-0 mt-2">
+              <img src="/logo-branca2.svg" alt="Logo" className="w-full h-full object-contain" />
             </div>
-          </div>
+          )}
+
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={`text-white/40 hover:text-white hover:bg-white/10 h-9 w-9 rounded-xl border border-white/10 transition-all mt-6 ${isCollapsed ? "absolute left-1/2 -translate-x-1/2 mt-20" : ""}`}
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+            </Button>
+          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4">
-          <div className="space-y-1 mb-10">
-            <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Operação</p>
+        <div className="flex-1 overflow-y-auto py-8 px-4 no-scrollbar">
+          <div className="space-y-1.5 mb-10">
+            {!isCollapsed && (
+              <p className="px-4 text-[10px] font-bold text-white/40 uppercase tracking-[0.15em] mb-4">Operação</p>
+            )}
             {mainNavItems.map((item) => {
               const isActive = location === item.href;
+              const getIconColor = () => {
+                if (!isActive) return "text-white/50";
+                return "text-white";
+              };
               return (
                 <Link key={item.name} href={item.href}>
-                  <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
-                    isActive 
-                      ? "bg-[#42789f] text-white font-medium shadow-sm" 
-                      : "text-white/70 hover:bg-[#42789f]/50 hover:text-white"
-                  }`}>
-                    <item.icon className={`w-5 h-5 ${isActive ? "text-[#f1c40f]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
-                    <span className="text-sm font-medium">{item.name}</span>
+                  <div className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group ${isActive
+                      ? "bg-white/12 text-white font-bold shadow-lg"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                    } ${isCollapsed ? "justify-center px-0" : ""}`}>
+                    <item.icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${getIconColor()}`} strokeWidth={isActive ? 2.5 : 2} />
+                    {!isCollapsed && (
+                      <span className="text-sm tracking-tight overflow-hidden whitespace-nowrap">{item.name}</span>
+                    )}
                   </div>
                 </Link>
               );
             })}
           </div>
 
-          {userRole === 'admin' && (
-            <div className="space-y-1">
-              <p className="px-4 text-[10px] font-bold text-white/50 uppercase tracking-widest mb-4">Gestão</p>
-              {secondaryNavItems.map((item) => {
-                const isActive = location === item.href;
-                return (
-                  <Link key={item.name} href={item.href}>
-                    <div className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${
-                      isActive 
-                        ? "bg-[#42789f] text-white font-medium shadow-sm" 
-                        : "text-white/70 hover:bg-[#42789f]/50 hover:text-white"
-                    }`}>
-                      <item.icon className={`w-5 h-5 ${isActive ? "text-[#f1c40f]" : ""}`} strokeWidth={isActive ? 2.5 : 2} />
-                      <span className="text-sm font-medium">{item.name}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          <div className="space-y-1.5">
+            {!isCollapsed && (
+              <p className="px-4 text-[10px] font-bold text-white/40 uppercase tracking-[0.15em] mb-4">Administrativo</p>
+            )}
+            {secondaryNavItems.filter(item => userRole === 'admin' || item.href === '/operadores').map((item) => {
+              const isActive = location === item.href;
+              const getIconColor = () => {
+                if (!isActive) return "text-white/50";
+                return "text-white";
+              };
+              return (
+                <Link key={item.name} href={item.href}>
+                  <div className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer group ${isActive
+                      ? "bg-white/12 text-white font-bold shadow-lg"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                    } ${isCollapsed ? "justify-center px-0" : ""}`}>
+                    <item.icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${getIconColor()}`} strokeWidth={isActive ? 2.5 : 2} />
+                    {!isCollapsed && (
+                      <span className="text-sm tracking-tight overflow-hidden whitespace-nowrap">{item.name}</span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-[#42789f] border border-[#f1c40f]/30 flex items-center justify-center text-white font-bold text-sm">
-              {userRole === 'admin' ? 'U' : 'O'}
+        {/* User Profile Area (Desktop Sidebar Bottom) */}
+        <div className={`p-4 border-t border-white/10 bg-black/10 ${isCollapsed ? "flex justify-center" : ""}`}>
+          <div className="flex items-center justify-between group w-full">
+            <div className={`flex items-center gap-3 ${isCollapsed ? "hidden" : "flex"}`}>
+              <div className="w-10 h-10 rounded-full bg-white/15 border border-white/10 flex items-center justify-center text-white font-bold shrink-0">
+                {userRole === 'admin' ? 'A' : 'O'}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-bold text-white truncate">Usuário Google</span>
+                <span className="text-[10px] text-white/50 uppercase tracking-widest">{userRole}</span>
+              </div>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-white truncate">
-                Usuário Google
-              </span>
-              <span className="text-xs text-[#f1c40f] truncate mt-0.5 font-medium">
-                {userRole === 'admin' ? 'Admin' : 'Operador'}
-              </span>
-            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-all ${isCollapsed ? "w-12 h-12" : "w-10 h-10"}`}
+                >
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={isCollapsed ? "center" : "end"} side={isCollapsed ? "right" : "bottom"} className="w-48 rounded-xl z-[100]">
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer rounded-lg">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Configurações</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer rounded-lg">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair do ERP</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          <button onClick={handleLogout} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium w-full px-2">
-            <LogOut className="w-4 h-4" />
-            Sair do sistema
-          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-16 flex items-center justify-between px-4 sm:px-8 bg-[#f8f9fa] z-10 sticky top-0 sm:border-b sm:border-border/50">
-          <div className="flex items-center gap-2 sm:hidden">
-            <div className="w-8 h-8 overflow-hidden relative flex-shrink-0">
-              <img src="/logo-svg.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
+        {/* Top Header (Mobile Only) */}
+        <header className="h-16 lg:hidden bg-white border-b border-border items-center px-4 gap-4 flex shrink-0 sticky top-0 z-[40]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 overflow-hidden">
+              <img src="/logo-verde.svg" alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-1">
-                 <span className="font-bold text-sm leading-none font-display text-[#233e66]">Locações</span>
-                 <span className="font-bold text-sm leading-none font-display text-[#233e66]">São</span>
-                 <span className="font-bold text-sm leading-none font-display text-[#f1c40f]">Bento</span>
-              </div>
+            <div>
+              <h1 className="text-base font-bold font-display text-primary leading-none">Locações</h1>
+              <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">São Bento</p>
             </div>
           </div>
-          
-          <div className="hidden sm:flex items-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-            <Menu className="w-5 h-5" />
-          </div>
-          
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="w-8 h-8 rounded-full bg-primary/10 sm:hidden flex items-center justify-center text-primary font-bold text-xs">
-               {userRole === 'admin' ? 'U' : 'O'}
+
+          <div className="ml-auto">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs ring-2 ring-background ring-offset-2 ring-offset-border">
+              {userRole === 'admin' ? 'A' : 'O'}
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 sm:pb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-7xl mx-auto"
-          >
-            {children}
-          </motion.div>
-        </main>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          <div className="px-4 py-6 sm:px-6 lg:px-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+            {/* Context Tooltip/Header (Desktop only) */}
+            <div className="hidden lg:flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                {showBack && backTo && (
+                  <Link href={backTo}>
+                    <Button variant="ghost" size="sm" className="mr-4 -ml-2 rounded-xl text-muted-foreground hover:text-foreground">
+                      ← Voltar
+                    </Button>
+                  </Link>
+                )}
+                <h2 className="text-2xl font-bold text-foreground font-display tracking-tight">{title}</h2>
+              </div>
+              <div className="flex items-center gap-4">
+              </div>
+            </div>
 
-        <MobileBottomNav />
-      </div>
+            {children}
+          </div>
+        </div>
+      </main>
+
+      {/* Bottom Nav (Mobile Only) */}
+      <MobileBottomNav />
     </div>
+  );
+}
+
+function Badge({ className, variant, ...props }: any) {
+  return (
+    <div
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}
+      {...props}
+    />
   );
 }

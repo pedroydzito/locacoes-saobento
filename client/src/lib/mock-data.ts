@@ -1,18 +1,18 @@
 export const machinesList = [
-  "220 NOVA ESCAV", "220 ANTIGA ESCAV", "SANNY", "700J novo A", "700J Nova", 
-  "Caminhão 2544", "Caminhão 1513", "12B Pá Carregadeira", "Trator 7D1", 
+  "220 NOVA ESCAV", "220 ANTIGA ESCAV", "SANNY", "700J novo A", "700J Nova",
+  "Caminhão 2544", "Caminhão 1513", "12B Pá Carregadeira", "Trator 7D1",
   "MAQ DO JOÃO", "STRADA PRETA", "STRADA BRANCA", "Moto", "D150"
 ];
 
 export const operatorsList = [
-  "Anderson", "Guri", "Cleiton", "Caio", "Cristiano", "Beto", "Samuel", 
-  "Mimi", "Lucas 700j", "Armack", "Geovani guri", "Julio D51", "Vitor Guri", 
+  "Anderson", "Guri", "Cleiton", "Caio", "Cristiano", "Beto", "Samuel",
+  "Mimi", "Lucas 700j", "Armack", "Geovani guri", "Julio D51", "Vitor Guri",
   "Dionisio", "Gean 7d1"
 ];
 
 export const clientsList = [
-  "Geovani Reis", "Antenor", "Claré", "Leandro Reis", "Deivid", 
-  "Compestre", "Josual", "Valdeci", "Mane", "Juca", "Provalia", 
+  "Geovani Reis", "Antenor", "Claré", "Leandro Reis", "Deivid",
+  "Compestre", "Josual", "Valdeci", "Mane", "Juca", "Provalia",
   "Conceição", "Agri"
 ];
 
@@ -30,10 +30,11 @@ export let mockAccounts = accountsList.map((name, i) => ({
 export const mockMachines = machinesList.map((name, i) => ({
   id: `maq-${i}`,
   name,
+  chapa: i % 2 === 0 ? `CH-00${i}` : undefined,
   model: name.includes("220") ? "220" : name.includes("700J") ? "700J" : "Standard",
-  type: name.includes("ESCAV") || name.includes("SANNY") ? "Escavadeira" : 
-        name.includes("Caminhão") ? "Caminhão" : 
-        name.includes("Pá") ? "Pá Carregadeira" : 
+  type: name.includes("ESCAV") || name.includes("SANNY") ? "Escavadeira" :
+    name.includes("Caminhão") ? "Caminhão" :
+      name.includes("Pá") ? "Pá Carregadeira" :
         name.includes("Trator") ? "Trator" : "Outros",
   year: 2020 - (i % 5),
   hour_cost: 150 + (i * 10),
@@ -46,7 +47,7 @@ export const mockOperators = operatorsList.map((name, i) => ({
   id: `op-${i}`,
   name,
   salary: 2500 + (i * 200),
-  machine_assigned: i === 0 
+  machine_assigned: i === 0
     ? [mockMachines[0].name, mockMachines[1].name]
     : [mockMachines[i % mockMachines.length].name],
   hours_worked: 150 + (i * 10),
@@ -69,7 +70,7 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   const client = mockClients[i % mockClients.length];
   const machine = mockMachines[i % mockMachines.length];
   const operator = mockOperators[i % mockOperators.length];
-  
+
   const hours = 8 + (i % 5);
   const hora_inicial = "08:00";
   const endHour = 8 + hours;
@@ -79,13 +80,13 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   const cost_machine = hours * machine.hour_cost;
   const cost_operator = hours * (operator.salary / 220);
   const cost_diesel = diesel * 6.50; // preco diesel
-  
+
   const additionalCosts = [
     { id: `cst-${i}-1`, name: "Custo Máquina", value: cost_machine, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
     { id: `cst-${i}-2`, name: "Custo Operador", value: cost_operator, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
     { id: `cst-${i}-3`, name: "Custo Diesel", value: cost_diesel, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" }
   ];
-  
+
   const total_costs = additionalCosts.reduce((acc, curr) => acc + curr.value, 0);
   const profit = value - total_costs;
 

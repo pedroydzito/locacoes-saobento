@@ -6,11 +6,11 @@ import { Download, FileText, TrendingUp, Users, Droplets, Target } from "lucide-
 
 export default function Reports() {
   const reportsList = [
-    { title: "Rentabilidade por Máquina", desc: "Análise de lucro e custos por equipamento", icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50" },
+    { title: "Rentabilidade por Máquina", desc: "Análise de lucro e custos por equipamento", icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
     { title: "Rentabilidade por Cliente", desc: "Ranking de faturamento e margem por obra", icon: Target, color: "text-[hsl(var(--success-text))]", bg: "bg-[hsl(var(--success-subtle))]" },
-    { title: "Produtividade Operadores", desc: "Horas trabalhadas e eficiência da equipe", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+    { title: "Produtividade Operadores", desc: "Horas trabalhadas e eficiência da equipe", icon: Users, color: "text-[hsl(var(--info-text))]", bg: "bg-[hsl(var(--info-subtle))]" },
     { title: "Consumo de Diesel", desc: "Média de consumo (L/h) da frota", icon: Droplets, color: "text-[hsl(var(--warning-text))]", bg: "bg-[hsl(var(--warning-subtle))]" },
-    { title: "Faturamento Mensal", desc: "Histórico de receitas e despesas", icon: FileText, color: "text-rose-600", bg: "bg-rose-50" },
+    { title: "Faturamento Mensal", desc: "Histórico de receitas e despesas", icon: FileText, color: "text-destructive", bg: "bg-destructive/10" },
   ];
 
   const pieData = [
@@ -23,8 +23,11 @@ export default function Reports() {
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight font-display">Central de Relatórios</h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <FileText className="w-7 h-7 text-primary hidden sm:block" />
+            <h1 className="text-3xl font-bold tracking-tight font-display">Central de Relatórios</h1>
+          </div>
           <p className="text-muted-foreground mt-1">Análises detalhadas de performance e custos.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -66,7 +69,7 @@ export default function Reports() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={machineUsageData} layout="vertical" margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-mono)'}} />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-sans)'}} />
                   <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontFamily: 'var(--font-sans)', fontWeight: 600}} width={120} />
                   <Tooltip 
                     cursor={{fill: 'hsl(var(--muted))'}}
