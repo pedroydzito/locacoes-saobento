@@ -1,5 +1,5 @@
 # Design System — Locações São Bento
-**Versão 1.4.3 · Guia Mestre Definitivo · Março 2026**
+**Versão 1.4.5 · Guia Mestre Definitivo · Março 2026**
 
 ---
 
@@ -123,9 +123,12 @@ Utilizar classe `touch-card` para feedback tátil (`active:scale-[0.98]`).
 ## 6. Navegação
 
 ### 6.1 Sidebar (Desktop)
-- **Header Structure:** Layout horizontal (flex row).
+- **Header Structure:** Layout horizontal (flex row). Redução de altura para `h-20`.
 - **Logo:** Alinhada à esquerda (`w-10 h-10`).
-- **Marca:** Texto centralizado à esquerda, com "Locações" em caixa alta itálica e "São Bento" em destaque Bold.
+- **Marca:** 
+    - "Locações": Sem itálico/uppercase, tamanho `text-[10px]`.
+    - "São Bento": Fonte Display em destaque no centro.
+    - "Logística": Subtexto em cinza (`white/30`), tamanho `text-[10px]`.
 - **Toggle:** Botão de controle posicionado à **Direita** do header (ml-auto).
 - **Active State:** Ícone em Branco Puro sobre fundo primário.
 
@@ -149,7 +152,17 @@ O ícone de contexto fica à esquerda do título (Exceção: **Visão Operaciona
 
 ---
 
-## 7. Regras de Consistência (Checklist)
+## 7. Autenticação (Login)
+
+### 7.1 UX de Entrada Progressiva
+- **Foco:** Priorizar login social (Google).
+- **Acordeão:** O formulário de e-mail e senha deve ser oculto por padrão, acessível via botão com chevron.
+- **Micro-animação:** Utilizar `Framer Motion` para transição de altura suave (`ease-in-out`).
+- **Cards Internos:** O formulário colapsável deve residir em um `Card` com background `card/40` e sobra sutil.
+
+---
+
+## 8. Regras de Consistência (Checklist)
 
 - [ ] **Sem Hardcoded Colors:** Usar `var(--primary)`, `var(--success)`, etc.
 - [ ] **Dual View:** Desktop (Tabela) vs Mobile (Cards) sempre implementados.

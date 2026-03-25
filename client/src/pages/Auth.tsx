@@ -2,12 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +56,9 @@ export default function Auth() {
           </div>
           
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-1">
+            <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-4">
               Locações <span className="text-white">São</span> <span className="text-[#f1c40f]">Bento</span>
             </h1>
-            <p className="text-[#a5b4fc] text-sm tracking-widest font-bold uppercase mb-6">
-              LOCAÇÕES
-            </p>
             <p className="text-white/80 text-base max-w-xs mx-auto font-medium">
               Gestão inteligente de frota e serviços.
             </p>
@@ -102,42 +103,68 @@ export default function Auth() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">E-mail</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@saobento.com ou operador@..." 
-                  className="h-12 rounded-xl bg-card border-border shadow-sm px-4" 
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Senha</Label>
-                  <a href="#" className="text-xs font-bold text-primary hover:underline">Recuperar senha</a>
-                </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  className="h-12 rounded-xl bg-card border-border shadow-sm px-4 font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-base" 
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-12 rounded-xl font-bold text-base mt-2 shadow-md transition-all active:scale-[0.98]"
-                disabled={isLoading}
+            <div className="space-y-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEmailForm(!showEmailForm)}
+                className="w-full h-12 rounded-xl font-bold text-sm bg-card border-border shadow-sm flex items-center justify-center gap-2 hover:bg-muted transition-all"
               >
-                {isLoading ? "Entrando..." : "Entrar"}
+                Entrar com e-mail e senha
+                {showEmailForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
-            </form>
+
+              <AnimatePresence>
+                {showEmailForm && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <Card className="border-border shadow-md rounded-2xl p-6 mt-2 bg-card/40">
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">E-mail</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="admin@saobento.com ou operador@..."
+                            className="h-12 rounded-xl bg-card border-border shadow-sm px-4"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Senha</Label>
+                            <a href="#" className="text-xs font-bold text-primary hover:underline">Esqueceu?</a>
+                          </div>
+                          <Input
+                            id="password"
+                            type="password"
+                            placeholder="••••••••"
+                            className="h-12 rounded-xl bg-card border-border shadow-sm px-4 font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
+                            required
+                          />
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full h-12 rounded-xl font-bold text-base mt-2 shadow-md transition-all active:scale-[0.98]"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Entrando..." : "Entrar"}
+                        </Button>
+                      </form>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           
           <div className="mt-8 text-center">

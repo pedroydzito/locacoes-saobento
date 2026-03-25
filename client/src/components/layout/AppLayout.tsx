@@ -79,7 +79,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
         className={`hidden lg:flex flex-col bg-primary text-primary-foreground shrink-0 z-50 shadow-2xl transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-72"
           }`}
       >
-        <div className={`h-24 flex items-center justify-between px-4 pt-6 mb-2 relative ${isCollapsed ? "flex-col px-0 gap-4" : ""}`}>
+        <div className={`h-20 flex items-center justify-between px-4 pt-4 mb-1 relative ${isCollapsed ? "flex-col px-0 gap-4" : ""}`}>
           {!isCollapsed ? (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
@@ -90,12 +90,12 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
                 <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
               </div>
               <div className="flex flex-col justify-center">
-                <span className="font-bold text-sm leading-none font-display tracking-tight text-white uppercase italic opacity-90">Locações</span>
-                <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-bold text-[10px] leading-none font-display tracking-tight text-white/70">Locações</span>
+                <div className="flex items-baseline gap-1 mt-1">
                   <span className="font-bold text-lg leading-none font-display tracking-tight text-white">São</span>
                   <span className="font-bold text-lg leading-none font-display tracking-tight text-[#FFD700]">Bento</span>
                 </div>
-                <span className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1 leading-none">Logística</span>
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mt-1 leading-none">Logística</span>
               </div>
             </motion.div>
           ) : (
