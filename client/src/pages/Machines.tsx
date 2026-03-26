@@ -159,7 +159,7 @@ export default function Machines() {
                   <td className="p-4 text-center font-bold text-foreground">
                     {machine.hours_worked}h
                   </td>
-                  <td className="p-4 text-right font-bold text-success-text">
+                  <td className={`p-4 text-right font-bold ${machine.profit_generated >= 0 ? 'text-success-text' : 'text-destructive'}`}>
                     {formatCurrency(machine.profit_generated)}
                   </td>
                   <td className="p-4 text-center">
@@ -208,9 +208,20 @@ export default function Machines() {
                 }
               />
               <MobileCardActions>
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Horas</p>
-                  <p className="font-bold text-sm text-foreground">{machine.hours_worked}h</p>
+                <div className="flex flex-col items-end w-full">
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <div className="text-left">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Horas</p>
+                      <p className="font-bold text-sm text-foreground">{machine.hours_worked}h</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Rentabilidade</p>
+                      <p className={`font-bold text-sm ${machine.profit_generated >= 0 ? 'text-success-text' : 'text-destructive'}`}>
+                        {formatCurrency(machine.profit_generated)}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-success-subtle text-success-text border-success/20 text-[10px] px-2 py-0">Ativo</Badge>
                 </div>
               </MobileCardActions>
             </MobileCard>

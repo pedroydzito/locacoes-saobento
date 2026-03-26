@@ -11,7 +11,7 @@ export default function Dashboard() {
   };
 
   const statCards = [
-    { title: "Faturamento Bruto", value: formatCurrency(kpis.revenue), icon: DollarSign, trend: "+12%", trendUp: true, color: "var(--primary)", sub: "Este mês" },
+    { title: "Faturamento Bruto", value: formatCurrency(kpis.revenue), icon: DollarSign, trend: "+12%", trendUp: true, color: "var(--success)", sub: "Este mês" },
     { title: "Horas Máquina", value: `${kpis.hours}h`, icon: Clock, trend: "+5%", trendUp: true, color: "var(--primary)", sub: "Em operação" },
     { title: "Diesel Consumido", value: `${kpis.diesel}L`, icon: Fuel, trend: "-2%", trendUp: false, color: "var(--primary)", sub: "Média 15L/h" },
     { title: "Estoque Colheita", value: "12.4K", icon: Wheat, trend: "+18%", trendUp: true, color: "var(--primary)", sub: "Sacas (Soja)" },
@@ -43,7 +43,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div>
-                <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                  <p className="text-2xl font-bold tracking-tight" style={stat.title === "Faturamento Bruto" ? { color: `hsl(${stat.color})` } : {}}>{stat.value}</p>
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-sm font-bold text-muted-foreground">{stat.title}</p>
                 </div>

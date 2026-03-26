@@ -131,11 +131,11 @@ export default function Finance() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Faturamento (Entradas)</p>
-                <h3 className="text-2xl font-bold mt-1 text-success-text font-display">
+                <h3 className="text-2xl font-bold mt-1 text-success font-display">
                   {formatCurrency(totalEntradas)}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-success-subtle flex items-center justify-center">
                 <ArrowUpRight className="w-6 h-6 text-success" />
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function Finance() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <div className={`p-1 rounded ${tx.type === 'entrada' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                      <div className={`p-1 rounded ${tx.type === 'entrada' ? 'bg-success-subtle text-success' : 'bg-destructive/10 text-destructive'}`}>
                         {tx.type === 'entrada' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                       </div>
                       <span className="font-bold text-foreground">{tx.description}</span>
@@ -225,7 +225,7 @@ export default function Finance() {
                     </Badge>
                   </td>
                   <td className="p-4 text-muted-foreground">{tx.account}</td>
-                  <td className={`p-4 text-right font-bold ${tx.type === 'entrada' ? 'text-success-text' : 'text-destructive'}`}>
+                  <td className={`p-4 text-right font-bold ${tx.type === 'entrada' ? 'text-success' : 'text-destructive'}`}>
                     {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -272,7 +272,7 @@ export default function Finance() {
                 }
               />
               <MobileCardActions>
-                <p className={`font-bold text-sm ${tx.type === 'entrada' ? 'text-success-text' : 'text-destructive'}`}>
+                <p className={`font-bold text-sm ${tx.type === 'entrada' ? 'text-success' : 'text-destructive'}`}>
                   {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
                 </p>
               </MobileCardActions>
