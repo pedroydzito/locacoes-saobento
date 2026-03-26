@@ -104,13 +104,13 @@ export default function Finance() {
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all">
-            <Wallet className="w-4 h-4 mr-2" />
-            Contas
-          </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all" onClick={() => setIsFilterModalOpen(true)}>
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all" onClick={() => setIsFilterModalOpen(true)}>
             <Filter className="w-4 h-4 mr-2" />
             Filtros
+          </Button>
+          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all">
+            <Wallet className="w-4 h-4 mr-2" />
+            Contas
           </Button>
           <div className="flex gap-2">
             <Button onClick={() => handleAdd('entrada')} className="rounded-xl h-10 px-4  transition-all active:scale-95 bg-success text-white hover:bg-success/90">
@@ -202,6 +202,7 @@ export default function Finance() {
                 <th className="p-4">Categoria</th>
                 <th className="p-4">Conta</th>
                 <th className="p-4 text-right">Valor</th>
+                <th className="p-4">Adicionado em</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
             </thead>
@@ -227,6 +228,16 @@ export default function Finance() {
                   <td className="p-4 text-muted-foreground">{tx.account}</td>
                   <td className={`p-4 text-right font-bold ${tx.type === 'entrada' ? 'text-success' : 'text-destructive'}`}>
                     {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  </td>
+                  <td className="p-4 text-muted-foreground">
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {tx.createdAt ? new Date(tx.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
+                      </span>
+                      <span className="opacity-70 truncate max-w-[120px]">
+                        por {tx.createdBy?.split('@')[0] || 'sistema'}
+                      </span>
+                    </div>
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -260,7 +271,7 @@ export default function Finance() {
               <MobileCardContent
                 metadata={
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-muted-foreground">{new Date(tx.date).toLocaleDateString('pt-BR')}</span>
+                    <span className="text-[10px] text-muted-foreground">{new Date(tx.date).toLocaleDateString('pt-BR')} {tx.createdAt && <span className="ml-1 opacity-70">({new Date(tx.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})})</span>}</span>
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{tx.account}</span>
                   </div>
                 }
