@@ -11,7 +11,7 @@ O projeto utiliza o **Tailwind CSS v4**. Todas as cores são definidas como vari
 - `--secondary`: Azul médio (#42789f).
 - `--accent`: Amarelo (#f1c40f) - Usado para destaques e ações.
 - `--background`: Bege claro/Cinza (#f5f5f4).
-- `--success`: Verde profissional (#14532d) - Usado em todo o app para indicadores positivos e valores de destaque.
+- `--success`: Verde Vibrante (#32CD32/similar) - Usado para faturamento e tendências positivas.
 
 ### Configuração Técnica (Importante)
 Para que as cores sejam reconhecidas pelo Tailwind v4 como classes utilitárias (ex: `bg-primary`, `text-secondary`, `border-border`), elas devem ser mapeadas no `@theme`.
