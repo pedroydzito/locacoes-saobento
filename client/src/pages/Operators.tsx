@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockOperators, mockServices, mockMachines } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Users, Calendar, Clock } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Users, Calendar, Clock, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
@@ -18,8 +18,16 @@ export default function Operators() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [machineFilter, setMachineFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const sortedMachines = [...mockMachines].map(m => m.name).sort();
+
+  const parseTime = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours + (minutes / 60);
+  };
 
   const filteredOperators = mockOperators.filter(op => {
     const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -27,8 +35,25 @@ export default function Operators() {
     const matchesMachine = machineFilter === "all" || machines.includes(machineFilter);
     return matchesSearch && matchesMachine;
   }).map(op => {
-    const servicesCount = mockServices.filter(s => s.operator === op.name).length;
-    return { ...op, services_done: servicesCount };
+    const opServices = mockServices.filter(s => {
+      const matchesOperator = s.operator === op.name;
+      const matchesStart = !startDate || s.date >= startDate;
+      const matchesEnd = !endDate || s.date <= endDate;
+      return matchesOperator && matchesStart && matchesEnd;
+    });
+
+    const calculatedHours = opServices.reduce((acc, curr) => {
+      if (curr.hora_inicial && curr.hora_final) {
+        const start = parseTime(curr.hora_inicial);
+        const end = parseTime(curr.hora_final);
+        let diff = end - start;
+        if (diff < 0) diff += 24;
+        return acc + diff;
+      }
+      return acc + (curr.hours || 0);
+    }, 0);
+
+    return { ...op, services_done: opServices.length, hours_worked: Number(calculatedHours.toFixed(1)) };
   });
 
   const formatCurrency = (value: number) => {
@@ -74,16 +99,56 @@ export default function Operators() {
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all" onClick={() => setIsFilterModalOpen(true)}>
-            <Filter className="w-4 h-4 mr-2" />
+          <Button 
+            variant="outline" 
+            className={`hidden sm:flex border-border bg-white rounded-xl h-10 transition-all ${machineFilter !== "all" || startDate || endDate ? "border-primary text-primary" : ""}`} 
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <Filter className={`w-4 h-4 mr-2 ${machineFilter !== "all" || startDate || endDate ? "fill-primary/10" : ""}`} />
             Filtros
+            {(machineFilter !== "all" || startDate || endDate) && (
+              <Badge className="ml-2 bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                {Number(machineFilter !== "all") + Number(!!startDate) + Number(!!endDate)}
+              </Badge>
+            )}
           </Button>
-          <Button onClick={handleAdd} className="rounded-xl h-10 px-5  transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none">
+          <Button onClick={handleAdd} className="rounded-xl h-10 px-5 transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none shadow-none">
             <Plus className="w-4 h-4 mr-2" />
             Novo Operador
           </Button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(machineFilter !== "all" || startDate || endDate) && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-1">Filtros Ativos:</span>
+          {machineFilter !== "all" && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Máquina: {machineFilter}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setMachineFilter("all")} />
+            </Badge>
+          )}
+          {(startDate || endDate) && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Período: {startDate || "..."} - {endDate || "..."}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => { setStartDate(""); setEndDate(""); }} />
+            </Badge>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive transition-colors"
+            onClick={() => {
+              setMachineFilter("all");
+              setStartDate("");
+              setEndDate("");
+            }}
+          >
+            Limpar Todos
+          </Button>
+        </div>
+      )}
 
       <MobileListControls
         onExportClick={() => { }}
@@ -221,16 +286,16 @@ export default function Operators() {
       <ActionModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        title="Filtrar por Máquina"
+        title="Filtrar por Período"
       >
-        <div className="space-y-4 pt-4">
+        <div className="space-y-5 pt-4">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina Principal</label>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Máquina Principal</label>
             <Select value={machineFilter} onValueChange={setMachineFilter}>
-              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm e">
-                <SelectValue placeholder="Selecione a Máquina" />
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-muted/10 text-sm hover:bg-muted/20 transition-colors">
+                <SelectValue placeholder="Todas as Máquinas" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
+              <SelectContent className="rounded-xl z-50 border-border">
                 <SelectItem value="all" className="cursor-pointer">Todas as Máquinas</SelectItem>
                 {sortedMachines.map((m) => (
                   <SelectItem key={m} value={m} className="cursor-pointer">{m}</SelectItem>
@@ -238,9 +303,44 @@ export default function Operators() {
               </SelectContent>
             </Select>
           </div>
-          <Button className="w-full h-12 mt-4 rounded-xl font-bold" onClick={() => setIsFilterModalOpen(false)}>
-            Aplicar Filtros
-          </Button>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Início</label>
+              <Input 
+                type="date" 
+                value={startDate} 
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-11 rounded-xl border-border bg-muted/10 font-mono text-sm focus-visible:ring-primary/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fim</label>
+              <Input 
+                type="date" 
+                value={endDate} 
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-11 rounded-xl border-border bg-muted/10 font-mono text-sm focus-visible:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-6 pt-4 border-t border-border/50">
+            <Button 
+              variant="outline" 
+              className="flex-1 h-11 rounded-xl border-border hover:bg-muted/50" 
+              onClick={() => {
+                setMachineFilter("all");
+                setStartDate("");
+                setEndDate("");
+              }}
+            >
+              Limpar Tudo
+            </Button>
+            <Button className="flex-1 h-11 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsFilterModalOpen(false)}>
+              Aplicar Filtros
+            </Button>
+          </div>
         </div>
       </ActionModal>
     </div>

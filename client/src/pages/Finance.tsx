@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockTransactions, mockServices } from "@/lib/mock-data";
-import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2, Filter, Wallet, FileDown, DollarSign } from "lucide-react";
+import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2, Filter, Wallet, FileDown, DollarSign, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,9 @@ export default function Finance() {
     category: "",
     account: "all",
     startDate: "",
-    endDate: ""
+    endDate: "",
+    supplier: "",
+    dueDateStatus: "all"
   });
 
   const formatCurrency = (value: number) => {
@@ -72,15 +74,36 @@ export default function Finance() {
   };
 
   const handleClearFilters = () => {
-    setFilters({ category: "", account: "all", startDate: "", endDate: "" });
+    setFilters({ category: "", account: "all", startDate: "", endDate: "", supplier: "", dueDateStatus: "all" });
     setIsFilterModalOpen(false);
   };
 
   const filteredTransactions = mockTransactions.filter(tx => {
-    if (filters.category && !tx.category.toLowerCase().includes(filters.category.toLowerCase())) return false;
+    if (filters.category && !tx.category.toLowerCase().includes(filters.category.toLowerCase()) && !tx.description.toLowerCase().includes(filters.category.toLowerCase())) return false;
     if (filters.account !== "all" && tx.account !== filters.account) return false;
     if (filters.startDate && tx.date < filters.startDate) return false;
     if (filters.endDate && tx.date > filters.endDate) return false;
+    if (filters.supplier && !tx.supplier?.toLowerCase().includes(filters.supplier.toLowerCase())) return false;
+    
+    if (filters.dueDateStatus !== "all") {
+      if (filters.dueDateStatus === "no_due") {
+        if (tx.dueDate) return false;
+      } else {
+        if (!tx.dueDate) return false;
+        const dueDate = new Date(tx.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (filters.dueDateStatus === "overdue") {
+          if (dueDate >= today) return false;
+        } else if (filters.dueDateStatus === "upcoming") {
+          const sevenDaysFromNow = new Date();
+          sevenDaysFromNow.setDate(today.getDate() + 7);
+          if (dueDate < today || dueDate > sevenDaysFromNow) return false;
+        }
+      }
+    }
+    
     return true;
   });
 
@@ -104,26 +127,80 @@ export default function Finance() {
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all" onClick={() => setIsFilterModalOpen(true)}>
-            <Filter className="w-4 h-4 mr-2" />
+          <Button 
+            variant="outline" 
+            className={`hidden sm:flex border-border bg-white rounded-xl h-10 transition-all ${filters.account !== "all" || filters.category || filters.startDate || filters.endDate || filters.supplier || filters.dueDateStatus !== "all" ? "border-primary text-primary" : ""}`} 
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <Filter className={`w-4 h-4 mr-2 ${filters.account !== "all" || filters.category || filters.startDate || filters.endDate || filters.supplier || filters.dueDateStatus !== "all" ? "fill-primary/10" : ""}`} />
             Filtros
+            {(filters.account !== "all" || filters.category || filters.startDate || filters.endDate || filters.supplier || filters.dueDateStatus !== "all") && (
+              <Badge className="ml-2 bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                {[filters.account !== "all", !!filters.category, !!filters.startDate || !!filters.endDate, !!filters.supplier, filters.dueDateStatus !== "all"].filter(Boolean).length}
+              </Badge>
+            )}
           </Button>
-          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all">
+          <Button variant="outline" onClick={() => setIsAccountModalOpen(true)} className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all shadow-none">
             <Wallet className="w-4 h-4 mr-2" />
             Contas
           </Button>
           <div className="flex gap-2">
-            <Button onClick={() => handleAdd('entrada')} className="rounded-xl h-10 px-4  transition-all active:scale-95 bg-success text-white hover:bg-success/90">
+            <Button onClick={() => handleAdd('entrada')} className="rounded-xl h-10 px-4 transition-all active:scale-95 bg-success text-white hover:bg-success/90 shadow-none">
               <Plus className="w-4 h-4 mr-1.5" />
               Entrada
             </Button>
-            <Button onClick={() => handleAdd('saida')} className="rounded-xl h-10 px-4  transition-all active:scale-95 bg-destructive text-white hover:bg-destructive/90">
+            <Button onClick={() => handleAdd('saida')} className="rounded-xl h-10 px-4 transition-all active:scale-95 bg-destructive text-white hover:bg-destructive/90 shadow-none">
               <Plus className="w-4 h-4 mr-1.5" />
               Saída
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(filters.account !== "all" || filters.category || filters.startDate || filters.endDate || filters.supplier || filters.dueDateStatus !== "all") && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-1">Filtros Ativos:</span>
+          {filters.category && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Busca: {filters.category}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, category: "" }))} />
+            </Badge>
+          )}
+          {filters.supplier && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Fornecedor: {filters.supplier}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, supplier: "" }))} />
+            </Badge>
+          )}
+          {filters.account !== "all" && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Conta: {filters.account}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, account: "all" }))} />
+            </Badge>
+          )}
+          {filters.dueDateStatus !== "all" && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Status: {filters.dueDateStatus === 'overdue' ? 'Vencidos' : filters.dueDateStatus === 'upcoming' ? 'A Vencer' : 'Sem Vencimento'}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, dueDateStatus: "all" }))} />
+            </Badge>
+          )}
+          {(filters.startDate || filters.endDate) && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Período: {filters.startDate || "..."} - {filters.endDate || "..."}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, startDate: "", endDate: "" }))} />
+            </Badge>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive transition-colors"
+            onClick={handleClearFilters}
+          >
+            Limpar Todos
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="border-border rounded-2xl  overflow-hidden bg-card">
@@ -199,7 +276,10 @@ export default function Finance() {
               <tr className="border-b border-border bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide font-bold">
                 <th className="p-4">Data</th>
                 <th className="p-4">Descrição</th>
+                <th className="p-4">Fornecedor</th>
                 <th className="p-4">Categoria</th>
+                <th className="p-4">Destino</th>
+                <th className="p-4 text-center">Vencimento</th>
                 <th className="p-4">Conta</th>
                 <th className="p-4 text-right">Valor</th>
                 <th className="p-4">Adicionado em</th>
@@ -220,10 +300,38 @@ export default function Finance() {
                       <span className="font-bold text-foreground">{tx.description}</span>
                     </div>
                   </td>
+                  <td className="p-4 text-muted-foreground truncate max-w-[120px]">
+                    {tx.supplier || '-'}
+                  </td>
                   <td className="p-4">
                     <Badge variant="secondary" className="bg-neutral-subtle text-neutral-text border-none text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
                       {tx.category}
                     </Badge>
+                  </td>
+                  <td className="p-4">
+                    {tx.allocation ? (
+                      <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-[9px] px-2 py-0.5 rounded-full">
+                        {tx.allocation}
+                      </Badge>
+                    ) : '-'}
+                  </td>
+                  <td className="p-4 text-center">
+                    {tx.dueDate ? (
+                      <div className="flex flex-col items-center">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          new Date(tx.dueDate) < new Date() 
+                            ? 'bg-destructive/10 text-destructive' : 
+                          new Date(tx.dueDate).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000 
+                            ? 'bg-warning-text/10 text-warning-text' : 
+                          'bg-muted/30 text-muted-foreground'
+                        }`}>
+                          {new Date(tx.dueDate).toLocaleDateString('pt-BR')}
+                        </span>
+                        {new Date(tx.dueDate) < new Date() && (
+                          <span className="text-[9px] font-bold text-destructive uppercase mt-0.5">Vencido</span>
+                        )}
+                      </div>
+                    ) : '-'}
                   </td>
                   <td className="p-4 text-muted-foreground">{tx.account}</td>
                   <td className={`p-4 text-right font-bold ${tx.type === 'entrada' ? 'text-success' : 'text-destructive'}`}>
@@ -231,10 +339,10 @@ export default function Finance() {
                   </td>
                   <td className="p-4 text-muted-foreground">
                     <div className="flex flex-col">
-                      <span className="font-medium">
+                      <span className="font-medium text-[10px]">
                         {tx.createdAt ? new Date(tx.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
                       </span>
-                      <span className="opacity-70 truncate max-w-[120px]">
+                      <span className="opacity-70 truncate max-w-[100px] text-[10px]">
                         por {tx.createdBy?.split('@')[0] || 'sistema'}
                       </span>
                     </div>
@@ -277,9 +385,24 @@ export default function Finance() {
                 }
                 title={tx.description}
                 subtitle={
-                  <Badge variant="secondary" className="mt-1 bg-neutral-subtle text-neutral-text border-none text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                    {tx.category}
-                  </Badge>
+                  <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="bg-neutral-subtle text-neutral-text border-none text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                        {tx.category}
+                      </Badge>
+                      {tx.allocation && (
+                        <span className="text-[9px] text-muted-foreground opacity-70">➔ {tx.allocation}</span>
+                      )}
+                    </div>
+                    {tx.supplier && <p className="text-[10px] text-muted-foreground italic truncate">{tx.supplier}</p>}
+                    {tx.dueDate && (
+                      <p className={`text-[10px] font-bold ${
+                        new Date(tx.dueDate) < new Date() ? 'text-destructive' : 'text-muted-foreground'
+                      }`}>
+                        Vence em: {new Date(tx.dueDate).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
+                  </div>
                 }
               />
               <MobileCardActions>

@@ -110,23 +110,33 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
     additionalCosts,
     profit,
     status: i < 5 ? "andamento" : "concluido",
+    photos: i % 5 === 0 ? [
+      { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400", label: "Horímetro Inicial" },
+      { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400", label: "Horímetro Final" }
+    ] : [],
     notes: ""
   };
 });
 
-export let mockTransactions = Array.from({ length: 20 }).map((_, i) => ({
-  id: `tx-${i}`,
-  type: i % 4 === 0 ? "saida" : "entrada",
-  amount: i % 4 === 0 ? 1500 + (i * 100) : 5000 + (i * 500),
-  date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
-  description: i % 4 === 0 ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i]?.id || 'N/A'}`,
-  account: accountsList[i % accountsList.length],
-  category: i % 4 === 0 ? "Diesel" : "Serviços",
-  createdAt: new Date(2023, 9, 28 - i).toISOString(),
-  createdBy: "admin@saobento.com",
-  relatedCostId: undefined as string | undefined,
-  relatedServiceId: undefined as string | undefined
-}));
+export let mockTransactions = Array.from({ length: 20 }).map((_, i) => {
+  const isExpense = i % 4 === 0;
+  return {
+    id: `tx-${i}`,
+    type: isExpense ? "saida" : "entrada",
+    amount: isExpense ? 1500 + (i * 100) : 5000 + (i * 500),
+    date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
+    description: isExpense ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i]?.id || 'N/A'}`,
+    account: accountsList[i % accountsList.length],
+    category: isExpense ? "Diesel" : "Serviços",
+    supplier: isExpense ? ["Posto Rodonave", "Oficina do João", "Pneus & Cia"][i % 3] : undefined,
+    dueDate: isExpense ? new Date(2023, 9, 30 - i).toISOString().split('T')[0] : undefined,
+    allocation: isExpense ? (i % 2 === 0 ? "Administrativo" : mockMachines[i % mockMachines.length].name) : undefined,
+    createdAt: new Date(2023, 9, 28 - i).toISOString(),
+    createdBy: "admin@saobento.com",
+    relatedCostId: undefined as string | undefined,
+    relatedServiceId: undefined as string | undefined
+  };
+});
 
 export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
   id: `FRT-${1000 + i}`,

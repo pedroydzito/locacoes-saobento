@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockMachines, mockServices } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Tractor, Calendar, Clock, BarChart3 } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Tractor, Calendar, Clock, BarChart3, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
@@ -17,6 +17,8 @@ export default function Machines() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [typeFilter, setTypeFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const parseTime = (timeStr: string) => {
     if (!timeStr) return 0;
@@ -25,7 +27,12 @@ export default function Machines() {
   };
 
   const machinesWithStats = mockMachines.map(machine => {
-    const machineServices = mockServices.filter(s => s.machine === machine.name);
+    const machineServices = mockServices.filter(s => {
+      const matchesMachine = s.machine === machine.name;
+      const matchesStart = !startDate || s.date >= startDate;
+      const matchesEnd = !endDate || s.date <= endDate;
+      return matchesMachine && matchesStart && matchesEnd;
+    });
     
     const calculatedHours = machineServices.reduce((acc, curr) => {
       if (curr.hora_inicial && curr.hora_final) {
@@ -96,16 +103,56 @@ export default function Machines() {
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all" onClick={() => setIsFilterModalOpen(true)}>
-            <Filter className="w-4 h-4 mr-2" />
+          <Button 
+            variant="outline" 
+            className={`hidden sm:flex border-border bg-white rounded-xl h-10 transition-all ${typeFilter !== "all" || startDate || endDate ? "border-primary text-primary" : ""}`} 
+            onClick={() => setIsFilterModalOpen(true)}
+          >
+            <Filter className={`w-4 h-4 mr-2 ${typeFilter !== "all" || startDate || endDate ? "fill-primary/10" : ""}`} />
             Filtros
+            {(typeFilter !== "all" || startDate || endDate) && (
+              <Badge className="ml-2 bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                {Number(typeFilter !== "all") + Number(!!startDate) + Number(!!endDate)}
+              </Badge>
+            )}
           </Button>
-          <Button onClick={handleAdd} className="rounded-xl h-10 px-5  transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none">
+          <Button onClick={handleAdd} className="rounded-xl h-10 px-5 transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none shadow-none">
             <Plus className="w-4 h-4 mr-2" />
             Nova Máquina
           </Button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(typeFilter !== "all" || startDate || endDate) && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-1">Filtros Ativos:</span>
+          {typeFilter !== "all" && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Tipo: {typeFilter}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => setTypeFilter("all")} />
+            </Badge>
+          )}
+          {(startDate || endDate) && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
+              Período: {startDate || "..."} - {endDate || "..."}
+              <X className="w-3 h-3 cursor-pointer" onClick={() => { setStartDate(""); setEndDate(""); }} />
+            </Badge>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive transition-colors"
+            onClick={() => {
+              setTypeFilter("all");
+              setStartDate("");
+              setEndDate("");
+            }}
+          >
+            Limpar Todos
+          </Button>
+        </div>
+      )}
 
       <MobileListControls 
         onExportClick={() => {}} 
@@ -247,16 +294,16 @@ export default function Machines() {
       <ActionModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        title="Filtrar por Tipo"
+        title="Filtrar por Período"
       >
-        <div className="space-y-4 pt-4">
+        <div className="space-y-5 pt-4">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Tipo de Máquina</label>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Tipo de Equipamento</label>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm e">
-                <SelectValue placeholder="Selecione o Tipo" />
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-muted/10 text-sm hover:bg-muted/20 transition-colors">
+                <SelectValue placeholder="Todos os Tipos" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
+              <SelectContent className="rounded-xl z-50 border-border">
                 <SelectItem value="all" className="cursor-pointer">Todos os Tipos</SelectItem>
                 {machineTypes.map((type) => (
                   <SelectItem key={type} value={type} className="cursor-pointer">{type}</SelectItem>
@@ -264,9 +311,44 @@ export default function Machines() {
               </SelectContent>
             </Select>
           </div>
-          <Button className="w-full h-12 mt-4 rounded-xl font-bold" onClick={() => setIsFilterModalOpen(false)}>
-            Aplicar Filtros
-          </Button>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Início</label>
+              <Input 
+                type="date" 
+                value={startDate} 
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-11 rounded-xl border-border bg-muted/10 font-mono text-sm focus-visible:ring-primary/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fim</label>
+              <Input 
+                type="date" 
+                value={endDate} 
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-11 rounded-xl border-border bg-muted/10 font-mono text-sm focus-visible:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-6 pt-4 border-t border-border/50">
+            <Button 
+              variant="outline" 
+              className="flex-1 h-11 rounded-xl border-border hover:bg-muted/50" 
+              onClick={() => {
+                setTypeFilter("all");
+                setStartDate("");
+                setEndDate("");
+              }}
+            >
+              Limpar Tudo
+            </Button>
+            <Button className="flex-1 h-11 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsFilterModalOpen(false)}>
+              Aplicar Filtros
+            </Button>
+          </div>
         </div>
       </ActionModal>
     </div>
