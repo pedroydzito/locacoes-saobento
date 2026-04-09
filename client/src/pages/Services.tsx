@@ -222,8 +222,6 @@ export default function Services() {
                 <th className="p-4 text-right">Início</th>
                 <th className="p-4 text-right">Fim</th>
                 <th className="p-4 text-right">Diesel</th>
-                <th className="p-4 text-right">Faturamento</th>
-                <th className="p-4 text-right">Lucro Limpo</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
@@ -245,10 +243,6 @@ export default function Services() {
                   <td className="p-4 text-right font-bold">{service.hora_inicial || '-'}</td>
                   <td className="p-4 text-right font-bold">{service.hora_final || '-'}</td>
                   <td className="p-4 text-right text-muted-foreground">{service.diesel}L</td>
-                  <td className="p-4 text-right font-bold text-foreground">{formatCurrency(service.value)}</td>
-                  <td className={`p-4 text-right font-bold ${service.profit >= 0 ? 'text-[hsl(var(--success-text))]' : 'text-destructive'}`}>
-                    {formatCurrency(service.profit)}
-                  </td>
                   <td className="p-4 text-center">
                     <Badge variant={service.status === 'concluido' ? 'default' : 'secondary'} className={service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e'}>
                       {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
@@ -377,7 +371,12 @@ export default function Services() {
 
       <ActionModal
         isOpen={isCostModalOpen}
-        onClose={() => setIsCostModalOpen(false)}
+        onClose={() => {
+          setIsCostModalOpen(false);
+          if (viewingService) {
+            setIsDetailModalOpen(true);
+          }
+        }}
         title={`Custos - OS ${managingCostService?.id}`}
       >
         {managingCostService && (
@@ -442,11 +441,11 @@ export default function Services() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Data Inicial</label>
-              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-11 rounded-xl bg-muted/10 font-mono" />
+              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-11 rounded-xl bg-muted/10" />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Data Final</label>
-              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-11 rounded-xl bg-muted/10 font-mono" />
+              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-11 rounded-xl bg-muted/10" />
             </div>
           </div>
 

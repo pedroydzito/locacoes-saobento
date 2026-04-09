@@ -142,6 +142,12 @@ export default function Reports() {
                   <Tooltip 
                     cursor={{fill: 'hsl(var(--muted))'}}
                     contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', fontFamily: 'var(--font-sans)', fontSize: '12px' }}
+                    formatter={(value: number, name: string) => {
+                      if (name.includes("(R$)") || name.includes("Lucro")) {
+                        return [formatCurrency(value), name];
+                      }
+                      return [value, name];
+                    }}
                   />
                   <Bar dataKey="profit" name="Lucro (R$)" fill="hsl(var(--success))" radius={[0, 4, 4, 0]} barSize={12} />
                   <Bar dataKey="hours" name="Horas Trab." fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />

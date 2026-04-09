@@ -160,7 +160,7 @@ export function BillingReportModal({ onClose }: BillingReportModalProps) {
             <SelectValue placeholder="Escolha um cliente para cobrar" />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
-            {mockClients.map(c => (
+            {[...mockClients].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
               <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
             ))}
           </SelectContent>
@@ -219,6 +219,10 @@ export function BillingReportModal({ onClose }: BillingReportModalProps) {
                     <span>{new Date(s.date).toLocaleDateString('pt-BR')}</span>
                     <span>•</span>
                     <span>{s.hours}h operadas</span>
+                    <span>•</span>
+                    <span className={s.status === 'concluido' ? 'text-[hsl(var(--success-text))]' : 'text-[hsl(var(--warning-text))]'}>
+                      {s.status === 'concluido' ? 'Concluído' : 'Em Andamento'}
+                    </span>
                   </div>
                 </div>
               </div>

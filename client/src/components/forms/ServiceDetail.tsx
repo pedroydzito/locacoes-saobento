@@ -83,7 +83,7 @@ export function ServiceDetail({ service, onManageCosts, onEdit }: ServiceDetailP
 
         <div className={`p-4 rounded-2xl border border-border shadow-none ${profit >= 0 ? 'bg-success/5' : 'bg-destructive/5'}`}>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-3">
-            <TrendingUp className={`w-3.5 h-3.5 ${profit >= 0 ? 'text-success' : 'text-destructive'}`} /> Resultado OS
+            <TrendingUp className={`w-3.5 h-3.5 ${profit >= 0 ? 'text-success' : 'text-destructive'}`} /> Lucro
           </p>
           <div className="space-y-1">
             <p className={`text-2xl font-bold font-display ${profit >= 0 ? 'text-success' : 'text-destructive'}`}>
