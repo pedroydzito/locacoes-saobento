@@ -17,7 +17,7 @@ export function ActionModal({ isOpen, onClose, title, children, maxWidth = "max-
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={`sm:max-w-${maxWidth} border border-border rounded-2xl p-6 shadow-none`}>
+        <DialogContent className={`${maxWidth} border border-border rounded-2xl p-6 shadow-none`}>
           <DialogHeader className="text-left mb-4">
             <DialogTitle className="text-xl font-bold font-display">{title}</DialogTitle>
           </DialogHeader>

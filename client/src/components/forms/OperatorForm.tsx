@@ -33,13 +33,9 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
         <Input id="name" defaultValue={initialData?.name} placeholder="Nome completo" className="h-11 sm:h-10 rounded-xl" />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="salary" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Salário Base (R$)</Label>
-          <Input id="salary" type="number" defaultValue={initialData?.salary} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina Principal</Label>
+          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquinas Designadas</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-11 sm:h-10 rounded-xl w-full justify-start text-left font-normal bg-card overflow-hidden">
@@ -69,6 +65,29 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+      </div>
+
+      <div className="pt-4 mt-2 border-t border-border/50 space-y-4">
+        <h3 className="text-sm font-bold text-foreground">Regras de Remuneração</h3>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="salary" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Salário Fixo Mensal (R$)</Label>
+            <Input id="salary" type="number" defaultValue={initialData?.salary} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="commission_per_hour" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Comissão por Hora (R$)</Label>
+              <Input id="commission_per_hour" type="number" defaultValue={initialData?.commission_per_hour} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fixed_commission" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Comissão Fixo p/ Serviço (R$)</Label>
+              <Input id="fixed_commission" type="number" defaultValue={initialData?.fixed_commission} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          * Vales e adiantamentos devem ser lançados diretamente no módulo Financeiro, vinculados ao operador.
+        </p>
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8 sm:mt-6 pt-4 border-t border-border/50">

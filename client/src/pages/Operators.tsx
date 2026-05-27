@@ -178,7 +178,7 @@ export default function Operators() {
                 <th className="p-4">Máquinas Designadas</th>
                 <th className="p-4 text-center">Horas Trabalhadas</th>
                 <th className="p-4 text-center">Serviços Feitos</th>
-                <th className="p-4 text-right">Salário</th>
+                <th className="p-4 text-right">Salário Total (Est.)</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
             </thead>
@@ -213,7 +213,14 @@ export default function Operators() {
                       {op.services_done}
                     </Badge>
                   </td>
-                  <td className="p-4 text-right font-bold text-foreground">{formatCurrency(op.salary)}</td>
+                  <td className="p-4 text-right font-bold text-foreground">
+                    <div className="flex flex-col items-end">
+                      <span>{formatCurrency(op.salary + (op.hours_worked * (op.commission_per_hour || 0)) + (op.services_done * (op.fixed_commission || 0)))}</span>
+                      {((op.commission_per_hour || 0) > 0 || (op.fixed_commission || 0) > 0) && (
+                        <span className="text-[10px] text-muted-foreground font-normal">Base: {formatCurrency(op.salary)}</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -258,9 +265,17 @@ export default function Operators() {
                 }
               />
               <MobileCardActions>
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Serviços</p>
-                  <p className="font-bold text-sm text-primary">{op.services_done}</p>
+                <div className="flex gap-4 items-center">
+                  <div className="text-right">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Serviços</p>
+                    <p className="font-bold text-sm text-primary">{op.services_done}</p>
+                  </div>
+                  <div className="text-right border-l border-border pl-4">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Total (Est.)</p>
+                    <p className="font-bold text-sm text-foreground">
+                      {formatCurrency(op.salary + (op.hours_worked * (op.commission_per_hour || 0)) + (op.services_done * (op.fixed_commission || 0)))}
+                    </p>
+                  </div>
                 </div>
               </MobileCardActions>
             </MobileCard>
@@ -279,6 +294,7 @@ export default function Operators() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? "Editar Operador" : "Novo Operador"}
+        maxWidth="max-w-3xl"
       >
         <OperatorForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
       </ActionModal>

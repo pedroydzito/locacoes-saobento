@@ -17,47 +17,57 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     machine: initialData?.machine || "",
     operator: initialData?.operator || "",
     date: initialData?.date || new Date().toISOString().split('T')[0],
-    hora_inicial: initialData?.hora_inicial || "08:00",
-    hora_final: initialData?.hora_final || "17:00",
+    hora_inicial: initialData?.hora_inicial || "",
+    hora_final: initialData?.hora_final || "",
     diesel: initialData?.diesel || 0,
+    dieselSupplier: initialData?.dieselSupplier || "cliente",
+    serviceType: initialData?.serviceType || "",
     value: initialData?.value || 0,
     status: initialData?.status || "andamento"
   });
-
-  const parseTime = (timeStr: string) => {
-    if (!timeStr) return 0;
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours + (minutes / 60);
-  };
+  
+  const [photoUploaded, setPhotoUploaded] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const isTimeValid = () => {
     if (!formData.hora_inicial || !formData.hora_final) return false;
-    return formData.hora_final > formData.hora_inicial;
+    return parseFloat(formData.hora_final) > parseFloat(formData.hora_inicial);
+  };
+
+  const handlePhotoUpload = () => {
+    setIsUploading(true);
+    setTimeout(() => {
+      setIsUploading(false);
+      setPhotoUploaded(true);
+    }, 1500);
   };
 
   const handleSave = () => {
     if (!isTimeValid()) return;
     if (!formData.client || !formData.machine || !formData.operator) return;
 
-    const start = parseTime(formData.hora_inicial);
-    const end = parseTime(formData.hora_final);
+    const start = parseFloat(formData.hora_inicial);
+    const end = parseFloat(formData.hora_final);
     let hoursWorked = end - start;
-    if (hoursWorked < 0) hoursWorked += 24;
 
     const machineObj = mockMachines.find(m => m.name === formData.machine);
     const operatorObj = mockOperators.find(o => o.name === formData.operator);
 
     const cost_machine = hoursWorked * (machineObj?.hour_cost || 0);
-    const cost_operator = hoursWorked * ((operatorObj?.salary || 0) / 220);
-    const cost_diesel = (formData.diesel || 0) * 6.50;
+    const cost_operator = hoursWorked * ((operatorObj?.salary || 0) / 220); // Basic rule, will be handled by dynamic rule engine later
+    const cost_diesel = formData.dieselSupplier === 'sao_bento' ? ((formData.diesel || 0) * 6.50) : 0;
 
     const additionalCosts = [
       { id: `cst-${Date.now()}-1`, name: "Custo Máquina", value: cost_machine, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" },
-      { id: `cst-${Date.now()}-2`, name: "Custo Operador", value: cost_operator, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" },
-      { id: `cst-${Date.now()}-3`, name: "Custo Diesel", value: cost_diesel, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" }
+      { id: `cst-${Date.now()}-2`, name: "Custo Operador", value: cost_operator, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" }
     ];
 
+    if (cost_diesel > 0) {
+      additionalCosts.push({ id: `cst-${Date.now()}-3`, name: "Custo Diesel (São Bento)", value: cost_diesel, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" });
+    }
+
     const total_costs = additionalCosts.reduce((acc, curr) => acc + curr.value, 0);
+    // If diesel is from Sao Bento, we might add it to the final invoice depending on config
     const profit = (formData.value || 0) - total_costs;
     const serviceData = {
       ...formData,
@@ -110,7 +120,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Cliente / Obra</Label>
           <Select 
@@ -120,7 +130,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
               <SelectValue placeholder="Selecione o cliente" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl z-50 border-border">
+            <SelectContent className="rounded-xl z-[100] border-border">
               {sortedClients.map((c) => (
                 <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
               ))}
@@ -136,6 +146,15 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
           />
         </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Tipo de Serviço</Label>
+          <Input 
+            placeholder="Ex: Destoca, Terraplanagem"
+            value={formData.serviceType}
+            onChange={(e) => setFormData({...formData, serviceType: e.target.value})}
+            className="h-11 rounded-xl border-border bg-muted/10" 
+          />
+        </div>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -148,7 +167,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
               <SelectValue placeholder="Selecione a máquina" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl z-50 border-border">
+            <SelectContent className="rounded-xl z-[100] border-border">
               {sortedMachines.map((m) => (
                 <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
               ))}
@@ -164,7 +183,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
               <SelectValue placeholder="Selecione o operador" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl z-50 border-border">
+            <SelectContent className="rounded-xl z-[100] border-border">
               {sortedOperators.map((o) => (
                 <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>
               ))}
@@ -173,25 +192,32 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">H. Inicial</Label>
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Inicial</Label>
           <Input 
-            type="time" 
+            type="number" 
+            step="0.1"
+            placeholder="1332.6"
             value={formData.hora_inicial} 
             onChange={(e) => setFormData({...formData, hora_inicial: e.target.value})} 
             className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">H. Final</Label>
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Final</Label>
           <Input 
-            type="time" 
+            type="number" 
+            step="0.1"
+            placeholder="1338.0"
             value={formData.hora_final} 
             onChange={(e) => setFormData({...formData, hora_final: e.target.value})} 
-            className={`h-11 rounded-xl border-border bg-muted/10 font-mono ${!isTimeValid() ? 'border-destructive text-destructive' : ''}`} 
+            className={`h-11 rounded-xl border-border bg-muted/10 font-mono ${!isTimeValid() && formData.hora_final ? 'border-destructive text-destructive' : ''}`} 
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Diesel (L)</Label>
           <Input 
@@ -203,6 +229,21 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
           />
         </div>
         <div className="space-y-2">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fornec. Diesel</Label>
+          <Select 
+            value={formData.dieselSupplier} 
+            onValueChange={(v) => setFormData({...formData, dieselSupplier: v})}
+          >
+            <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
+              <SelectValue placeholder="Fornecedor" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl z-[100] border-border">
+              <SelectItem value="cliente">Cliente (Sem Custo)</SelectItem>
+              <SelectItem value="sao_bento">São Bento</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 text-primary">Valor (R$)</Label>
           <Input 
             type="number" 
@@ -211,6 +252,38 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             placeholder="0,00" 
             className="h-11 rounded-xl border-border bg-primary/5 font-bold text-primary font-mono" 
           />
+        </div>
+      </div>
+
+      <div className="space-y-2 mt-4 p-4 border border-dashed border-border rounded-xl bg-card">
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Comprovante de Horímetro (Foto do Painel)</Label>
+        <div className="flex items-center gap-4 mt-2">
+          <Button 
+            variant="outline" 
+            type="button"
+            className="rounded-xl h-10 hover:bg-muted/50 transition-colors relative overflow-hidden"
+            onClick={handlePhotoUpload}
+            disabled={isUploading || photoUploaded}
+          >
+            {isUploading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                Enviando...
+              </span>
+            ) : photoUploaded ? (
+              <span className="flex items-center gap-2 text-success">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                Foto Anexada
+              </span>
+            ) : (
+              "📸 Tirar/Anexar Foto"
+            )}
+          </Button>
+          {photoUploaded && (
+            <span className="text-xs text-muted-foreground animate-in fade-in">
+              painel_maq_{formData.machine || 'unnamed'}.jpg
+            </span>
+          )}
         </div>
       </div>
 

@@ -217,10 +217,11 @@ export default function Services() {
                 <th className="p-4">OS</th>
                 <th className="p-4">Data</th>
                 <th className="p-4">Cliente / Obra</th>
+                <th className="p-4">Tipo Serviço</th>
                 <th className="p-4">Máquina</th>
                 <th className="p-4">Operador</th>
-                <th className="p-4 text-right">Início</th>
-                <th className="p-4 text-right">Fim</th>
+                <th className="p-4 text-right">H. Ini</th>
+                <th className="p-4 text-right">H. Fim</th>
                 <th className="p-4 text-right">Diesel</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 w-[52px]"></th>
@@ -238,11 +239,15 @@ export default function Services() {
                   </td>
                   <td className="p-4 text-muted-foreground">{new Date(service.date).toLocaleDateString('pt-BR')}</td>
                   <td className="p-4 font-bold text-foreground">{service.client}</td>
+                  <td className="p-4 text-muted-foreground text-xs">{service.serviceType || '-'}</td>
                   <td className="p-4 text-muted-foreground">{service.machine}</td>
                   <td className="p-4 text-muted-foreground">{service.operator}</td>
                   <td className="p-4 text-right font-bold">{service.hora_inicial || '-'}</td>
                   <td className="p-4 text-right font-bold">{service.hora_final || '-'}</td>
-                  <td className="p-4 text-right text-muted-foreground">{service.diesel}L</td>
+                  <td className="p-4 text-right text-muted-foreground">
+                    <div>{service.diesel}L</div>
+                    {service.diesel > 0 && <div className="text-[9px] uppercase tracking-wider">{service.dieselSupplier === 'sao_bento' ? 'SB' : 'CLI'}</div>}
+                  </td>
                   <td className="p-4 text-center">
                     <Badge variant={service.status === 'concluido' ? 'default' : 'secondary'} className={service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e'}>
                       {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
@@ -294,18 +299,26 @@ export default function Services() {
                 title={service.client}
                 subtitle={
                   <div className="space-y-0.5 text-xs">
+                    <p className="text-primary font-medium">{service.serviceType || 'Serviço'}</p>
                     <p className="font-medium text-foreground/80">{service.machine}</p>
                     <p className="text-muted-foreground">{service.operator}</p>
                   </div>
                 }
               />
               <MobileCardActions>
-                <Badge variant="outline" className={`e font-bold text-[10px] uppercase tracking-wider ${service.status === 'concluido'
-                    ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.2)]'
-                    : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.2)]'
-                  }`}>
-                  {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
-                </Badge>
+                <div className="flex flex-col gap-1 items-start">
+                  <Badge variant="outline" className={`e font-bold text-[10px] uppercase tracking-wider ${service.status === 'concluido'
+                      ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.2)]'
+                      : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.2)]'
+                    }`}>
+                    {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                  </Badge>
+                  {service.diesel > 0 && (
+                    <span className="text-[9px] text-muted-foreground font-bold">
+                      {service.diesel}L ({service.dieselSupplier === 'sao_bento' ? 'SB' : 'CLI'})
+                    </span>
+                  )}
+                </div>
                 <div className="text-right mt-1">
                   <p className="text-[10px] text-muted-foreground font-medium uppercase">{service.hora_inicial} - {service.hora_final}</p>
                   <p className="font-bold text-sm text-primary">{formatCurrency(service.value)}</p>
@@ -336,6 +349,7 @@ export default function Services() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? "Editar Serviço" : "Novo Serviço"}
+        maxWidth="max-w-3xl"
       >
         <ServiceForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
       </ActionModal>

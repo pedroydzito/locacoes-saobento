@@ -47,6 +47,8 @@ export const mockOperators = operatorsList.map((name, i) => ({
   id: `op-${i}`,
   name,
   salary: 2500 + (i * 200),
+  commission_per_hour: 10 + (i % 5),
+  fixed_commission: i % 2 === 0 ? 50 : 0,
   machine_assigned: i === 0
     ? [mockMachines[0].name, mockMachines[1].name]
     : [mockMachines[i % mockMachines.length].name],
@@ -100,6 +102,8 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
     hora_final,
     hours,
     diesel,
+    dieselSupplier: i % 2 === 0 ? "sao_bento" : "cliente",
+    serviceType: ["Terraplanagem", "Destoca", "Transporte"][i % 3],
     freight: i % 3 === 0 ? 500 : 0,
     value,
     costs: {
