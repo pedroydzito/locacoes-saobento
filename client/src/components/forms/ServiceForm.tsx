@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { mockMachines, mockOperators, mockClients, mockServices, mockTransactions } from "@/lib/mock-data";
+import { CheckCircle2 } from "lucide-react";
 
 interface ServiceFormProps {
   onSave: () => void;
@@ -14,7 +16,7 @@ interface ServiceFormProps {
 export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps) {
   const [formData, setFormData] = useState({
     client: initialData?.client || "",
-    machine: initialData?.machine || "",
+    machines: initialData?.machine ? initialData.machine.split(', ') : [],
     operator: initialData?.operator || "",
     date: initialData?.date || new Date().toISOString().split('T')[0],
     hora_inicial: initialData?.hora_inicial || "",
@@ -23,10 +25,10 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     dieselSupplier: initialData?.dieselSupplier || "cliente",
     serviceType: initialData?.serviceType || "",
     value: initialData?.value || 0,
-    status: initialData?.status || "andamento"
+    status: initialData?.status || "em_andamento"
   });
   
-  const [photoUploaded, setPhotoUploaded] = useState(false);
+  const [photos, setPhotos] = useState<any[]>(initialData?.photos || []);
   const [isUploading, setIsUploading] = useState(false);
 
   const isTimeValid = () => {
@@ -35,25 +37,30 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
   };
 
   const handlePhotoUpload = () => {
+    if (photos.length >= 5) return;
     setIsUploading(true);
     setTimeout(() => {
       setIsUploading(false);
-      setPhotoUploaded(true);
+      const newPhoto = { url: `painel_maq_${formData.machines.join('_')}_${photos.length + 1}.jpg`, label: "Foto do Painel" };
+      setPhotos([...photos, newPhoto]);
     }, 1500);
   };
 
   const handleSave = () => {
     if (!isTimeValid()) return;
-    if (!formData.client || !formData.machine || !formData.operator) return;
+    if (!formData.client || formData.machines.length === 0 || !formData.operator) return;
 
     const start = parseFloat(formData.hora_inicial);
     const end = parseFloat(formData.hora_final);
     let hoursWorked = end - start;
 
-    const machineObj = mockMachines.find(m => m.name === formData.machine);
+    const cost_machine = formData.machines.reduce((total, machineName) => {
+      const machineObj = mockMachines.find(m => m.name === machineName);
+      return total + (hoursWorked * (machineObj?.hour_cost || 0));
+    }, 0);
+
     const operatorObj = mockOperators.find(o => o.name === formData.operator);
 
-    const cost_machine = hoursWorked * (machineObj?.hour_cost || 0);
     const cost_operator = hoursWorked * ((operatorObj?.salary || 0) / 220); // Basic rule, will be handled by dynamic rule engine later
     const cost_diesel = formData.dieselSupplier === 'sao_bento' ? ((formData.diesel || 0) * 6.50) : 0;
 
@@ -71,10 +78,13 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     const profit = (formData.value || 0) - total_costs;
     const serviceData = {
       ...formData,
+      machine: formData.machines.join(', '),
       id: initialData?.id || `SRV-${1000 + mockServices.length + 1}`,
       hours: hoursWorked,
       freight: 0,
       notes: "",
+      safra: initialData?.safra || "2024/25",
+      photos: photos,
       costs: {
         machine: cost_machine,
         operator: cost_operator,
@@ -86,9 +96,9 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
 
     if (initialData?.id) {
       const idx = mockServices.findIndex(s => s.id === initialData.id);
-      if (idx !== -1) mockServices[idx] = serviceData;
+      if (idx !== -1) mockServices[idx] = serviceData as any;
     } else {
-      mockServices.unshift(serviceData);
+      mockServices.unshift(serviceData as any);
     }
 
     // Gerar lançamentos financeiros de custo automaticamente
@@ -98,12 +108,12 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
         type: "saida",
         amount: cost.value,
         date: formData.date,
-        description: `${cost.name} - ${serviceData.id} (${formData.machine})`,
+        description: `${cost.name} - ${serviceData.id} (${serviceData.machine})`,
         account: "Sicoob",
         category: cost.name.includes("Diesel") ? "Diesel" : "Manutenção/Operacional",
         supplier: "São Bento Logística", // Auto-supplier
         dueDate: formData.date,
-        allocation: formData.machine,
+        allocation: serviceData.machine,
         createdAt: new Date().toISOString(),
         createdBy: "admin@saobento.com",
         relatedCostId: cost.id,
@@ -157,22 +167,36 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
         </div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Equipamento / Máquina</Label>
-          <Select 
-            value={formData.machine} 
-            onValueChange={(v) => setFormData({...formData, machine: v})}
-          >
-            <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
-              <SelectValue placeholder="Selecione a máquina" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl z-[100] border-border">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-border bg-muted/10 font-normal truncate">
+                {formData.machines.length > 0 
+                  ? formData.machines.join(', ')
+                  : <span className="text-muted-foreground">Selecione as máquinas</span>}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[300px] rounded-xl z-[100] border-border">
               {sortedMachines.map((m) => (
-                <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                <DropdownMenuCheckboxItem
+                  key={m.id}
+                  checked={formData.machines.includes(m.name)}
+                  onCheckedChange={(checked) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      machines: checked 
+                        ? [...prev.machines, m.name]
+                        : prev.machines.filter(name => name !== m.name)
+                    }))
+                  }}
+                >
+                  {m.name}
+                </DropdownMenuCheckboxItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Operador Responsável</Label>
@@ -187,6 +211,21 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
               {sortedOperators.map((o) => (
                 <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Status da OS</Label>
+          <Select 
+            value={formData.status} 
+            onValueChange={(v) => setFormData({...formData, status: v})}
+          >
+            <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl z-[100] border-border">
+              <SelectItem value="em_andamento">Em Andamento</SelectItem>
+              <SelectItem value="concluido">Concluído</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -263,26 +302,34 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             type="button"
             className="rounded-xl h-10 hover:bg-muted/50 transition-colors relative overflow-hidden"
             onClick={handlePhotoUpload}
-            disabled={isUploading || photoUploaded}
+            disabled={isUploading || photos.length >= 5}
           >
             {isUploading ? (
               <span className="flex items-center gap-2">
                 <span className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
                 Enviando...
               </span>
-            ) : photoUploaded ? (
+            ) : photos.length >= 5 ? (
               <span className="flex items-center gap-2 text-success">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                Foto Anexada
+                <span className="w-2 h-2 rounded-full bg-success" />
+                Limite de 5 fotos atingido
               </span>
             ) : (
-              "📸 Tirar/Anexar Foto"
+              `📸 Anexar Foto (${photos.length}/5)`
             )}
           </Button>
-          {photoUploaded && (
-            <span className="text-xs text-muted-foreground animate-in fade-in">
-              painel_maq_{formData.machine || 'unnamed'}.jpg
-            </span>
+          {photos.length > 0 && (
+            <div className="flex flex-col gap-1 mt-2 sm:mt-0">
+              {photos.map((photo, i) => {
+                const photoName = typeof photo === 'string' ? photo : photo.url;
+                return (
+                <span key={i} className="text-xs text-muted-foreground animate-in fade-in flex items-center gap-2">
+                  <CheckCircle2 className="w-3 h-3 text-success" />
+                  {photoName}
+                </span>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

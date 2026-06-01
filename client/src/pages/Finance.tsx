@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockTransactions, mockServices } from "@/lib/mock-data";
-import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2, Filter, Wallet, FileDown, DollarSign, X } from "lucide-react";
+import { Search, Plus, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Trash2, Filter, Wallet, FileDown, DollarSign, X, AlertTriangle, Clock as ClockIcon, ChevronRight } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { FinanceForm } from "@/components/forms/FinanceForm";
 import { FinanceFilter, FinanceFilters } from "@/components/forms/FinanceFilter";
@@ -14,11 +16,14 @@ import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Finance() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<FinanceFilters>({
     category: "",
@@ -43,24 +48,33 @@ export default function Finance() {
     setIsModalOpen(true);
   };
 
+  const handleViewDetails = (item: any) => {
+    setLocation(`/financeiro/${item.id}`);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este lançamento?")) {
-      const txIndex = mockTransactions.findIndex(t => t.id === id);
-      if (txIndex === -1) return;
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
 
-      const tx = mockTransactions[txIndex];
-      if (tx.relatedCostId && tx.relatedServiceId) {
-        const service = mockServices.find(s => s.id === tx.relatedServiceId);
-        if (service && service.additionalCosts) {
-          service.additionalCosts = service.additionalCosts.filter((c: any) => c.id !== tx.relatedCostId);
-          const totalCosts = service.additionalCosts.reduce((acc: number, curr: any) => acc + curr.value, 0);
-          service.profit = service.value - totalCosts;
-        }
+  const confirmDelete = () => {
+    if (!deletingId) return;
+    const txIndex = mockTransactions.findIndex(t => t.id === deletingId);
+    if (txIndex === -1) { setDeletingId(null); return; }
+
+    const tx = mockTransactions[txIndex];
+    if (tx.relatedCostId && tx.relatedServiceId) {
+      const service = mockServices.find(s => s.id === tx.relatedServiceId);
+      if (service && service.additionalCosts) {
+        service.additionalCosts = service.additionalCosts.filter((c: any) => c.id !== tx.relatedCostId);
+        const totalCosts = service.additionalCosts.reduce((acc: number, curr: any) => acc + curr.value, 0);
+        service.profit = service.value - totalCosts;
       }
-
-      mockTransactions.splice(txIndex, 1);
-      setRefreshKey(prev => prev + 1);
     }
+
+    mockTransactions.splice(txIndex, 1);
+    setDeletingId(null);
+    setRefreshKey(prev => prev + 1);
   };
 
   const handleSave = () => {
@@ -109,6 +123,23 @@ export default function Finance() {
 
   const totalEntradas = filteredTransactions.filter(t => t.type === 'entrada').reduce((acc, curr) => acc + curr.amount, 0);
   const totalSaidas = filteredTransactions.filter(t => t.type === 'saida').reduce((acc, curr) => acc + curr.amount, 0);
+
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+  
+  const dueTodayBoletos = mockTransactions.filter(tx => {
+    if (tx.account !== "Boletos Cobrança" || !tx.dueDate || tx.boletoInfo?.isPaid) return false;
+    const dueDate = new Date(tx.dueDate);
+    dueDate.setHours(0,0,0,0);
+    return dueDate.getTime() === todayMidnight.getTime();
+  });
+  
+  const overdueBoletos = mockTransactions.filter(tx => {
+    if (tx.account !== "Boletos Cobrança" || !tx.dueDate || tx.boletoInfo?.isPaid) return false;
+    const dueDate = new Date(tx.dueDate);
+    dueDate.setHours(0,0,0,0);
+    return dueDate < todayMidnight;
+  });
 
   return (
     <div className="space-y-6 pb-8">
@@ -202,6 +233,51 @@ export default function Finance() {
         </div>
       )}
 
+      {/* Alertas de Boletos */}
+      {(dueTodayBoletos.length > 0 || overdueBoletos.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4">
+          {overdueBoletos.length > 0 && (
+            <div 
+              className="p-4 rounded-2xl border border-[hsl(var(--destructive)/0.3)] bg-[hsl(var(--destructive)/0.1)] flex items-center justify-between cursor-pointer hover:bg-[hsl(var(--destructive)/0.15)] transition-colors group"
+              onClick={() => setFilters({ ...filters, account: 'Boletos Cobrança', dueDateStatus: 'overdue' })}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-destructive text-white flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-destructive text-lg leading-tight">Atrasados</h4>
+                  <p className="text-sm text-destructive/80 font-medium">
+                    {overdueBoletos.length} {overdueBoletos.length === 1 ? 'boleto pendente' : 'boletos pendentes'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-destructive/50 group-hover:translate-x-1 transition-transform" />
+            </div>
+          )}
+          
+          {dueTodayBoletos.length > 0 && (
+            <div 
+              className="p-4 rounded-2xl border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning-subtle))] flex items-center justify-between cursor-pointer hover:bg-[hsl(var(--warning)/0.2)] transition-colors group"
+              onClick={() => setFilters({ ...filters, account: 'Boletos Cobrança', dueDateStatus: 'upcoming' })}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--warning))] text-white flex items-center justify-center shrink-0">
+                  <ClockIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-[hsl(var(--warning-text))] text-lg leading-tight">Vencendo Hoje</h4>
+                  <p className="text-sm text-[hsl(var(--warning-text))]/80 font-medium">
+                    {dueTodayBoletos.length} {dueTodayBoletos.length === 1 ? 'boleto' : 'boletos'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[hsl(var(--warning))/50] group-hover:translate-x-1 transition-transform" />
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="border-border rounded-2xl  overflow-hidden bg-card">
           <CardContent className="p-6">
@@ -288,7 +364,7 @@ export default function Finance() {
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
               {filteredTransactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(tx)}>
+                <tr key={tx.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(tx)}>
                   <td className="p-4 text-muted-foreground">
                     {new Date(tx.date).toLocaleDateString('pt-BR')}
                   </td>
@@ -356,8 +432,8 @@ export default function Finance() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEdit(tx)} className="rounded-lg cursor-pointer">
-                          <Edit className="w-4 h-4 mr-2" /> Editar
+                        <DropdownMenuItem onClick={() => handleViewDetails(tx)} className="rounded-lg cursor-pointer">
+                          <ArrowUpRight className="w-4 h-4 mr-2" /> Detalhes
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleDelete(tx.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
@@ -375,7 +451,7 @@ export default function Finance() {
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
           {filteredTransactions.map((tx) => (
-            <MobileCard key={tx.id} onClick={() => handleEdit(tx)}>
+            <MobileCard key={tx.id} onClick={() => handleViewDetails(tx)}>
               <MobileCardContent
                 metadata={
                   <div className="flex items-center justify-between mb-1">
@@ -460,6 +536,14 @@ export default function Finance() {
       >
         <AccountManager onChanged={() => setRefreshKey(k => k + 1)} />
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir lançamento"
+        description="Tem certeza que deseja excluir este lançamento financeiro? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

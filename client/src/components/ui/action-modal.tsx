@@ -11,13 +11,13 @@ interface ModalProps {
   maxWidth?: string;
 }
 
-export function ActionModal({ isOpen, onClose, title, children, maxWidth = "max-w-[400px]" }: ModalProps) {
+export function ActionModal({ isOpen, onClose, title, children, maxWidth = "max-w-3xl" }: ModalProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
 
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={`${maxWidth} border border-border rounded-2xl p-6 shadow-none`}>
+        <DialogContent className={`${maxWidth} max-h-[90vh] overflow-y-auto border border-border rounded-2xl p-6 shadow-none`}>
           <DialogHeader className="text-left mb-4">
             <DialogTitle className="text-xl font-bold font-display">{title}</DialogTitle>
           </DialogHeader>

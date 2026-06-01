@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,18 +8,23 @@ import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Tractor, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MachineForm } from "@/components/forms/MachineForm";
 import { Badge } from "@/components/ui/badge";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Machines() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [typeFilter, setTypeFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const parseTime = (timeStr: string) => {
     if (!timeStr) return 0;
@@ -35,12 +41,12 @@ export default function Machines() {
     });
     
     const calculatedHours = machineServices.reduce((acc, curr) => {
-      if (curr.hora_inicial && curr.hora_final) {
-        const start = parseTime(curr.hora_inicial);
-        const end = parseTime(curr.hora_final);
-        let diff = end - start;
-        if (diff < 0) diff += 24;
-        return acc + diff;
+      if (curr.hora_inicial != null && curr.hora_final != null) {
+        const start = typeof curr.hora_inicial === 'number' ? curr.hora_inicial : parseFloat(curr.hora_inicial);
+        const end = typeof curr.hora_final === 'number' ? curr.hora_final : parseFloat(curr.hora_final);
+        if (!isNaN(start) && !isNaN(end)) {
+          return acc + (end - start);
+        }
       }
       return acc + (curr.hours || 0);
     }, 0);
@@ -74,20 +80,46 @@ export default function Machines() {
     setIsModalOpen(true);
   };
 
+  const handleUpdateMachine = (updatedMachine: any) => {
+    const idx = mockMachines.findIndex(m => m.id === updatedMachine.id);
+    if (idx !== -1) mockMachines[idx] = updatedMachine;
+    setRefreshKey(k => k + 1);
+  };
+
+  const handleViewDetails = (item: any) => {
+    setLocation(`/maquinas/${item.id}`);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta máquina?")) {
-      // Logic to delete would go here
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      const idx = mockMachines.findIndex(m => m.id === deletingId);
+      if (idx !== -1) mockMachines.splice(idx, 1);
+      setDeletingId(null);
+      setIsDeleteDialogOpen(false);
+      setRefreshKey(k => k + 1);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (data: any) => {
+    if (editingItem) {
+      const idx = mockMachines.findIndex(m => m.id === editingItem.id);
+      if (idx !== -1) mockMachines[idx] = { ...editingItem, ...data };
+    } else {
+      mockMachines.unshift({ id: `maq-${Date.now()}`, ...data, hours_worked: 0, profit_generated: 0, chapa: "NEW" });
+    }
     setIsModalOpen(false);
+    setRefreshKey(k => k + 1);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8" key={refreshKey}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -186,7 +218,7 @@ export default function Machines() {
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
               {filteredMachines.map((machine) => (
-                <tr key={machine.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(machine)}>
+                <tr key={machine.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(machine)}>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
@@ -209,8 +241,29 @@ export default function Machines() {
                   <td className={`p-4 text-right font-bold ${machine.profit_generated >= 0 ? 'text-success-text' : 'text-destructive'}`}>
                     {formatCurrency(machine.profit_generated)}
                   </td>
-                  <td className="p-4 text-center">
-                    <Badge className="bg-success-subtle text-success-text border-success/20">Ativo</Badge>
+                  <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity e font-bold uppercase tracking-wider text-[10px] px-2 py-0.5 border-none ${
+                          machine.status === 'em_manutencao' ? 'bg-destructive/10 text-destructive' :
+                          machine.status === 'disponivel' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))]' :
+                          'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))]'
+                        }`}>
+                          {machine.status === 'em_manutencao' ? 'Em Manutenção' : machine.status === 'disponivel' ? 'Disponível' : 'Operando'}
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="w-[160px] rounded-xl">
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'operando' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Operando
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'disponivel' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Disponível
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'em_manutencao' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-destructive" /> Em Manutenção
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -244,7 +297,7 @@ export default function Machines() {
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
           {filteredMachines.map((machine) => (
-            <MobileCard key={machine.id} onClick={() => handleEdit(machine)}>
+            <MobileCard key={machine.id} onClick={() => handleViewDetails(machine)}>
               <MobileCardContent 
                 title={machine.name}
                 subtitle={
@@ -268,7 +321,30 @@ export default function Machines() {
                       </p>
                     </div>
                   </div>
-                  <Badge className="bg-success-subtle text-success-text border-success/20 text-[10px] px-2 py-0">Ativo</Badge>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity e font-bold text-[10px] uppercase tracking-wider px-2 py-0 border-none ${
+                          machine.status === 'em_manutencao' ? 'bg-destructive/10 text-destructive' :
+                          machine.status === 'disponivel' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))]' :
+                          'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))]'
+                        }`}>
+                          {machine.status === 'em_manutencao' ? 'Em Manutenção' : machine.status === 'disponivel' ? 'Disponível' : 'Operando'}
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-[160px] rounded-xl">
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'operando' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Operando
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'disponivel' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Disponível
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateMachine({ ...machine, status: 'em_manutencao' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-destructive" /> Em Manutenção
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </MobileCardActions>
             </MobileCard>
@@ -351,6 +427,14 @@ export default function Machines() {
           </div>
         </div>
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir máquina"
+        description="Tem certeza que deseja excluir esta máquina? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

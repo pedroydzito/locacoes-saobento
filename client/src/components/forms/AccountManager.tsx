@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { mockAccounts, mockTransactions } from "@/lib/mock-data";
 import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface AccountManagerProps {
   onChanged: () => void;
@@ -14,6 +15,8 @@ export function AccountManager({ onChanged }: AccountManagerProps) {
   const [newAccountName, setNewAccountName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState<{ id: string; name: string } | null>(null);
 
   const getTransactionCount = (accountName: string) => {
     return mockTransactions.filter(tx => tx.account === accountName).length;
@@ -51,7 +54,15 @@ export function AccountManager({ onChanged }: AccountManagerProps) {
       alert(`Não é possível excluir esta conta pois ela possui ${count} transações vinculadas.`);
       return;
     }
-    syncAccounts(accounts.filter(a => a.id !== id));
+    setDeletingAccount({ id, name });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingAccount) {
+      syncAccounts(accounts.filter(a => a.id !== deletingAccount.id));
+      setDeletingAccount(null);
+    }
   };
 
   const handleStartEdit = (acc: typeof mockAccounts[0]) => {
@@ -154,6 +165,14 @@ export function AccountManager({ onChanged }: AccountManagerProps) {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir conta"
+        description={`Tem certeza que deseja excluir a conta "${deletingAccount?.name}"? Esta ação não pode ser desfeita.`}
+      />
     </div>
   );
 }

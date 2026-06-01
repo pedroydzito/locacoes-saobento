@@ -121,6 +121,12 @@ Utilizar classe `touch-card` para feedback tátil (`active:scale-[0.98]`).
 </div>
 ```
 
+### 5.5 Popups (Modais de Adição e Edição)
+- **Componente Base:** Todo formulário de criação ou edição deve utilizar o `ActionModal`.
+- **Largura Padrão:** O padrão para modais de formulário é `max-w-3xl` em Desktop para garantir uniformidade.
+- **Scroll Inteligente:** O conteúdo interno (`DialogContent`) possui limite de altura (`max-h-[90vh]`) e scroll vertical (`overflow-y-auto`) automático, adequando-se a resoluções menores.
+- **Mobile-First:** Em dispositivos móveis, o `ActionModal` se transforma em um `Sheet` inferior para otimizar o espaço e a ergonomia.
+
 ---
 
 ## 6. Navegação

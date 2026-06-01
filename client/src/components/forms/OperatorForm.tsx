@@ -26,11 +26,24 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
     }
   }, [initialData]);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = Object.fromEntries(formData.entries());
+    onSave({
+      ...data,
+      machine_assigned: selectedMachines,
+      salary: Number(data.salary) || 0,
+      commission_per_hour: Number(data.commission_per_hour) || 0,
+      fixed_commission: Number(data.fixed_commission) || 0,
+    });
+  };
+
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Nome do Operador</Label>
-        <Input id="name" defaultValue={initialData?.name} placeholder="Nome completo" className="h-11 sm:h-10 rounded-xl" />
+        <Input id="name" name="name" defaultValue={initialData?.name} placeholder="Nome completo" className="h-11 sm:h-10 rounded-xl" required />
       </div>
       
       <div className="space-y-4">
@@ -72,16 +85,16 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="salary" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Salário Fixo Mensal (R$)</Label>
-            <Input id="salary" type="number" defaultValue={initialData?.salary} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+            <Input id="salary" name="salary" type="number" defaultValue={initialData?.salary} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="commission_per_hour" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Comissão por Hora (R$)</Label>
-              <Input id="commission_per_hour" type="number" defaultValue={initialData?.commission_per_hour} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+              <Input id="commission_per_hour" name="commission_per_hour" type="number" defaultValue={initialData?.commission_per_hour} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fixed_commission" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Comissão Fixo p/ Serviço (R$)</Label>
-              <Input id="fixed_commission" type="number" defaultValue={initialData?.fixed_commission} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
+              <Input id="fixed_commission" name="fixed_commission" type="number" defaultValue={initialData?.fixed_commission} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
             </div>
           </div>
         </div>
@@ -91,9 +104,9 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8 sm:mt-6 pt-4 border-t border-border/50">
-        <Button variant="outline" onClick={onCancel} className="h-12 sm:h-10 rounded-xl flex-1 sm:flex-none">Cancelar</Button>
-        <Button onClick={onSave} className="h-12 sm:h-10 rounded-xl font-bold flex-1 sm:flex-none">{initialData ? 'Atualizar' : 'Cadastrar Operador'}</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="h-12 sm:h-10 rounded-xl flex-1 sm:flex-none">Cancelar</Button>
+        <Button type="submit" className="h-12 sm:h-10 rounded-xl font-bold flex-1 sm:flex-none">{initialData ? 'Atualizar' : 'Cadastrar Operador'}</Button>
       </div>
-    </div>
+    </form>
   );
 }

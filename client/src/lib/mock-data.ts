@@ -40,7 +40,17 @@ export const mockMachines = machinesList.map((name, i) => ({
   hour_cost: 150 + (i * 10),
   diesel_consumption: 15 + (i % 10),
   hours_worked: 1200 + (i * 50),
-  profit_generated: 45000 + (i * 2000)
+  profit_generated: 45000 + (i * 2000),
+  status: i % 4 === 0 ? "em_manutencao" : "operando",
+  financing: i % 3 === 0 ? undefined : {
+    isFinanced: true,
+    totalAmount: 350000 + (i * 50000),
+    paidAmount: (350000 + (i * 50000)) * (0.3 + (i * 0.1 > 0.6 ? 0.6 : i * 0.1)),
+    installmentsTotal: 60,
+    installmentsPaid: Math.floor(60 * (0.3 + (i * 0.1 > 0.6 ? 0.6 : i * 0.1))),
+    monthlyValue: (350000 + (i * 50000)) / 60,
+    endDate: new Date(2028, 5 + i, 10).toISOString().split('T')[0]
+  }
 }));
 
 export const mockOperators = operatorsList.map((name, i) => ({
@@ -74,9 +84,9 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   const operator = mockOperators[i % mockOperators.length];
 
   const hours = 8 + (i % 5);
-  const hora_inicial = "08:00";
-  const endHour = 8 + hours;
-  const hora_final = `${endHour < 10 ? '0' : ''}${endHour}:00`;
+  const baseHorimeter = 1200 + (i * 47.3);
+  const hora_inicial = Number(baseHorimeter.toFixed(1));
+  const hora_final = Number((baseHorimeter + hours).toFixed(1));
   const diesel = hours * machine.diesel_consumption;
   const value = hours * 350; // media cobrada
   const cost_machine = hours * machine.hour_cost;
@@ -104,6 +114,7 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
     diesel,
     dieselSupplier: i % 2 === 0 ? "sao_bento" : "cliente",
     serviceType: ["Terraplanagem", "Destoca", "Transporte"][i % 3],
+    safra: i % 2 === 0 ? "2023/24" : "2024/25",
     freight: i % 3 === 0 ? 500 : 0,
     value,
     costs: {
@@ -113,7 +124,7 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
     },
     additionalCosts,
     profit,
-    status: i < 5 ? "andamento" : "concluido",
+    status: i < 5 ? "em_andamento" : "concluido",
     photos: i % 5 === 0 ? [
       { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400", label: "Horímetro Inicial" },
       { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400", label: "Horímetro Final" }
@@ -124,16 +135,32 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
 
 export let mockTransactions = Array.from({ length: 20 }).map((_, i) => {
   const isExpense = i % 4 === 0;
+  const baseAccount = accountsList[i % accountsList.length];
+  const isBoleto = baseAccount === "Boletos Cobrança" || i === 1 || i === 2; // Force some to be Boletos for testing
+  
+  const today = new Date();
+  const dueDate = isBoleto 
+    ? (i % 2 === 0 ? today.toISOString().split('T')[0] : new Date(today.getTime() + 86400000 * 2).toISOString().split('T')[0]) 
+    : (isExpense ? new Date(2023, 9, 30 - i).toISOString().split('T')[0] : undefined);
+    
+  const amount = isExpense ? 1500 + (i * 100) : 5000 + (i * 500);
+
   return {
     id: `tx-${i}`,
     type: isExpense ? "saida" : "entrada",
-    amount: isExpense ? 1500 + (i * 100) : 5000 + (i * 500),
+    amount,
     date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
     description: isExpense ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i]?.id || 'N/A'}`,
-    account: accountsList[i % accountsList.length],
+    account: isBoleto ? "Boletos Cobrança" : baseAccount,
     category: isExpense ? "Diesel" : "Serviços",
     supplier: isExpense ? ["Posto Rodonave", "Oficina do João", "Pneus & Cia"][i % 3] : undefined,
-    dueDate: isExpense ? new Date(2023, 9, 30 - i).toISOString().split('T')[0] : undefined,
+    dueDate,
+    boletoInfo: isBoleto ? {
+      installment: `${(i % 12) + 1}/12`,
+      isPaid: i % 3 === 0,
+      delayDays: i % 3 === 0 ? 0 : (i % 2 === 0 ? 0 : 5),
+      interestValue: (i % 3 !== 0 && i % 2 !== 0) ? amount * 0.02 : 0
+    } : undefined,
     allocation: isExpense ? (i % 2 === 0 ? "Administrativo" : mockMachines[i % mockMachines.length].name) : undefined,
     createdAt: new Date(2023, 9, 28 - i).toISOString(),
     createdBy: "admin@saobento.com",
@@ -150,6 +177,8 @@ export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
   destination: ["Obra Alpha", "Fazenda Boa Vista", "Rio Verde", "Aparecida de Goiânia", "Pátio Central"][i % 5],
   driver: ["Roberto", "Carlos", "Juliano"][i % 3],
   value: 800 + (i * 150),
+  km_inicial: 10000 + (i * 100),
+  km_final: 10000 + (i * 100) + 150 + (i * 10),
   status: i < 2 ? "planejado" : i < 4 ? "em_andamento" : "concluido",
   notes: ""
 }));

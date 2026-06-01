@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,16 +8,21 @@ import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter, T
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FreightForm } from "@/components/forms/FreightForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Freights() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [machineFilter, setMachineFilter] = useState("all");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const filteredFreights = mockFreights.filter(f =>
     machineFilter === "all" || f.machine === machineFilter
@@ -29,11 +35,11 @@ export default function Freights() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'concluido':
-        return <Badge className="bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e">Concluído</Badge>;
+        return <Badge variant="outline" className="bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e uppercase tracking-widest text-[10px] px-2 py-0.5 border-none font-bold">Concluído</Badge>;
       case 'em_andamento':
-        return <Badge className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] e">Em Andamento</Badge>;
+        return <Badge variant="outline" className="bg-[hsl(var(--info-subtle))] text-[hsl(var(--info-text))] border-[hsl(var(--info)/0.3)] e uppercase tracking-widest text-[10px] px-2 py-0.5 border-none font-bold">Em Andamento</Badge>;
       case 'planejado':
-        return <Badge className="bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e">Planejado</Badge>;
+        return <Badge variant="outline" className="bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e uppercase tracking-widest text-[10px] px-2 py-0.5 border-none font-bold">Planejado</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -49,20 +55,46 @@ export default function Freights() {
     setIsModalOpen(true);
   };
 
+  const handleViewDetails = (item: any) => {
+    setLocation(`/fretes/${item.id}`);
+  };
+
+  const handleUpdateFreight = (updatedFreight: any) => {
+    const idx = mockFreights.findIndex(f => f.id === updatedFreight.id);
+    if (idx !== -1) mockFreights[idx] = updatedFreight;
+    setRefreshKey(k => k + 1);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este frete?")) {
-      // Logic
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      const idx = mockFreights.findIndex(f => f.id === deletingId);
+      if (idx !== -1) mockFreights.splice(idx, 1);
+      setDeletingId(null);
+      setIsDeleteDialogOpen(false);
+      setRefreshKey(k => k + 1);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (data: any) => {
+    if (editingItem) {
+      const idx = mockFreights.findIndex(f => f.id === editingItem.id);
+      if (idx !== -1) mockFreights[idx] = { ...editingItem, ...data };
+    } else {
+      mockFreights.unshift({ id: `FRT-${Date.now()}`, ...data });
+    }
     setIsModalOpen(false);
+    setRefreshKey(k => k + 1);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8" key={refreshKey}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -116,6 +148,7 @@ export default function Freights() {
                 <th className="p-4">Máquina</th>
                 <th className="p-4">Rota (Origem → Destino)</th>
                 <th className="p-4">Motorista</th>
+                <th className="p-4">Quilometragem</th>
                 <th className="p-4 text-right">Valor</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 w-[52px]"></th>
@@ -123,7 +156,7 @@ export default function Freights() {
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
               {filteredFreights.map((freight) => (
-                <tr key={freight.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(freight)}>
+                <tr key={freight.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(freight)}>
                   <td className="p-4 font-bold text-primary">{freight.id}</td>
                   <td className="p-4 text-muted-foreground">{new Date(freight.date).toLocaleDateString('pt-BR')}</td>
                   <td className="p-4 font-bold text-foreground">{freight.machine}</td>
@@ -135,9 +168,35 @@ export default function Freights() {
                     </div>
                   </td>
                   <td className="p-4 text-muted-foreground">{freight.driver}</td>
+                  <td className="p-4 text-muted-foreground">
+                    <div className="flex flex-col text-xs">
+                      <span>Início: <span className="font-medium text-foreground">{freight.km_inicial ?? '—'}</span></span>
+                      <span>Fim: <span className="font-medium text-foreground">{freight.km_final ?? '—'}</span></span>
+                      {freight.km_inicial && freight.km_final && (
+                        <span className="text-primary font-medium mt-0.5">{(freight.km_final - freight.km_inicial).toLocaleString('pt-BR')} km total</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="p-4 text-right font-bold">{formatCurrency(freight.value)}</td>
-                  <td className="p-4 text-center">
-                    {getStatusBadge(freight.status)}
+                  <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <div className="cursor-pointer hover:opacity-80 transition-opacity">
+                          {getStatusBadge(freight.status)}
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="w-[160px] rounded-xl">
+                        <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'planejado' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Planejado
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'em_andamento' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--info))]" /> Em Andamento
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'concluido' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -171,7 +230,7 @@ export default function Freights() {
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
           {filteredFreights.map((freight) => (
-            <MobileCard key={freight.id} onClick={() => handleEdit(freight)}>
+            <MobileCard key={freight.id} onClick={() => handleViewDetails(freight)}>
               <MobileCardContent
                 metadata={
                   <div className="flex items-center gap-2 mb-1">
@@ -197,11 +256,36 @@ export default function Freights() {
                       <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{freight.driver[0]}</span>
                       {freight.driver}
                     </p>
+                    {freight.km_inicial && freight.km_final && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <span className="font-medium text-foreground">KM:</span> {freight.km_inicial} → {freight.km_final} 
+                        <span className="text-primary font-medium ml-auto">{(freight.km_final - freight.km_inicial).toLocaleString('pt-BR')} km</span>
+                      </p>
+                    )}
                   </div>
                 }
               />
               <MobileCardActions>
-                {getStatusBadge(freight.status)}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="focus:outline-none">
+                      <div className="cursor-pointer hover:opacity-80 transition-opacity">
+                        {getStatusBadge(freight.status)}
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[160px] rounded-xl">
+                      <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'planejado' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Planejado
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'em_andamento' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--info))]" /> Em Andamento
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleUpdateFreight({ ...freight, status: 'concluido' })} className="rounded-lg cursor-pointer flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 <p className="font-bold text-sm text-primary mt-auto">{formatCurrency(freight.value)}</p>
               </MobileCardActions>
             </MobileCard>
@@ -250,6 +334,14 @@ export default function Freights() {
           </Button>
         </div>
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir frete"
+        description="Tem certeza que deseja excluir este frete? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2, Plus } from "lucide-react";
 import { mockTransactions } from "@/lib/mock-data";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface CostManagerProps {
   service: any;
@@ -13,6 +14,8 @@ interface CostManagerProps {
 export function CostManager({ service, onUpdateService }: CostManagerProps) {
   const [costName, setCostName] = useState("");
   const [costValue, setCostValue] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingCostId, setDeletingCostId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -49,6 +52,9 @@ export function CostManager({ service, onUpdateService }: CostManagerProps) {
       description: `Custo: ${costName} (OS ${service.id})`,
       account: "Dinheiro",
       category: "Custos Operacionais",
+      supplier: undefined,
+      dueDate: undefined,
+      allocation: undefined,
       createdAt: newCost.createdAt,
       createdBy: newCost.createdBy,
       relatedCostId: newCost.id,
@@ -60,15 +66,22 @@ export function CostManager({ service, onUpdateService }: CostManagerProps) {
   };
 
   const handleRemoveCost = (costId: string) => {
+    setDeletingCostId(costId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmRemoveCost = () => {
+    if (!deletingCostId) return;
     onUpdateService({
       ...service,
-      additionalCosts: currentCosts.filter((c: any) => c.id !== costId)
+      additionalCosts: currentCosts.filter((c: any) => c.id !== deletingCostId)
     });
     
-    const txIndex = mockTransactions.findIndex(tx => tx.relatedCostId === costId);
+    const txIndex = mockTransactions.findIndex(tx => tx.relatedCostId === deletingCostId);
     if (txIndex !== -1) {
       mockTransactions.splice(txIndex, 1);
     }
+    setDeletingCostId(null);
   };
 
   const totalCosts = currentCosts.reduce((acc: number, curr: any) => acc + curr.value, 0);
@@ -113,6 +126,15 @@ export function CostManager({ service, onUpdateService }: CostManagerProps) {
         <span className="font-bold uppercase tracking-wide text-muted-foreground">Total de Custos</span>
         <span className="font-mono text-destructive font-bold text-xl">{formatCurrency(totalCosts)}</span>
       </div>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmRemoveCost}
+        title="Remover custo"
+        description="Tem certeza que deseja remover este custo? O lançamento financeiro vinculado também será removido."
+        confirmLabel="Remover"
+      />
     </div>
   );
 }

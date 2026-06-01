@@ -6,13 +6,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Services from "@/pages/Services";
+import ServiceDetailPage from "@/pages/ServiceDetailPage";
 import Machines from "@/pages/Machines";
+import MachineDetailPage from "@/pages/MachineDetailPage";
 import Operators from "@/pages/Operators";
+import OperatorDetailPage from "@/pages/OperatorDetailPage";
 import Finance from "@/pages/Finance";
+import FinanceDetailPage from "@/pages/FinanceDetailPage";
 import Freights from "@/pages/Freights";
+import FreightDetailPage from "@/pages/FreightDetailPage";
+import Clients from "@/pages/Clients";
+import ClientDetailPage from "@/pages/ClientDetailPage";
 import Reports from "@/pages/Reports";
 import Auth from "@/pages/Auth";
-import Clients from "@/pages/Clients";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -47,13 +53,19 @@ function Router() {
       <Switch>
         <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
         <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
+        <Route path="/servicos/:id" component={() => <ProtectedRoute component={ServiceDetailPage} />} />
         <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
+        <Route path="/maquinas/:id" component={() => <ProtectedRoute component={MachineDetailPage} />} />
         <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
+        <Route path="/fretes/:id" component={() => <ProtectedRoute component={FreightDetailPage} />} />
         <Route path="/clientes" component={() => <ProtectedRoute component={Clients} />} />
+        <Route path="/clientes/:id" component={() => <ProtectedRoute component={ClientDetailPage} />} />
         
         {/* Gestão - Apenas Admin */}
         <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />
+        <Route path="/operadores/:id" component={() => <ProtectedRoute component={OperatorDetailPage} allowedRoles={['admin']} />} />
         <Route path="/financeiro" component={() => <ProtectedRoute component={Finance} allowedRoles={['admin']} />} />
+        <Route path="/financeiro/:id" component={() => <ProtectedRoute component={FinanceDetailPage} allowedRoles={['admin']} />} />
         <Route path="/relatorios" component={() => <ProtectedRoute component={Reports} allowedRoles={['admin']} />} />
         
         <Route component={NotFound} />

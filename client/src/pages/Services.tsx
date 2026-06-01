@@ -1,21 +1,24 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockServices, mockClients, mockMachines } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, FileText, Edit, Trash2, DollarSign, Pickaxe, Calendar, Clock, MapPin, X } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, FileText, Edit, Trash2, DollarSign, Pickaxe, Calendar, Clock, MapPin, X, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ServiceForm } from "@/components/forms/ServiceForm";
 import { CostManager } from "@/components/forms/CostManager";
+import { exportServiceToPDF } from "@/lib/pdf-export";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 import { BillingReportModal } from "@/components/forms/BillingReportModal";
-import { ServiceDetail } from "@/components/forms/ServiceDetail";
 
 export default function Services() {
+  const [, setLocation] = useLocation();
   const [services, setServices] = useState<any[]>(mockServices);
   const [selectedClient, setSelectedClient] = useState<string>("all");
   const [selectedMachine, setSelectedMachine] = useState<string>("all");
@@ -27,10 +30,11 @@ export default function Services() {
   const [editingItem, setEditingItem] = useState<any>(null);
 
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
   const [managingCostService, setManagingCostService] = useState<any>(null);
-  const [viewingService, setViewingService] = useState<any>(null);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const calculateServiceProfit = (service: any) => {
     const totalCosts = (service.additionalCosts || []).reduce((acc: number, curr: any) => acc + curr.value, 0);
@@ -57,8 +61,7 @@ export default function Services() {
   };
 
   const handleViewDetails = (service: any) => {
-    setViewingService(service);
-    setIsDetailModalOpen(true);
+    setLocation(`/servicos/${service.id}`);
   };
 
   const handleUpdateService = (updatedService: any) => {
@@ -68,22 +71,28 @@ export default function Services() {
       prev.map(s => s.id === updatedService.id ? updatedService : s)
     );
 
-    if (viewingService?.id === updatedService.id) {
-       setViewingService(updatedService);
-    }
-
     const idx = mockServices.findIndex(s => s.id === updatedService.id);
     if (idx !== -1) mockServices[idx] = updatedService;
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este serviço?")) {
-      // Logic to delete would go here
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      setServices(prev => prev.filter(s => s.id !== deletingId));
+      const idx = mockServices.findIndex(s => s.id === deletingId);
+      if (idx !== -1) mockServices.splice(idx, 1);
+      setDeletingId(null);
+      setIsDeleteDialogOpen(false);
     }
   };
 
   const handleSave = () => {
     setIsModalOpen(false);
+    setServices([...mockServices]);
   };
 
   const handleClearFilters = () => {
@@ -222,13 +231,17 @@ export default function Services() {
                 <th className="p-4">Operador</th>
                 <th className="p-4 text-right">H. Ini</th>
                 <th className="p-4 text-right">H. Fim</th>
-                <th className="p-4 text-right">Diesel</th>
+                <th className="p-4 text-right">H. Total</th>
                 <th className="p-4 text-center">Status</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50 bg-card">
-              {filteredServices.map((service) => (
+              {filteredServices.map((service) => {
+                const hTotal = typeof service.hora_final === 'number' && typeof service.hora_inicial === 'number'
+                  ? (service.hora_final - service.hora_inicial).toFixed(1)
+                  : '-';
+                return (
                 <tr 
                   key={service.id} 
                   className="hover:bg-muted/30 transition-colors group cursor-pointer"
@@ -242,16 +255,31 @@ export default function Services() {
                   <td className="p-4 text-muted-foreground text-xs">{service.serviceType || '-'}</td>
                   <td className="p-4 text-muted-foreground">{service.machine}</td>
                   <td className="p-4 text-muted-foreground">{service.operator}</td>
-                  <td className="p-4 text-right font-bold">{service.hora_inicial || '-'}</td>
-                  <td className="p-4 text-right font-bold">{service.hora_final || '-'}</td>
-                  <td className="p-4 text-right text-muted-foreground">
-                    <div>{service.diesel}L</div>
-                    {service.diesel > 0 && <div className="text-[9px] uppercase tracking-wider">{service.dieselSupplier === 'sao_bento' ? 'SB' : 'CLI'}</div>}
-                  </td>
-                  <td className="p-4 text-center">
-                    <Badge variant={service.status === 'concluido' ? 'default' : 'secondary'} className={service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e'}>
-                      {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
-                    </Badge>
+                  <td className="p-4 text-right font-mono text-sm">{service.hora_inicial ?? '-'}</td>
+                  <td className="p-4 text-right font-mono text-sm">{service.hora_final ?? '-'}</td>
+                  <td className="p-4 text-right font-bold text-primary">{hTotal}h</td>
+                  <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <Badge variant={service.status === 'concluido' ? 'default' : 'secondary'} className={`cursor-pointer hover:opacity-80 transition-opacity ${service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e'}`}>
+                          {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="w-[160px] rounded-xl">
+                        <DropdownMenuItem 
+                          onClick={() => handleUpdateService({ ...service, status: 'em_andamento' })} 
+                          className="rounded-lg cursor-pointer flex items-center gap-2"
+                        >
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Em Andamento
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleUpdateService({ ...service, status: 'concluido' })} 
+                          className="rounded-lg cursor-pointer flex items-center gap-2"
+                        >
+                          <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -268,6 +296,9 @@ export default function Services() {
                         <DropdownMenuItem onClick={() => handleViewDetails(service)} className="rounded-lg cursor-pointer">
                           <FileText className="w-4 h-4 mr-2" /> Ver Detalhes
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => exportServiceToPDF(service, mockClients)} className="rounded-lg cursor-pointer">
+                          <Download className="w-4 h-4 mr-2" /> Exportar PDF
+                        </DropdownMenuItem>
                         {userRole === 'admin' && (
                           <>
                             <DropdownMenuSeparator />
@@ -280,7 +311,8 @@ export default function Services() {
                     </DropdownMenu>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
@@ -306,22 +338,35 @@ export default function Services() {
                 }
               />
               <MobileCardActions>
-                <div className="flex flex-col gap-1 items-start">
-                  <Badge variant="outline" className={`e font-bold text-[10px] uppercase tracking-wider ${service.status === 'concluido'
-                      ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.2)]'
-                      : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.2)]'
-                    }`}>
-                    {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
-                  </Badge>
-                  {service.diesel > 0 && (
-                    <span className="text-[9px] text-muted-foreground font-bold">
-                      {service.diesel}L ({service.dieselSupplier === 'sao_bento' ? 'SB' : 'CLI'})
-                    </span>
-                  )}
+                <div className="flex flex-col gap-1 items-start" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="focus:outline-none">
+                      <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity e font-bold text-[10px] uppercase tracking-wider ${service.status === 'concluido'
+                          ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.2)]'
+                          : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.2)]'
+                        }`}>
+                        {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                      </Badge>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[160px] rounded-xl">
+                      <DropdownMenuItem 
+                        onClick={() => handleUpdateService({ ...service, status: 'em_andamento' })} 
+                        className="rounded-lg cursor-pointer flex items-center gap-2"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Em Andamento
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleUpdateService({ ...service, status: 'concluido' })} 
+                        className="rounded-lg cursor-pointer flex items-center gap-2"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="text-right mt-1">
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase">{service.hora_inicial} - {service.hora_final}</p>
-                  <p className="font-bold text-sm text-primary">{formatCurrency(service.value)}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono font-medium">{service.hora_inicial} → {service.hora_final}</p>
+                  <p className="font-bold text-sm text-primary">{typeof service.hora_final === 'number' && typeof service.hora_inicial === 'number' ? `${(service.hora_final - service.hora_inicial).toFixed(1)}h` : '-'}</p>
                 </div>
               </MobileCardActions>
             </MobileCard>
@@ -349,7 +394,6 @@ export default function Services() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? "Editar Serviço" : "Novo Serviço"}
-        maxWidth="max-w-3xl"
       >
         <ServiceForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
       </ActionModal>
@@ -363,34 +407,8 @@ export default function Services() {
       </ActionModal>
 
       <ActionModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        title={`Detalhes da Ordem de Serviço - ${viewingService?.id}`}
-        maxWidth="max-w-2xl"
-      >
-        {viewingService && (
-          <ServiceDetail 
-            service={viewingService} 
-            onManageCosts={(s) => {
-              setIsDetailModalOpen(false);
-              handleManageCosts(s);
-            }} 
-            onEdit={(s) => {
-              setIsDetailModalOpen(false);
-              handleEdit(s);
-            }} 
-          />
-        )}
-      </ActionModal>
-
-      <ActionModal
         isOpen={isCostModalOpen}
-        onClose={() => {
-          setIsCostModalOpen(false);
-          if (viewingService) {
-            setIsDetailModalOpen(true);
-          }
-        }}
+        onClose={() => setIsCostModalOpen(false)}
         title={`Custos - OS ${managingCostService?.id}`}
       >
         {managingCostService && (
@@ -400,6 +418,14 @@ export default function Services() {
           />
         )}
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir serviço"
+        description="Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos."
+      />
 
       <ActionModal
         isOpen={isFilterModalOpen}

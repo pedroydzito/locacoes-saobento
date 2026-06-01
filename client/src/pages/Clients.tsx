@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,15 +8,20 @@ import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Building2
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ClientForm } from "@/components/forms/ClientForm";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Clients() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const sortedClients = [...mockClients].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -38,20 +44,40 @@ export default function Clients() {
     setIsModalOpen(true);
   };
 
+  const handleViewDetails = (item: any) => {
+    setLocation(`/clientes/${item.id}`);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este cliente?")) {
-      // Logic to delete would go here
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      const idx = mockClients.findIndex(c => c.id === deletingId);
+      if (idx !== -1) mockClients.splice(idx, 1);
+      setDeletingId(null);
+      setIsDeleteDialogOpen(false);
+      setRefreshKey(k => k + 1);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (data: any) => {
+    if (editingItem) {
+      const idx = mockClients.findIndex(c => c.id === editingItem.id);
+      if (idx !== -1) mockClients[idx] = { ...editingItem, ...data };
+    } else {
+      mockClients.unshift({ id: `cli-${Date.now()}`, ...data, total_billed: 0, machines_used: [] });
+    }
     setIsModalOpen(false);
+    setRefreshKey(k => k + 1);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8" key={refreshKey}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -112,7 +138,7 @@ export default function Clients() {
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
               {filteredClients.map((client) => (
-                <tr key={client.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(client)}>
+                <tr key={client.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(client)}>
                   <td className="p-4 font-bold text-foreground">{client.name}</td>
                   <td className="p-4 text-muted-foreground">{client.cpf_cnpj}</td>
                   <td className="p-4 text-muted-foreground">{client.phone}</td>
@@ -150,7 +176,7 @@ export default function Clients() {
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
           {filteredClients.map((client) => (
-            <MobileCard key={client.id} onClick={() => handleEdit(client)}>
+            <MobileCard key={client.id} onClick={() => handleViewDetails(client)}>
               <MobileCardContent
                 title={client.name}
                 subtitle={
@@ -198,6 +224,14 @@ export default function Clients() {
           </Button>
         </div>
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir cliente"
+        description="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,14 @@ import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Users, Ca
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { OperatorForm } from "@/components/forms/OperatorForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Operators() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -20,6 +23,9 @@ export default function Operators() {
   const [machineFilter, setMachineFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const sortedMachines = [...mockMachines].map(m => m.name).sort();
 
@@ -43,17 +49,29 @@ export default function Operators() {
     });
 
     const calculatedHours = opServices.reduce((acc, curr) => {
-      if (curr.hora_inicial && curr.hora_final) {
-        const start = parseTime(curr.hora_inicial);
-        const end = parseTime(curr.hora_final);
-        let diff = end - start;
-        if (diff < 0) diff += 24;
-        return acc + diff;
+      if (curr.hora_inicial != null && curr.hora_final != null) {
+        const start = typeof curr.hora_inicial === 'number' ? curr.hora_inicial : parseFloat(curr.hora_inicial);
+        const end = typeof curr.hora_final === 'number' ? curr.hora_final : parseFloat(curr.hora_final);
+        if (!isNaN(start) && !isNaN(end)) {
+          return acc + (end - start);
+        }
       }
       return acc + (curr.hours || 0);
     }, 0);
 
-    return { ...op, services_done: opServices.length, hours_worked: Number(calculatedHours.toFixed(1)) };
+    const calculatedCommission = (calculatedHours * (op.commission_per_hour || 0)) + (opServices.length * (op.fixed_commission || 0));
+
+    return { 
+      ...op, 
+      services_done: opServices.length, 
+      hours_worked: Number(calculatedHours.toFixed(1)),
+      calculatedCommission
+    };
+  }).filter(op => {
+    if (startDate || endDate) {
+      return op.services_done > 0;
+    }
+    return true;
   });
 
   const formatCurrency = (value: number) => {
@@ -70,20 +88,40 @@ export default function Operators() {
     setIsModalOpen(true);
   };
 
+  const handleViewDetails = (item: any) => {
+    setLocation(`/operadores/${item.id}`);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este operador?")) {
-      // Logic
+    setDeletingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      const idx = mockOperators.findIndex(op => op.id === deletingId);
+      if (idx !== -1) mockOperators.splice(idx, 1);
+      setDeletingId(null);
+      setIsDeleteDialogOpen(false);
+      setRefreshKey(k => k + 1);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = (data: any) => {
+    if (editingItem) {
+      const idx = mockOperators.findIndex(op => op.id === editingItem.id);
+      if (idx !== -1) mockOperators[idx] = { ...editingItem, ...data };
+    } else {
+      mockOperators.unshift({ id: `op-${Date.now()}`, ...data, hours_worked: 0, services_done: 0 });
+    }
     setIsModalOpen(false);
+    setRefreshKey(k => k + 1);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8" key={refreshKey}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -183,41 +221,43 @@ export default function Operators() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 bg-card">
-              {filteredOperators.map((op) => (
-                <tr key={op.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleEdit(op)}>
+              {filteredOperators.map((operator) => (
+                <tr key={operator.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(operator)}>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                        {op.name.charAt(0)}
+                        {operator.name.charAt(0)}
                       </div>
-                      <span className="font-bold text-foreground">{op.name}</span>
+                      <span className="font-bold text-foreground">{operator.name}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      {op.machine_assigned.slice(0, 2).map((m: any) => (
+                      {operator.machine_assigned.slice(0, 2).map((m: any) => (
                         <Badge key={m} variant="secondary" className="bg-neutral-subtle text-neutral-text border-none text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
                           {m}
                         </Badge>
                       ))}
-                      {op.machine_assigned.length > 2 && (
+                      {operator.machine_assigned.length > 2 && (
                         <Badge variant="outline" className="text-[10px] px-2 py-0">
-                          +{op.machine_assigned.length - 2}
+                          +{operator.machine_assigned.length - 2}
                         </Badge>
                       )}
                     </div>
                   </td>
-                  <td className="p-4 text-center text-muted-foreground">{op.hours_worked}h</td>
+                  <td className="p-4 text-center text-muted-foreground">{operator.hours_worked}h</td>
                   <td className="p-4 text-center">
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                      {op.services_done}
+                      {operator.services_done}
                     </Badge>
                   </td>
                   <td className="p-4 text-right font-bold text-foreground">
                     <div className="flex flex-col items-end">
-                      <span>{formatCurrency(op.salary + (op.hours_worked * (op.commission_per_hour || 0)) + (op.services_done * (op.fixed_commission || 0)))}</span>
-                      {((op.commission_per_hour || 0) > 0 || (op.fixed_commission || 0) > 0) && (
-                        <span className="text-[10px] text-muted-foreground font-normal">Base: {formatCurrency(op.salary)}</span>
+                      <span>{formatCurrency((startDate || endDate ? 0 : operator.salary) + operator.calculatedCommission)}</span>
+                      {((operator.commission_per_hour || 0) > 0 || (operator.fixed_commission || 0) > 0) && (
+                        <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                          {(startDate || endDate) ? `Apenas Comissões (Período)` : `Base: ${formatCurrency(operator.salary)}`}
+                        </span>
                       )}
                     </div>
                   </td>
@@ -230,13 +270,13 @@ export default function Operators() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEdit(op)} className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem onClick={() => handleEdit(operator)} className="rounded-lg cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" /> Editar
                         </DropdownMenuItem>
                         {userRole === 'admin' && (
                           <>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDelete(op.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
+                            <DropdownMenuItem onClick={() => handleDelete(operator.id)} className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4 mr-2" /> Excluir
                             </DropdownMenuItem>
                           </>
@@ -252,13 +292,13 @@ export default function Operators() {
 
         {/* Cards Mobile */}
         <div className="sm:hidden divide-y divide-border/60 bg-card">
-          {filteredOperators.map((op) => (
-            <MobileCard key={op.id} onClick={() => handleEdit(op)}>
+          {filteredOperators.map((operator) => (
+            <MobileCard key={operator.id} onClick={() => handleViewDetails(operator)}>
               <MobileCardContent
-                title={op.name}
+                title={operator.name}
                 subtitle={
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {op.machine_assigned.map((m: any) => (
+                    {operator.machine_assigned.map((m: any) => (
                       <span key={m} className="text-[10px] bg-neutral-subtle text-neutral-text px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{m}</span>
                     ))}
                   </div>
@@ -268,13 +308,15 @@ export default function Operators() {
                 <div className="flex gap-4 items-center">
                   <div className="text-right">
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Serviços</p>
-                    <p className="font-bold text-sm text-primary">{op.services_done}</p>
+                    <p className="font-bold text-sm text-primary">{operator.services_done}</p>
                   </div>
                   <div className="text-right border-l border-border pl-4">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Total (Est.)</p>
-                    <p className="font-bold text-sm text-foreground">
-                      {formatCurrency(op.salary + (op.hours_worked * (op.commission_per_hour || 0)) + (op.services_done * (op.fixed_commission || 0)))}
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                      {(startDate || endDate) ? 'Comissão' : 'Total (Est.)'}
                     </p>
+                    <span className="font-bold text-foreground text-sm flex items-center gap-2">
+                    {formatCurrency((startDate || endDate ? 0 : operator.salary) + operator.calculatedCommission)}
+                  </span>
                   </div>
                 </div>
               </MobileCardActions>
@@ -294,7 +336,6 @@ export default function Operators() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? "Editar Operador" : "Novo Operador"}
-        maxWidth="max-w-3xl"
       >
         <OperatorForm onSave={handleSave} onCancel={() => setIsModalOpen(false)} initialData={editingItem} />
       </ActionModal>
@@ -359,6 +400,14 @@ export default function Operators() {
           </div>
         </div>
       </ActionModal>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Excluir operador"
+        description="Tem certeza que deseja excluir este operador? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

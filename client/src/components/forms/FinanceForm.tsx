@@ -22,6 +22,12 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
     supplier: initialData?.supplier || "",
     dueDate: initialData?.dueDate || "",
     allocation: initialData?.allocation || "Administrativo",
+    boletoInfo: initialData?.boletoInfo || {
+      installment: "",
+      isPaid: false,
+      delayDays: 0,
+      interestValue: 0
+    }
   });
 
   const handleSave = () => {
@@ -30,23 +36,24 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
     const currentUser = (localStorage.getItem("userRole") === "admin") ? "admin@saobento.com" : "operador@saobento.com";
     const amount = parseFloat(formData.amount.toString());
 
+    const finalData = { ...formData };
+    if (finalData.account !== "Boletos Cobrança") {
+      finalData.boletoInfo = undefined;
+    }
+
     if (initialData?.id) {
-      // Edit existing
       const index = mockTransactions.findIndex(t => t.id === initialData.id);
       if (index !== -1) {
         mockTransactions[index] = {
           ...mockTransactions[index],
-          ...formData,
+          ...finalData,
           amount,
-          // Keep original audit or update? Usually keep original createdAt but mark editor? 
-          // For now let's just update the main fields.
         };
       }
     } else {
-      // Create new
       mockTransactions.unshift({
         id: `tx-${Date.now()}`,
-        ...formData,
+        ...finalData,
         amount,
         createdAt: new Date().toISOString(),
         createdBy: currentUser,
@@ -127,6 +134,56 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
           </Select>
         </div>
       </div>
+
+      {formData.account === "Boletos Cobrança" && (
+        <div className="p-4 rounded-xl border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning-subtle))] space-y-4 mt-2 animate-in fade-in slide-in-from-top-2">
+          <p className="text-xs font-bold text-[hsl(var(--warning-text))] flex items-center gap-2">
+            Detalhes do Boleto
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase">Parcela (Ex: 1/12)</Label>
+              <Input 
+                value={formData.boletoInfo?.installment || ""} 
+                onChange={(e) => setFormData({...formData, boletoInfo: {...formData.boletoInfo, installment: e.target.value}} as any)}
+                placeholder="N/A"
+                className="h-9 rounded-lg border-border bg-background" 
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase">Status</Label>
+              <Select 
+                value={formData.boletoInfo?.isPaid ? "paid" : "pending"} 
+                onValueChange={(v) => setFormData({...formData, boletoInfo: {...formData.boletoInfo, isPaid: v === "paid"}} as any)}
+              >
+                <SelectTrigger className="h-9 rounded-lg border-border bg-background"><SelectValue/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending" className="text-[hsl(var(--warning))] font-bold">Pendente</SelectItem>
+                  <SelectItem value="paid" className="text-[hsl(var(--success))] font-bold">Quitado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase">Dias em Atraso</Label>
+              <Input 
+                type="number" 
+                value={formData.boletoInfo?.delayDays || 0} 
+                onChange={(e) => setFormData({...formData, boletoInfo: {...formData.boletoInfo, delayDays: Number(e.target.value)}} as any)}
+                className="h-9 rounded-lg border-border bg-background" 
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase">Juros/Multa (R$)</Label>
+              <Input 
+                type="number" 
+                value={formData.boletoInfo?.interestValue || 0} 
+                onChange={(e) => setFormData({...formData, boletoInfo: {...formData.boletoInfo, interestValue: Number(e.target.value)}} as any)}
+                className="h-9 rounded-lg border-border bg-background" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="amount" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Valor Total (R$)</Label>
