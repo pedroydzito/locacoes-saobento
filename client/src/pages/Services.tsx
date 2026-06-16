@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockServices, mockClients, mockMachines } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, FileText, Edit, Trash2, DollarSign, Pickaxe, Calendar, Clock, MapPin, X, Download } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, FileText, Edit, Trash2, DollarSign, Pickaxe, X, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -12,17 +12,17 @@ import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ServiceForm } from "@/components/forms/ServiceForm";
 import { CostManager } from "@/components/forms/CostManager";
-import { exportServiceToPDF } from "@/lib/pdf-export";
+import { exportServiceToPDF, ServicePDFSections } from "@/lib/pdf-export";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 import { BillingReportModal } from "@/components/forms/BillingReportModal";
+import { PDFExportModal } from "@/components/shared/PDFExportModal";
 
 export default function Services() {
   const [, setLocation] = useLocation();
   const [services, setServices] = useState<any[]>(mockServices);
   const [selectedClient, setSelectedClient] = useState<string>("all");
   const [selectedMachine, setSelectedMachine] = useState<string>("all");
-  const [selectedSafra, setSelectedSafra] = useState<string>("all");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,9 +32,20 @@ export default function Services() {
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
   const [managingCostService, setManagingCostService] = useState<any>(null);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [pdfTargetService, setPdfTargetService] = useState<any>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const SERVICE_PDF_SECTIONS = [
+    { key: "clientInfo",       label: "Informações do Cliente",    description: "Nome, CPF/CNPJ, telefone e endereço do cliente.", defaultChecked: true },
+    { key: "operationDetails", label: "Detalhes da Operação",      description: "Datas, horímetros, máquina, operador e tipo de serviço.", defaultChecked: true },
+    { key: "dieselInfo",       label: "Relação de Óleo Diesel",    description: "Quantidade consumida e fornecedor do combustível.", defaultChecked: false },
+    { key: "financial",        label: "Detalhamento Financeiro",   description: "Receita, custos, lucro líquido e margem.", defaultChecked: true },
+    { key: "photos",           label: "Anexos e Evidências",       description: "Fotos e documentos anexados ao serviço.", defaultChecked: true },
+  ];
 
   const calculateServiceProfit = (service: any) => {
     const totalCosts = (service.additionalCosts || []).reduce((acc: number, curr: any) => acc + curr.value, 0);
@@ -98,9 +109,24 @@ export default function Services() {
   const handleClearFilters = () => {
     setSelectedClient("all");
     setSelectedMachine("all");
-    setSelectedSafra("all");
     setStartDate("");
     setEndDate("");
+  };
+
+  const handleOpenPDF = (service: any) => {
+    setPdfTargetService(service);
+    setIsPDFModalOpen(true);
+  };
+
+  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+    if (!pdfTargetService) return;
+    setIsGeneratingPDF(true);
+    setTimeout(() => {
+      exportServiceToPDF(pdfTargetService, mockClients, selectedSections as unknown as ServicePDFSections);
+      setIsGeneratingPDF(false);
+      setIsPDFModalOpen(false);
+      setPdfTargetService(null);
+    }, 600);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
@@ -111,10 +137,9 @@ export default function Services() {
   const filteredServices = services.filter((service) => {
     const matchClient = selectedClient === "all" || service.client === selectedClient;
     const matchMachine = selectedMachine === "all" || service.machine === selectedMachine;
-    const matchSafra = selectedSafra === "all" || service.safra === selectedSafra;
     const matchDateStart = !startDate || service.date >= startDate;
     const matchDateEnd = !endDate || service.date <= endDate;
-    return matchClient && matchMachine && matchSafra && matchDateStart && matchDateEnd;
+    return matchClient && matchMachine && matchDateStart && matchDateEnd;
   });
 
   return (
@@ -144,14 +169,14 @@ export default function Services() {
           </Button>
           <Button 
             variant="outline" 
-            className={`hidden sm:flex border-border bg-white rounded-xl h-10 transition-all ${selectedMachine !== "all" || selectedClient !== "all" || selectedSafra !== "all" || startDate || endDate ? "border-primary text-primary" : ""}`} 
+            className={`hidden sm:flex border-border bg-white rounded-xl h-10 transition-all ${selectedMachine !== "all" || selectedClient !== "all" || startDate || endDate ? "border-primary text-primary" : ""}`} 
             onClick={() => setIsFilterModalOpen(true)}
           >
-            <Filter className={`w-4 h-4 mr-2 ${selectedMachine !== "all" || selectedClient !== "all" || selectedSafra !== "all" || startDate || endDate ? "fill-primary/10" : ""}`} />
+            <Filter className={`w-4 h-4 mr-2 ${selectedMachine !== "all" || selectedClient !== "all" || startDate || endDate ? "fill-primary/10" : ""}`} />
             Filtros
-            {(selectedMachine !== "all" || selectedClient !== "all" || selectedSafra !== "all" || startDate || endDate) && (
+            {(selectedMachine !== "all" || selectedClient !== "all" || startDate || endDate) && (
               <Badge className="ml-2 bg-primary text-primary-foreground h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
-                {[selectedMachine !== "all", selectedClient !== "all", selectedSafra !== "all", !!startDate || !!endDate].filter(Boolean).length}
+                {[selectedMachine !== "all", selectedClient !== "all", !!startDate || !!endDate].filter(Boolean).length}
               </Badge>
             )}
           </Button>
@@ -163,15 +188,9 @@ export default function Services() {
       </div>
 
       {/* Active Filters Display */}
-      {(selectedMachine !== "all" || selectedClient !== "all" || selectedSafra !== "all" || startDate || endDate) && (
+      {(selectedMachine !== "all" || selectedClient !== "all" || startDate || endDate) && (
         <div className="flex flex-wrap items-center gap-2 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-1">Filtros Ativos:</span>
-          {selectedSafra !== "all" && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
-              Safra: {selectedSafra}
-              <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedSafra("all")} />
-            </Badge>
-          )}
           {selectedClient !== "all" && (
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-1 flex items-center gap-1 group transition-all hover:bg-primary/20">
               Cliente: {selectedClient}
@@ -296,7 +315,7 @@ export default function Services() {
                         <DropdownMenuItem onClick={() => handleViewDetails(service)} className="rounded-lg cursor-pointer">
                           <FileText className="w-4 h-4 mr-2" /> Ver Detalhes
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => exportServiceToPDF(service, mockClients)} className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenPDF(service); }} className="rounded-lg cursor-pointer">
                           <Download className="w-4 h-4 mr-2" /> Exportar PDF
                         </DropdownMenuItem>
                         {userRole === 'admin' && (
@@ -433,34 +452,19 @@ export default function Services() {
         title="Filtros de Pesquisa"
       >
         <div className="space-y-6 pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Safra</label>
-              <Select value={selectedSafra} onValueChange={setSelectedSafra}>
-                <SelectTrigger className="h-11 rounded-xl w-full border-border bg-muted/10 text-sm">
-                  <SelectValue placeholder="Selecione a Safra" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl z-[100]">
-                  <SelectItem value="all">Todas as Safras</SelectItem>
-                  <SelectItem value="2023/24">2023/24</SelectItem>
-                  <SelectItem value="2024/25">2024/25</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Máquina</label>
-              <Select value={selectedMachine} onValueChange={setSelectedMachine}>
-                <SelectTrigger className="h-11 rounded-xl w-full border-border bg-muted/10 text-sm">
-                  <SelectValue placeholder="Selecione a Máquina" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl z-[100] max-h-[200px] overflow-y-auto">
-                  <SelectItem value="all" className="cursor-pointer">Todas as Máquinas</SelectItem>
-                  {sortedMachines.map((m) => (
-                    <SelectItem key={m.id} value={m.name} className="cursor-pointer">{m.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Máquina</label>
+            <Select value={selectedMachine} onValueChange={setSelectedMachine}>
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-muted/10 text-sm">
+                <SelectValue placeholder="Selecione a Máquina" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl z-[100] max-h-[200px] overflow-y-auto">
+                <SelectItem value="all" className="cursor-pointer">Todas as Máquinas</SelectItem>
+                {sortedMachines.map((m) => (
+                  <SelectItem key={m.id} value={m.name} className="cursor-pointer">{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -496,6 +500,20 @@ export default function Services() {
             </Button>
           </div>
         </div>
+      </ActionModal>
+
+      {/* PDF Section Selector Modal */}
+      <ActionModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        title="Exportar Relatório PDF"
+      >
+        <PDFExportModal
+          sections={SERVICE_PDF_SECTIONS}
+          onExport={handleExportPDF}
+          onClose={() => setIsPDFModalOpen(false)}
+          isGenerating={isGeneratingPDF}
+        />
       </ActionModal>
     </div>
   );

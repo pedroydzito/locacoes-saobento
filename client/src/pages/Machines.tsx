@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockMachines, mockServices } from "@/lib/mock-data";
-import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Tractor, Calendar, Clock, BarChart3, X } from "lucide-react";
+import { Search, Plus, Filter, MoreHorizontal, FileDown, Edit, Trash2, Tractor, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
@@ -13,6 +13,8 @@ import { MachineForm } from "@/components/forms/MachineForm";
 import { Badge } from "@/components/ui/badge";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
+import { exportMachineToPDF, MachinePDFSections } from "@/lib/pdf-export";
+import { PDFExportModal } from "@/components/shared/PDFExportModal";
 
 export default function Machines() {
   const [, setLocation] = useLocation();
@@ -25,6 +27,16 @@ export default function Machines() {
   const [endDate, setEndDate] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [pdfTargetMachine, setPdfTargetMachine] = useState<any>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const MACHINE_PDF_SECTIONS = [
+    { key: "basicInfo",       label: "Especificações da Máquina", description: "Modelo, ano, chassi, situação (quitada/financiada) e status.", defaultChecked: true },
+    { key: "financial",       label: "Resumo Financeiro",         description: "Horas trabalhadas, receita gerada e lucro.", defaultChecked: true },
+    { key: "financing",       label: "Detalhes do Financiamento",  description: "Parcelas, valor, data de quitação e progresso.", defaultChecked: true },
+    { key: "servicesHistory", label: "Histórico de Serviços",     description: "Lista de OSs realizadas com a máquina.", defaultChecked: true },
+  ];
 
   const parseTime = (timeStr: string) => {
     if (!timeStr) return 0;
@@ -116,6 +128,22 @@ export default function Machines() {
     setRefreshKey(k => k + 1);
   };
 
+  const handleOpenPDF = (machine: any) => {
+    setPdfTargetMachine(machine);
+    setIsPDFModalOpen(true);
+  };
+
+  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+    if (!pdfTargetMachine) return;
+    setIsGeneratingPDF(true);
+    setTimeout(() => {
+      exportMachineToPDF(pdfTargetMachine, mockServices, selectedSections as unknown as MachinePDFSections);
+      setIsGeneratingPDF(false);
+      setIsPDFModalOpen(false);
+      setPdfTargetMachine(null);
+    }, 600);
+  };
+
   const userRole = localStorage.getItem("userRole") || "operador";
 
   return (
@@ -131,7 +159,7 @@ export default function Machines() {
           <p className="hidden sm:block text-sm text-muted-foreground mt-1">Controle de equipamentos, custos e rentabilidade.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10  transition-all">
+          <Button variant="outline" className="hidden sm:flex border-border bg-white rounded-xl h-10 transition-all" onClick={() => setIsPDFModalOpen(true)}>
             <FileDown className="w-4 h-4 mr-2" />
             Exportar
           </Button>
@@ -435,6 +463,20 @@ export default function Machines() {
         title="Excluir máquina"
         description="Tem certeza que deseja excluir esta máquina? Esta ação não pode ser desfeita."
       />
+
+      {/* PDF Export Modal */}
+      <ActionModal
+        isOpen={isPDFModalOpen}
+        onClose={() => { setIsPDFModalOpen(false); setPdfTargetMachine(null); }}
+        title={pdfTargetMachine ? `Exportar — ${pdfTargetMachine.name}` : "Exportar Frota (PDF)"}
+      >
+        <PDFExportModal
+          sections={MACHINE_PDF_SECTIONS}
+          onExport={handleExportPDF}
+          onClose={() => { setIsPDFModalOpen(false); setPdfTargetMachine(null); }}
+          isGenerating={isGeneratingPDF}
+        />
+      </ActionModal>
     </div>
   );
 }

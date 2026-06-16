@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MachineFormProps {
-  onSave: () => void;
+  onSave: (data: any) => void;
   onCancel: () => void;
   initialData?: any;
 }

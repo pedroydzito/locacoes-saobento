@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit, DollarSign, Calendar, Clock, Pickaxe, User, Fuel, TrendingUp, TrendingDown, MapPin } from "lucide-react";
+import { Edit, DollarSign, Calendar, Clock, Pickaxe, User, Fuel, TrendingUp, TrendingDown, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ServiceDetailProps {
@@ -42,9 +42,9 @@ export function ServiceDetail({ service, onManageCosts, onEdit }: ServiceDetailP
         </div>
         <div className="p-3 rounded-2xl bg-muted/20 border border-border shadow-none">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1">
-            <MapPin className="w-3 h-3" /> Safra
+            <Pickaxe className="w-3 h-3" /> Tipo de Serviço
           </p>
-          <p className="font-bold text-sm uppercase">{service.safra || '2023/24'}</p>
+          <p className="font-bold text-sm uppercase">{service.serviceType || '—'}</p>
         </div>
         <div className="p-3 rounded-2xl bg-muted/20 border border-border shadow-none">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1">

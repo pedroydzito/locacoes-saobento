@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { mockFreights, machinesList } from "@/lib/mock-data";
-import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter, Truck, Calendar, Clock } from "lucide-react";
+import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter, Truck, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ActionModal } from "@/components/ui/action-modal";
@@ -13,6 +13,8 @@ import { FreightForm } from "@/components/forms/FreightForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
+import { exportFreightToPDF, FreightPDFSections } from "@/lib/pdf-export";
+import { PDFExportModal } from "@/components/shared/PDFExportModal";
 
 export default function Freights() {
   const [, setLocation] = useLocation();
@@ -23,6 +25,17 @@ export default function Freights() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [pdfTargetFreight, setPdfTargetFreight] = useState<any>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const FREIGHT_PDF_SECTIONS = [
+    { key: "routeInfo",   label: "Informações da Rota",  description: "ID, data, origem, destino e status do frete.", defaultChecked: true },
+    { key: "vehicleInfo",label: "Veículo e Condutor",   description: "Máquina transportada e motorista responsável.", defaultChecked: true },
+    { key: "kmInfo",     label: "Quilometragem",         description: "KM inicial, final e total percorrido.", defaultChecked: true },
+    { key: "financial",  label: "Informação Financeira",description: "Valor total do frete.", defaultChecked: true },
+    { key: "notes",      label: "Observações",          description: "Anotações e observações do frete.", defaultChecked: true },
+  ];
 
   const filteredFreights = mockFreights.filter(f =>
     machineFilter === "all" || f.machine === machineFilter
@@ -89,6 +102,22 @@ export default function Freights() {
     }
     setIsModalOpen(false);
     setRefreshKey(k => k + 1);
+  };
+
+  const handleOpenPDF = (freight: any) => {
+    setPdfTargetFreight(freight);
+    setIsPDFModalOpen(true);
+  };
+
+  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+    if (!pdfTargetFreight) return;
+    setIsGeneratingPDF(true);
+    setTimeout(() => {
+      exportFreightToPDF(pdfTargetFreight, selectedSections as unknown as FreightPDFSections);
+      setIsGeneratingPDF(false);
+      setIsPDFModalOpen(false);
+      setPdfTargetFreight(null);
+    }, 600);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
@@ -209,6 +238,9 @@ export default function Freights() {
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleEdit(freight)} className="rounded-lg cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" /> Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenPDF(freight); }} className="rounded-lg cursor-pointer">
+                          <Download className="w-4 h-4 mr-2" /> Exportar PDF
                         </DropdownMenuItem>
                         {userRole === 'admin' && (
                           <>
@@ -342,6 +374,20 @@ export default function Freights() {
         title="Excluir frete"
         description="Tem certeza que deseja excluir este frete? Esta ação não pode ser desfeita."
       />
+
+      {/* PDF Export Modal */}
+      <ActionModal
+        isOpen={isPDFModalOpen}
+        onClose={() => { setIsPDFModalOpen(false); setPdfTargetFreight(null); }}
+        title={pdfTargetFreight ? `Exportar Frete — ${pdfTargetFreight.id}` : "Exportar PDF"}
+      >
+        <PDFExportModal
+          sections={FREIGHT_PDF_SECTIONS}
+          onExport={handleExportPDF}
+          onClose={() => { setIsPDFModalOpen(false); setPdfTargetFreight(null); }}
+          isGenerating={isGeneratingPDF}
+        />
+      </ActionModal>
     </div>
   );
 }

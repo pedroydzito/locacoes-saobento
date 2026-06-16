@@ -83,7 +83,6 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
       hours: hoursWorked,
       freight: 0,
       notes: "",
-      safra: initialData?.safra || "2024/25",
       photos: photos,
       costs: {
         machine: cost_machine,

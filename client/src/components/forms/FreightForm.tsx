@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { mockClients } from "@/lib/mock-data";
 
 interface FreightFormProps {
-  onSave: () => void;
+  onSave: (data: any) => void;
   onCancel: () => void;
   initialData?: any;
 }

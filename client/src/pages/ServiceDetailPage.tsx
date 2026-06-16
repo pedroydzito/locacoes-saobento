@@ -10,8 +10,17 @@ import { ServiceForm } from "@/components/forms/ServiceForm";
 import { CostManager } from "@/components/forms/CostManager";
 import { Edit, DollarSign, Calendar, Clock, Pickaxe, Fuel, TrendingUp, MapPin, ChevronRight, ArrowLeft, Trash2, Gauge, Download, Image as ImageIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { exportServiceToPDF } from "@/lib/pdf-export";
+import { exportServiceToPDF, ServicePDFSections } from "@/lib/pdf-export";
 import { mockClients } from "@/lib/mock-data";
+import { PDFExportModal } from "@/components/shared/PDFExportModal";
+
+const SERVICE_PDF_SECTIONS = [
+  { key: "clientInfo",       label: "Informações do Cliente",    description: "Nome, CPF/CNPJ, telefone e endereço do cliente.", defaultChecked: true },
+  { key: "operationDetails", label: "Detalhes da Operação",      description: "Datas, horímetros, máquina, operador e tipo de serviço.", defaultChecked: true },
+  { key: "dieselInfo",       label: "Relação de Óleo Diesel",    description: "Quantidade consumida e fornecedor do combustível.", defaultChecked: false },
+  { key: "financial",        label: "Detalhamento Financeiro",   description: "Receita, custos, lucro líquido e margem.", defaultChecked: true },
+  { key: "photos",           label: "Anexos e Evidências",       description: "Fotos e documentos anexados ao serviço.", defaultChecked: true },
+];
 
 export default function ServiceDetailPage() {
   const [, setLocation] = useLocation();
@@ -22,6 +31,8 @@ export default function ServiceDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const service = mockServices.find(s => s.id === serviceId) as any;
 
@@ -64,6 +75,15 @@ export default function ServiceDetailPage() {
   const handleEditSave = () => {
     setIsEditModalOpen(false);
     setRefreshKey(k => k + 1);
+  };
+
+  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+    setIsGeneratingPDF(true);
+    setTimeout(() => {
+      exportServiceToPDF(service, mockClients, selectedSections as unknown as ServicePDFSections);
+      setIsGeneratingPDF(false);
+      setIsPDFModalOpen(false);
+    }, 600);
   };
 
   return (
@@ -131,7 +151,7 @@ export default function ServiceDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => exportServiceToPDF(service, mockClients)}
+            onClick={() => setIsPDFModalOpen(true)}
             className="rounded-xl h-9 border border-border transition-all hover:bg-primary/5 hover:text-primary shadow-none"
           >
             <Download className="w-4 h-4 mr-2" />
@@ -168,9 +188,9 @@ export default function ServiceDetailPage() {
         </div>
         <div className="p-4 rounded-2xl bg-muted/20 border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
-            <MapPin className="w-3 h-3" /> Safra
+            <Pickaxe className="w-3 h-3" /> Tipo de Serviço
           </p>
-          <p className="font-bold text-sm uppercase">{service.safra || '2023/24'}</p>
+          <p className="font-bold text-sm uppercase">{service.serviceType || '-'}</p>
         </div>
         <div className="p-4 rounded-2xl bg-muted/20 border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
@@ -273,6 +293,14 @@ export default function ServiceDetailPage() {
                   <span className="text-muted-foreground">Custo de Combustível</span>
                   <span className="font-medium text-destructive">{formatCurrency(costs.diesel || 0)}</span>
                 </div>
+
+                {/* Additional costs */}
+                {(service.additionalCosts || []).filter((c: any) => !['Custo Máquina', 'Custo Operador', 'Custo Diesel (São Bento)'].includes(c.name)).map((cost: any) => (
+                  <div key={cost.id} className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">{cost.name}</span>
+                    <span className="font-medium text-destructive">{formatCurrency(cost.value)}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="p-5 flex justify-between items-center bg-muted/30 border-t border-border">
@@ -324,6 +352,20 @@ export default function ServiceDetailPage() {
         <CostManager
           service={service}
           onUpdateService={handleUpdateService}
+        />
+      </ActionModal>
+
+      {/* PDF Export Modal */}
+      <ActionModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        title="Exportar Relatório PDF"
+      >
+        <PDFExportModal
+          sections={SERVICE_PDF_SECTIONS}
+          onExport={handleExportPDF}
+          onClose={() => setIsPDFModalOpen(false)}
+          isGenerating={isGeneratingPDF}
         />
       </ActionModal>
 
