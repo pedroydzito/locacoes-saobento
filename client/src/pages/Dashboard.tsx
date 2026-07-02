@@ -24,7 +24,7 @@ export default function Dashboard() {
           <div className="flex items-center">
             <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Visão Operacional</h1>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">Locações São Bento</p>
+          <p className="text-sm text-muted-foreground mt-1">São Bento Locações</p>
         </div>
       </div>
 

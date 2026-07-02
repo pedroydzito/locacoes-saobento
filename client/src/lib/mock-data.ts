@@ -56,6 +56,8 @@ export const mockMachines = machinesList.map((name, i) => ({
 export const mockOperators = operatorsList.map((name, i) => ({
   id: `op-${i}`,
   name,
+  username: name.toLowerCase().replace(/\s+/g, ''),
+  password: "123",
   salary: 2500 + (i * 200),
   commission_per_hour: 10 + (i % 5),
   fixed_commission: i % 2 === 0 ? 50 : 0,
@@ -78,7 +80,36 @@ export const mockClients = clientsList.map((name, i) => ({
   machines_used: mockMachines.slice(0, (i % 3) + 1).map(m => m.name)
 }));
 
-export const mockServices = Array.from({ length: 25 }).map((_, i) => {
+export interface Service {
+  id: string;
+  client: string;
+  machine: string;
+  operator: string;
+  date: string;
+  hora_inicial: number;
+  hora_final?: number;
+  hours?: number;
+  diesel?: number;
+  dieselSupplier?: string;
+  serviceType?: string;
+  safra?: string;
+  freight?: number;
+  fixedValue?: number;
+  hourlyValue?: number;
+  value?: number;
+  costs?: {
+    machine: number;
+    operator: number;
+    diesel: number;
+  };
+  additionalCosts?: any[];
+  profit?: number;
+  status: string;
+  photos?: any[];
+  notes?: string;
+}
+
+export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => {
   const client = mockClients[i % mockClients.length];
   const machine = mockMachines[i % mockMachines.length];
   const operator = mockOperators[i % mockOperators.length];
@@ -88,7 +119,9 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   const hora_inicial = Number(baseHorimeter.toFixed(1));
   const hora_final = Number((baseHorimeter + hours).toFixed(1));
   const diesel = hours * machine.diesel_consumption;
-  const value = hours * 350; // media cobrada
+  const fixedValue = i % 2 === 0 ? 500 : 0;
+  const hourlyValue = 350; // media cobrada
+  const value = fixedValue + (hours * hourlyValue);
   const cost_machine = hours * machine.hour_cost;
   const cost_operator = hours * (operator.salary / 220);
   const cost_diesel = diesel * 6.50; // preco diesel
@@ -116,13 +149,15 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
     serviceType: ["Terraplanagem", "Destoca", "Transporte"][i % 3],
     safra: i % 2 === 0 ? "2023/24" : "2024/25",
     freight: i % 3 === 0 ? 500 : 0,
-    value,
+    fixedValue,
+    hourlyValue,
     costs: {
       machine: cost_machine,
       operator: cost_operator,
       diesel: cost_diesel
     },
     additionalCosts,
+    value,
     profit,
     status: i < 5 ? "em_andamento" : "concluido",
     photos: i % 5 === 0 ? [
@@ -133,7 +168,30 @@ export const mockServices = Array.from({ length: 25 }).map((_, i) => {
   };
 });
 
-export let mockTransactions = Array.from({ length: 20 }).map((_, i) => {
+export interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  date: string;
+  description: string;
+  account: string;
+  category: string;
+  supplier?: string;
+  dueDate?: string;
+  boletoInfo?: {
+    installment: string;
+    isPaid: boolean;
+    delayDays: number;
+    interestValue: number;
+  };
+  allocation?: string;
+  createdAt: string;
+  createdBy: string;
+  relatedCostId?: string;
+  relatedServiceId?: string;
+}
+
+export let mockTransactions: Transaction[] = Array.from({ length: 20 }).map((_, i) => {
   const isExpense = i % 4 === 0;
   const baseAccount = accountsList[i % accountsList.length];
   const isBoleto = baseAccount === "Boletos Cobrança" || i === 1 || i === 2; // Force some to be Boletos for testing
@@ -184,10 +242,10 @@ export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
 }));
 
 export const kpis = {
-  revenue: mockTransactions.filter(t => t.type === 'entrada').reduce((acc, curr) => acc + curr.amount, 0),
-  hours: mockServices.reduce((acc, curr) => acc + curr.hours, 0),
-  profit: mockServices.reduce((acc, curr) => acc + curr.profit, 0),
-  diesel: mockServices.reduce((acc, curr) => acc + curr.diesel, 0)
+  revenue: mockTransactions.filter(t => t.type === 'entrada').reduce((acc, curr) => acc + (curr.amount || 0), 0),
+  hours: mockServices.reduce((acc, curr) => acc + (curr.hours || 0), 0),
+  profit: mockServices.reduce((acc, curr) => acc + (curr.profit || 0), 0),
+  diesel: mockServices.reduce((acc, curr) => acc + (curr.diesel || 0), 0)
 };
 
 export const revenueData = [
@@ -203,3 +261,27 @@ export const machineUsageData = mockMachines.slice(0, 6).map(m => ({
   name: m.name,
   hours: m.hours_worked
 })).sort((a, b) => b.hours - a.hours);
+
+export const mockInventory = [
+  { id: "inv-0", name: "Filtro de Óleo", code: "FO-220", quantity: 5, minQuantity: 10, unit: "unidades", unitPrice: 85.50 },
+  { id: "inv-1", name: "Óleo Diesel S10", code: "OD-S10", quantity: 1500, minQuantity: 500, unit: "litros", unitPrice: 6.50 },
+  { id: "inv-2", name: "Óleo Hidráulico", code: "OH-68", quantity: 200, minQuantity: 100, unit: "litros", unitPrice: 25.00 },
+  { id: "inv-3", name: "Filtro de Combustível", code: "FC-01", quantity: 15, minQuantity: 10, unit: "unidades", unitPrice: 45.00 },
+  { id: "inv-4", name: "Filtro de Ar Secundário", code: "FA-S2", quantity: 3, minQuantity: 5, unit: "unidades", unitPrice: 95.00 },
+  { id: "inv-5", name: "Graxa", code: "GRX-01", quantity: 50, minQuantity: 20, unit: "kg", unitPrice: 35.00 }
+];
+
+export interface OperatorTransaction {
+  id: string;
+  operatorId: string;
+  date: string;
+  type: "Vale" | "Adiantamento" | "Bonificação" | "Desconto";
+  amount: number;
+  description: string;
+}
+
+export const mockOperatorTransactions: OperatorTransaction[] = [
+  { id: "otx-1", operatorId: "op-0", date: new Date().toISOString().split('T')[0], type: "Vale", amount: 150, description: "Vale farmácia" },
+  { id: "otx-2", operatorId: "op-0", date: new Date().toISOString().split('T')[0], type: "Bonificação", amount: 200, description: "Meta batida" },
+  { id: "otx-3", operatorId: "op-1", date: new Date().toISOString().split('T')[0], type: "Adiantamento", amount: 500, description: "Adiantamento salarial" },
+];

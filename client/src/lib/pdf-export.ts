@@ -1,34 +1,67 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const COMPANY_NAME = "SÃO BENTO LOCAÇÕES";
-const COMPANY_CNPJ = "XX.XXX.XXX/0001-XX"; // Replace with actual CNPJ
+const COMPANY_NAME = "SÃO BENTO LOCAÇÕES E SERVIÇOS LTDA - ME";
+const COMPANY_CNPJ = "44.459.342/0001-40";
 const PRIMARY_COLOR: [number, number, number] = [29, 53, 87];
 const FOOTER_TEXT = "São Bento Locações - Sistema ERP v1.5.0";
 
-function addHeader(doc: jsPDF, subtitle: string) {
+let logoBase64Cache: string | null = null;
+
+export async function loadLogoForPDF(): Promise<string | null> {
+  if (logoBase64Cache) return logoBase64Cache;
+  try {
+    const response = await fetch("/logo-color.png");
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        logoBase64Cache = reader.result as string;
+        resolve(logoBase64Cache);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function addHeader(doc: jsPDF, subtitle: string, logoData?: string | null) {
+  const hasLogo = !!logoData;
+  const textX = hasLogo ? 45 : 105;
+  const textAlign = hasLogo ? "left" : "center";
+
+  // Logo
+  if (hasLogo) {
+    try {
+      doc.addImage(logoData, "PNG", 15, 8, 25, 25);
+    } catch {
+      // If logo fails, continue without it
+    }
+  }
+
   // Company name
-  doc.setFontSize(20);
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PRIMARY_COLOR);
-  doc.text(COMPANY_NAME, 105, 18, { align: "center" });
+  doc.text(COMPANY_NAME, textX, 16, { align: textAlign as any });
 
   // CNPJ
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 100, 100);
-  doc.text(`CNPJ: ${COMPANY_CNPJ}`, 105, 25, { align: "center" });
+  doc.text(`CNPJ: ${COMPANY_CNPJ}`, textX, 23, { align: textAlign as any });
 
   // Subtitle
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.text(subtitle, 105, 32, { align: "center" });
+  doc.text(subtitle, textX, 30, { align: textAlign as any });
 
   // Divider
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.5);
-  doc.line(20, 37, 190, 37);
+  doc.line(15, 36, 195, 36);
 }
 
 function addFooter(doc: jsPDF) {
@@ -52,7 +85,7 @@ export interface ServicePDFSections {
   photos: boolean;
 }
 
-export const exportServiceToPDF = (service: any, mockClients: any[], sections?: ServicePDFSections) => {
+export const exportServiceToPDF = async (service: any, mockClients: any[], sections?: ServicePDFSections) => {
   const s: ServicePDFSections = sections ?? {
     header: true,
     clientInfo: true,
@@ -62,8 +95,9 @@ export const exportServiceToPDF = (service: any, mockClients: any[], sections?: 
     photos: true
   };
 
+  const logoData = await loadLogoForPDF();
   const doc = new jsPDF();
-  addHeader(doc, `Relatório de Serviço — OS ${service.id}`);
+  addHeader(doc, `Relatório de Serviço — OS ${service.id}`, logoData);
 
   let y = 45;
 
@@ -194,7 +228,7 @@ export const exportServiceToPDF = (service: any, mockClients: any[], sections?: 
   // Photos
   if (s.photos && service.photos && service.photos.length > 0) {
     doc.addPage();
-    addHeader(doc, `Anexos e Evidências — OS ${service.id}`);
+    addHeader(doc, `Anexos e Evidências — OS ${service.id}`, logoData);
     let photoY = 45;
     service.photos.forEach((photo: any, idx: number) => {
       const name = typeof photo === "string" ? photo : photo.url;
@@ -220,7 +254,7 @@ export interface MachinePDFSections {
   servicesHistory: boolean;
 }
 
-export const exportMachineToPDF = (machine: any, services: any[], sections?: MachinePDFSections) => {
+export const exportMachineToPDF = async (machine: any, services: any[], sections?: MachinePDFSections) => {
   const s: MachinePDFSections = sections ?? {
     basicInfo: true,
     financial: true,
@@ -228,8 +262,9 @@ export const exportMachineToPDF = (machine: any, services: any[], sections?: Mac
     servicesHistory: true,
   };
 
+  const logoData = await loadLogoForPDF();
   const doc = new jsPDF();
-  addHeader(doc, `Relatório de Máquina — ${machine.name}`);
+  addHeader(doc, `Relatório de Máquina — ${machine.name}`, logoData);
 
   let y = 45;
 
@@ -326,7 +361,7 @@ export const exportMachineToPDF = (machine: any, services: any[], sections?: Mac
 
   // Services History
   if (s.servicesHistory && machineServices.length > 0) {
-    if (y > 220) { doc.addPage(); addHeader(doc, `Histórico de Serviços — ${machine.name}`); y = 45; }
+    if (y > 220) { doc.addPage(); addHeader(doc, `Histórico de Serviços — ${machine.name}`, logoData); y = 45; }
     autoTable(doc, {
       startY: y,
       head: [["OS", "Data", "Cliente", "Horas", "Receita", "Status"]],
@@ -366,7 +401,7 @@ export interface FreightPDFSections {
   notes: boolean;
 }
 
-export const exportFreightToPDF = (freight: any, sections?: FreightPDFSections) => {
+export const exportFreightToPDF = async (freight: any, sections?: FreightPDFSections) => {
   const s: FreightPDFSections = sections ?? {
     routeInfo: true,
     vehicleInfo: true,
@@ -375,8 +410,9 @@ export const exportFreightToPDF = (freight: any, sections?: FreightPDFSections) 
     notes: true,
   };
 
+  const logoData = await loadLogoForPDF();
   const doc = new jsPDF();
-  addHeader(doc, `Relatório de Frete — ${freight.id}`);
+  addHeader(doc, `Relatório de Frete — ${freight.id}`, logoData);
 
   let y = 45;
   const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -477,3 +513,136 @@ export const exportFreightToPDF = (freight: any, sections?: FreightPDFSections) 
   addFooter(doc);
   doc.save(`Frete_${freight.id}_${new Date().toISOString().split("T")[0]}.pdf`);
 };
+
+// ─── Client Detail PDF Export ──────────────────────────────────────────────
+export const exportClientToPDF = async (
+  client: any,
+  services: any[],
+  options?: { startDate?: string; endDate?: string }
+) => {
+  const logoData = await loadLogoForPDF();
+  const doc = new jsPDF();
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  const filtered = services.filter((s) => {
+    const matchStart = !options?.startDate || s.date >= options.startDate;
+    const matchEnd = !options?.endDate || s.date <= options.endDate;
+    return matchStart && matchEnd;
+  });
+
+  const totalBilled = filtered.reduce((a, s) => a + (s.value || 0), 0);
+  const totalProfit = filtered.reduce((a, s) => a + (s.profit || 0), 0);
+
+  const periodLabel = (() => {
+    if (options?.startDate && options?.endDate)
+      return `${new Date(options.startDate + "T00:00").toLocaleDateString("pt-BR")} a ${new Date(options.endDate + "T00:00").toLocaleDateString("pt-BR")}`;
+    if (options?.startDate)
+      return `A partir de ${new Date(options.startDate + "T00:00").toLocaleDateString("pt-BR")}`;
+    if (options?.endDate)
+      return `Até ${new Date(options.endDate + "T00:00").toLocaleDateString("pt-BR")}`;
+    return "Todo o período";
+  })();
+
+  addHeader(doc, `Relatório do Cliente — ${client.name}`, logoData);
+
+  let y = 44;
+
+  // Client block
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Dados do Cliente", 20, y);
+  y += 7;
+
+  const clientRows = [
+    ["Nome / Razão Social", client.name],
+    ["CPF / CNPJ", client.cpf_cnpj || "—"],
+    ["Telefone", client.phone || "—"],
+    ["E-mail", client.email || "—"],
+    ["Cidade / Estado", client.city ? `${client.city} / ${client.state || "—"}` : "—"],
+    ["Endereço", client.address || "—"],
+  ].filter(([, v]) => v !== "—");
+
+  autoTable(doc, {
+    startY: y,
+    body: clientRows,
+    styles: { fontSize: 9, cellPadding: 3 },
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 55, textColor: [80, 80, 80] } },
+    margin: { left: 20, right: 20 },
+    theme: "plain",
+  });
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Period summary
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Resumo do Período: ${periodLabel}`, 20, y);
+  y += 6;
+
+  autoTable(doc, {
+    startY: y,
+    head: [["Indicador", "Valor"]],
+    body: [
+      ["Total de Serviços (OSs)", `${filtered.length}`],
+      ["Total Faturado", fmt(totalBilled)],
+      ["Lucro Gerado", fmt(totalProfit)],
+    ],
+    headStyles: { fillColor: PRIMARY_COLOR, textColor: 255, fontStyle: "bold", fontSize: 9 },
+    alternateRowStyles: { fillColor: [245, 248, 252] },
+    styles: { fontSize: 9, cellPadding: 4 },
+    columnStyles: { 1: { halign: "right", fontStyle: "bold" } },
+    margin: { left: 20, right: 20 },
+  });
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Services table
+  if (filtered.length > 0) {
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Histórico de Serviços", 20, y);
+    y += 6;
+
+    autoTable(doc, {
+      startY: y,
+      head: [["OS", "Data", "Máquina", "Operador", "Tipo", "Forn. Diesel", "Horas", "Valor", "Status"]],
+      body: filtered.map((s) => [
+        s.id,
+        s.date ? new Date(s.date + "T00:00").toLocaleDateString("pt-BR") : "—",
+        s.machine || "—",
+        s.operator || "—",
+        s.serviceType || "—",
+        s.dieselSupplier === "sao_bento" ? "São Bento" : s.dieselSupplier === "cliente" ? "Cliente" : "—",
+        s.hours ? `${s.hours}h` : "—",
+        fmt(s.value || 0),
+        s.status === "concluido" ? "Concluído" : "Em andamento",
+      ]),
+      headStyles: { fillColor: PRIMARY_COLOR, textColor: 255, fontStyle: "bold", fontSize: 8 },
+      alternateRowStyles: { fillColor: [245, 248, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 15, fontStyle: "bold" },
+        1: { cellWidth: 18 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 20 },
+        6: { halign: "right" },
+        7: { halign: "right", fontStyle: "bold" },
+      },
+      margin: { left: 20, right: 20 },
+    });
+  } else {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(150, 150, 150);
+    doc.text("Nenhum serviço encontrado no período selecionado.", 20, y + 4);
+  }
+
+  addFooter(doc);
+
+  const safeName = client.name.replace(/[^a-zA-Z0-9]/g, "_");
+  const dateTag = new Date().toISOString().split("T")[0];
+  doc.save(`Cliente_${safeName}_${dateTag}.pdf`);
+};
+

@@ -20,6 +20,8 @@ import ClientDetailPage from "@/pages/ClientDetailPage";
 import Reports from "@/pages/Reports";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/not-found";
+import OperatorPortal from "@/pages/OperatorPortal";
+import Inventory from "@/pages/Inventory";
 import { useEffect } from "react";
 
 function ProtectedRoute({ component: Component, allowedRoles }: { component: any, allowedRoles?: string[] }) {
@@ -30,12 +32,17 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
   useEffect(() => {
     if (!isAuthenticated && location !== '/login') {
       setLocation('/login');
-    } else if (isAuthenticated && allowedRoles && !allowedRoles.includes(userRole)) {
-      setLocation('/');
+    } else if (isAuthenticated) {
+      if (userRole === 'operador' && location !== '/portal') {
+        setLocation('/portal');
+      } else if (allowedRoles && !allowedRoles.includes(userRole)) {
+        setLocation(userRole === 'operador' ? '/portal' : '/');
+      }
     }
   }, [isAuthenticated, location, setLocation, userRole, allowedRoles]);
 
   if (!isAuthenticated) return null;
+  if (userRole === 'operador' && location !== '/portal') return null;
   if (allowedRoles && !allowedRoles.includes(userRole)) return null;
 
   return <Component />;
@@ -46,6 +53,10 @@ function Router() {
 
   if (location === '/login') {
     return <Route path="/login" component={Auth} />;
+  }
+
+  if (location === '/portal') {
+    return <Route path="/portal" component={() => <ProtectedRoute component={OperatorPortal} allowedRoles={['operador', 'admin']} />} />;
   }
 
   return (
@@ -66,6 +77,7 @@ function Router() {
         <Route path="/operadores/:id" component={() => <ProtectedRoute component={OperatorDetailPage} allowedRoles={['admin']} />} />
         <Route path="/financeiro" component={() => <ProtectedRoute component={Finance} allowedRoles={['admin']} />} />
         <Route path="/financeiro/:id" component={() => <ProtectedRoute component={FinanceDetailPage} allowedRoles={['admin']} />} />
+        <Route path="/estoque" component={() => <ProtectedRoute component={Inventory} allowedRoles={['admin']} />} />
         <Route path="/relatorios" component={() => <ProtectedRoute component={Reports} allowedRoles={['admin']} />} />
         
         <Route component={NotFound} />

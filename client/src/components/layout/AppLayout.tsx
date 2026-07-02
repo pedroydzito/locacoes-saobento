@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Users, Tractor, Pickaxe, DollarSign, FileText,
   Truck, Menu, Bell, LogOut, User, ChevronLeft, ChevronRight, 
-  MoreHorizontal, Settings, PanelLeftClose, PanelLeftOpen
+  MoreHorizontal, Settings, PanelLeftClose, PanelLeftOpen, Package
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ const mainNavItems = [
 const secondaryNavItems = [
   { name: "Operadores", href: "/operadores", icon: Users },
   { name: "Financeiro", href: "/financeiro", icon: DollarSign },
+  { name: "Estoque", href: "/estoque", icon: Package },
   { name: "Relatórios", href: "/relatorios", icon: FileText },
 ];
 
@@ -87,7 +88,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
               className="flex items-center gap-3 overflow-hidden"
             >
               <div className="w-10 h-10 overflow-hidden relative flex-shrink-0">
-                <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+                <img src="/logo-branca2.svg" alt="Logo São Bento Locações" className="w-full h-full object-contain" />
               </div>
               <div className="flex flex-col justify-center">
                 <span className="font-bold text-[10px] leading-none font-display tracking-tight text-white/70">Locações</span>

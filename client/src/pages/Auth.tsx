@@ -7,10 +7,13 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { mockOperators } from "@/lib/mock-data";
+
 export default function Auth() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,15 +22,26 @@ export default function Auth() {
     
     // Simulate login and setup mock role
     setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true");
-      // If email starts with op, make them operator, else admin
-      if (email.toLowerCase().startsWith('op')) {
+      const operator = mockOperators.find(
+        (op) => (op.username === email || op.name.toLowerCase() === email.toLowerCase()) && op.password === password
+      );
+
+      if (operator) {
+        localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRole", "operador");
-      } else {
+        localStorage.setItem("operatorId", operator.id);
+        localStorage.setItem("operatorName", operator.name);
+        setIsLoading(false);
+        setLocation("/portal");
+      } else if (email === "admin@saobento.com" || email === "admin" || email.toLowerCase().startsWith("admin")) {
+        localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRole", "admin");
+        setIsLoading(false);
+        setLocation("/");
+      } else {
+        alert("Credenciais inválidas");
+        setIsLoading(false);
       }
-      setIsLoading(false);
-      setLocation("/");
     }, 800);
   };
 
@@ -38,6 +52,31 @@ export default function Auth() {
       localStorage.setItem("userRole", "admin");
       setIsLoading(false);
       setLocation("/");
+    }, 800);
+  };
+
+  const handleTestAdminLogin = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userRole", "admin");
+      setIsLoading(false);
+      setLocation("/");
+    }, 800);
+  };
+
+  const handleTestOperatorLogin = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      const operator = mockOperators[0];
+      if (operator) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "operador");
+        localStorage.setItem("operatorId", operator.id);
+        localStorage.setItem("operatorName", operator.name);
+      }
+      setIsLoading(false);
+      setLocation("/portal");
     }, 800);
   };
 
@@ -52,12 +91,12 @@ export default function Auth() {
         
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="mb-6 w-32 h-32 md:w-40 md:h-40 overflow-hidden relative flex-shrink-0">
-             <img src="/logo-branca2.svg" alt="Logo Locações São Bento" className="w-full h-full object-contain" />
+             <img src="/logo-branca2.svg" alt="Logo São Bento Locações" className="w-full h-full object-contain" />
           </div>
           
           <div>
             <h1 className="text-3xl lg:text-4xl font-bold font-display text-white leading-tight mb-4">
-              Locações <span className="text-white">São</span> <span className="text-[#f1c40f]">Bento</span>
+              São Bento <span className="text-white">Locações</span>
             </h1>
             <p className="text-white/80 text-base max-w-xs mx-auto font-medium">
               Gestão inteligente de frota e serviços.
@@ -126,13 +165,13 @@ export default function Auth() {
                     <Card className="border-border  rounded-2xl p-6 mt-2 bg-card/40">
                       <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">E-mail</Label>
+                          <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Usuário / E-mail</Label>
                           <Input
                             id="email"
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@saobento.com ou operador@..."
+                            placeholder="admin@saobento.com ou operador..."
                             className="h-12 rounded-xl bg-card border-border  px-4"
                             required
                           />
@@ -146,6 +185,8 @@ export default function Auth() {
                           <Input
                             id="password"
                             type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
                             className="h-12 rounded-xl bg-card border-border  px-4 font-mono text-lg tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
                             required
@@ -165,6 +206,39 @@ export default function Auth() {
                 )}
               </AnimatePresence>
             </div>
+            
+            {/* Início: Botões de Teste */}
+            <div className="relative mt-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border border-dashed"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-2 text-muted-foreground uppercase tracking-wider font-bold">Acesso Rápido (Teste)</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <Button 
+                type="button"
+                variant="secondary"
+                onClick={handleTestAdminLogin}
+                className="w-full h-10 text-xs font-bold border border-border bg-card hover:bg-muted"
+                disabled={isLoading}
+              >
+                Entrar como Admin
+              </Button>
+              <Button 
+                type="button"
+                variant="secondary"
+                onClick={handleTestOperatorLogin}
+                className="w-full h-10 text-xs font-bold border border-border bg-card hover:bg-muted"
+                disabled={isLoading}
+              >
+                Entrar como Operador
+              </Button>
+            </div>
+            {/* Fim: Botões de Teste */}
+            
           </div>
           
           <div className="mt-8 text-center">

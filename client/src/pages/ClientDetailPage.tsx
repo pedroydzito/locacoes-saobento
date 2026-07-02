@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ClientForm } from "@/components/forms/ClientForm";
-import { Edit, Trash2, ChevronRight, ArrowLeft, User, Phone, Mail, MapPin, DollarSign, CalendarDays, FileText } from "lucide-react";
+import { Edit, Trash2, ChevronRight, ArrowLeft, User, Phone, Mail, MapPin, DollarSign, CalendarDays, FileText, FileDown, Loader2 } from "lucide-react";
+import { exportClientToPDF } from "@/lib/pdf-export";
+import { Input } from "@/components/ui/input";
 
 export default function ClientDetailPage() {
   const [, setLocation] = useLocation();
@@ -16,6 +18,10 @@ export default function ClientDetailPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfStartDate, setPdfStartDate] = useState("");
+  const [pdfEndDate, setPdfEndDate] = useState("");
 
   const client = mockClients.find(c => c.id === clientId) as any;
 
@@ -61,6 +67,10 @@ export default function ClientDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setIsPDFModalOpen(true)}
+            className="rounded-xl h-9 border-border hover:bg-primary/5 hover:text-primary shadow-none">
+            <FileDown className="w-4 h-4 mr-2" /> Exportar PDF
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}
             className="rounded-xl h-9 border-border hover:bg-primary/5 hover:text-primary shadow-none">
             <Edit className="w-4 h-4 mr-2" /> Editar
@@ -175,6 +185,50 @@ export default function ClientDetailPage() {
           setLocation("/clientes");
         }} title="Excluir cliente"
         description={`Tem certeza que deseja excluir "${client.name}"?`} />
+
+      {/* PDF Export Modal */}
+      <ActionModal isOpen={isPDFModalOpen} onClose={() => setIsPDFModalOpen(false)} title="Exportar Relatório PDF">
+        <div className="space-y-5 p-1">
+          <p className="text-sm text-muted-foreground">Gere um relatório completo deste cliente. Filtre por período para cobrir meses, anos ou intervalos personalizados.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Data Inicial</label>
+              <Input type="date" className="rounded-xl" value={pdfStartDate} onChange={e => setPdfStartDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Data Final</label>
+              <Input type="date" className="rounded-xl" value={pdfEndDate} onChange={e => setPdfEndDate(e.target.value)} />
+            </div>
+          </div>
+          {(pdfStartDate || pdfEndDate) && (
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
+              <p className="text-xs text-primary font-medium">
+                Período selecionado: {pdfStartDate ? new Date(pdfStartDate + 'T00:00').toLocaleDateString('pt-BR') : 'início'} até {pdfEndDate ? new Date(pdfEndDate + 'T00:00').toLocaleDateString('pt-BR') : 'hoje'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {clientServices.filter(s => (!pdfStartDate || s.date >= pdfStartDate) && (!pdfEndDate || s.date <= pdfEndDate)).length} serviços encontrados no período.
+              </p>
+            </div>
+          )}
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setIsPDFModalOpen(false)}>Cancelar</Button>
+            <Button
+              className="flex-1 rounded-xl"
+              disabled={isGeneratingPDF}
+              onClick={async () => {
+                setIsGeneratingPDF(true);
+                try {
+                  await exportClientToPDF(client, clientServices, { startDate: pdfStartDate || undefined, endDate: pdfEndDate || undefined });
+                } finally {
+                  setIsGeneratingPDF(false);
+                  setIsPDFModalOpen(false);
+                }
+              }}>
+              {isGeneratingPDF ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando...</> : <><FileDown className="w-4 h-4 mr-2" /> Exportar PDF</>}
+            </Button>
+          </div>
+        </div>
+      </ActionModal>
     </div>
   );
 }

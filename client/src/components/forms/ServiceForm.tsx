@@ -24,7 +24,8 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     diesel: initialData?.diesel || 0,
     dieselSupplier: initialData?.dieselSupplier || "cliente",
     serviceType: initialData?.serviceType || "",
-    value: initialData?.value || 0,
+    fixedValue: initialData?.fixedValue || 0,
+    hourlyValue: initialData?.hourlyValue || 0,
     status: initialData?.status || "em_andamento"
   });
   
@@ -54,7 +55,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     const end = parseFloat(formData.hora_final);
     let hoursWorked = end - start;
 
-    const cost_machine = formData.machines.reduce((total, machineName) => {
+    const cost_machine = formData.machines.reduce((total: number, machineName: string) => {
       const machineObj = mockMachines.find(m => m.name === machineName);
       return total + (hoursWorked * (machineObj?.hour_cost || 0));
     }, 0);
@@ -74,8 +75,9 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     }
 
     const total_costs = additionalCosts.reduce((acc, curr) => acc + curr.value, 0);
+    const totalRevenue = (formData.fixedValue || 0) + (hoursWorked * (formData.hourlyValue || 0));
     // If diesel is from Sao Bento, we might add it to the final invoice depending on config
-    const profit = (formData.value || 0) - total_costs;
+    const profit = totalRevenue - total_costs;
     const serviceData = {
       ...formData,
       machine: formData.machines.join(', '),
@@ -187,7 +189,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
                       ...prev,
                       machines: checked 
                         ? [...prev.machines, m.name]
-                        : prev.machines.filter(name => name !== m.name)
+                        : prev.machines.filter((name: string) => name !== m.name)
                     }))
                   }}
                 >
@@ -282,11 +284,21 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 text-primary">Valor (R$)</Label>
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 text-primary">Fixo (R$)</Label>
           <Input 
             type="number" 
-            value={formData.value} 
-            onChange={(e) => setFormData({...formData, value: parseFloat(e.target.value) || 0})}
+            value={formData.fixedValue} 
+            onChange={(e) => setFormData({...formData, fixedValue: parseFloat(e.target.value) || 0})}
+            placeholder="0,00" 
+            className="h-11 rounded-xl border-border bg-primary/5 font-bold text-primary font-mono" 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 text-primary">Hora (R$/h)</Label>
+          <Input 
+            type="number" 
+            value={formData.hourlyValue} 
+            onChange={(e) => setFormData({...formData, hourlyValue: parseFloat(e.target.value) || 0})}
             placeholder="0,00" 
             className="h-11 rounded-xl border-border bg-primary/5 font-bold text-primary font-mono" 
           />

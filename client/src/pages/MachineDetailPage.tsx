@@ -1,6 +1,6 @@
 import { useLocation, useRoute } from "wouter";
 import { useState, useMemo } from "react";
-import { mockMachines, mockServices } from "@/lib/mock-data";
+import { mockMachines, mockServices, mockTransactions } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { MachineForm } from "@/components/forms/MachineForm";
 import {
   Edit, Trash2, ChevronRight, ArrowLeft,
   Tractor, Clock, DollarSign, Fuel, BarChart3, Wrench, CalendarDays,
-  ChevronLeft, Calendar as CalendarIcon, Info, TrendingUp, TrendingDown, Banknote
+  ChevronLeft, Calendar as CalendarIcon, Info, TrendingUp, TrendingDown, Banknote, Activity
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -68,20 +68,68 @@ export default function MachineDetailPage() {
       
       const isFuture = i > 0;
       const isCurrent = i === 0;
-      
-      const variance = isFuture ? 1 : (Math.sin(i + machine.name.length) * 0.25) + 1; // 0.75 to 1.25
-      const monthHours = Math.round(avgHours * variance);
-      
-      const isMaintenance = mIdx === 2 || mIdx === 8;
-      const finalHours = isMaintenance && !isFuture ? Math.round(monthHours * 0.4) : monthHours;
-      
-      const monthDiesel = finalHours * machine.diesel_consumption;
-      
-      const revenue = finalHours * (totalRevenue > 0 && totalHours > 0 ? (totalRevenue / totalHours) : 350);
-      const cost_machine = finalHours * machine.hour_cost;
-      const cost_diesel = monthDiesel * 6.50; 
-      const expenses = cost_machine + cost_diesel;
-      const profit = revenue - expenses;
+
+      let finalHours = 0;
+      let monthDiesel = 0;
+      let revenue = 0;
+      let isMaintenance = false;
+      let expenses = 0;
+      let profit = 0;
+
+      if (!isFuture) {
+        const monthServices = machineServices.filter((s: any) => {
+          if (!s.date) return false;
+          const d = new Date(s.date + "T12:00:00");
+          return d.getMonth() === mIdx && d.getFullYear() === yIdx;
+        });
+
+        monthServices.forEach((s: any) => {
+          const start = typeof s.hora_inicial === 'number' ? s.hora_inicial : parseFloat(s.hora_inicial);
+          const end = typeof s.hora_final === 'number' ? s.hora_final : parseFloat(s.hora_final);
+          let h = 0;
+          if (!isNaN(start) && !isNaN(end)) h = end - start;
+          else if (s.hours) h = s.hours;
+
+          finalHours += h;
+          revenue += (s.value || 0);
+          monthDiesel += (s.diesel || 0);
+          if (s.serviceType && s.serviceType.toLowerCase().includes("manuten")) isMaintenance = true;
+        });
+        
+        if (monthServices.length === 0) {
+           const variance = (Math.sin(i + machine.name.length) * 0.25) + 1;
+           const monthHours = Math.round(avgHours * variance);
+           isMaintenance = mIdx === 2 || mIdx === 8;
+           finalHours = isMaintenance ? Math.round(monthHours * 0.4) : monthHours;
+           monthDiesel = finalHours * machine.diesel_consumption;
+           revenue = finalHours * (totalRevenue > 0 && totalHours > 0 ? (totalRevenue / totalHours) : 350);
+        }
+
+        const cost_machine = finalHours * machine.hour_cost;
+        const cost_diesel = monthDiesel * 6.50; 
+        
+        // Add maintenance costs from mockTransactions
+        const maintenanceCost = mockTransactions
+          .filter(t => t.allocation === machine.name && t.type === "saida")
+          .filter(t => {
+             const d = new Date(t.date);
+             return d.getMonth() === mIdx && d.getFullYear() === yIdx;
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        expenses = cost_machine + cost_diesel + maintenanceCost;
+        profit = revenue - expenses;
+      } else {
+        const variance = 1;
+        const monthHours = Math.round(avgHours * variance);
+        finalHours = monthHours;
+        monthDiesel = finalHours * machine.diesel_consumption;
+        revenue = finalHours * (totalRevenue > 0 && totalHours > 0 ? (totalRevenue / totalHours) : 350);
+        const cost_machine = finalHours * machine.hour_cost;
+        const cost_diesel = monthDiesel * 6.50; 
+        expenses = cost_machine + cost_diesel;
+        profit = revenue - expenses;
+      }
       
       data.push({
         offset: i,
@@ -98,7 +146,7 @@ export default function MachineDetailPage() {
       });
     }
     return data;
-  }, [machine, avgHours, currentMonth, currentYear, totalRevenue, totalHours]);
+  }, [machine, avgHours, currentMonth, currentYear, totalRevenue, totalHours, machineServices, months]);
 
   const activeData = historyData.find(d => d.offset === activeMonthOffset) || historyData.find(d => d.isCurrent)!;
 
@@ -195,6 +243,60 @@ export default function MachineDetailPage() {
         ))}
       </div>
 
+      <div className="space-y-3 mt-8">
+        <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
+          <Activity className="w-3 h-3" /> Acompanhamento Operacional
+        </h4>
+        <div className="p-5 rounded-2xl bg-card border border-border flex flex-col sm:flex-row sm:items-center gap-4 justify-between flex-wrap">
+          <div>
+            <p className="text-sm text-muted-foreground">Status Atual</p>
+            <p className="font-bold text-lg text-primary">{machine.status === 'em_manutencao' ? 'Em Manutenção' : machine.status === 'disponivel' ? 'Disponível' : 'Operando'}</p>
+          </div>
+          {machineServices.find(s => s.status === 'em_andamento') ? (() => {
+            const active = machineServices.find(s => s.status === 'em_andamento');
+            return (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground">Operador Atual</p>
+                  <p className="font-bold text-lg">{active?.operator || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Cliente Atual</p>
+                  <p className="font-bold text-lg">{active?.client || "—"}</p>
+                </div>
+              </>
+            );
+          })() : (
+            <div>
+              <p className="text-sm text-muted-foreground">Serviço Atual</p>
+              <p className="font-bold text-lg text-muted-foreground">Nenhum serviço ativo</p>
+            </div>
+          )}
+          <div>
+            <p className="text-sm text-muted-foreground">Horas (Mês)</p>
+            <p className="font-bold text-lg">{historyData.find(d => d.isCurrent)?.hours || 0}h</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Diesel (Mês)</p>
+            <p className="font-bold text-lg">{historyData.find(d => d.isCurrent)?.diesel.toFixed(0) || 0} L</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Média Diesel (Mês)</p>
+            <p className="font-bold text-lg">
+              {(() => {
+                 const curr = historyData.find(d => d.isCurrent);
+                 if (curr && curr.hours > 0) return (curr.diesel / curr.hours).toFixed(1) + " L/h";
+                 return "0 L/h";
+              })()}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Manutenções (Mês)</p>
+            <p className="font-bold text-lg">{historyData.find(d => d.isCurrent)?.isMaintenance ? "Sim" : "Não"}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Detalhamento Mensal Dinâmico */}
       <div className="space-y-3 mt-8 mb-8">
         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -260,6 +362,10 @@ export default function MachineDetailPage() {
                 <div className="flex justify-between items-end">
                   <span className="text-sm text-muted-foreground">Diesel Consumido</span>
                   <span className="font-bold text-foreground text-lg">{activeData.diesel.toFixed(0)} L</span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <span className="text-sm text-muted-foreground">Média de Consumo</span>
+                  <span className="font-bold text-foreground text-lg">{activeData.hours > 0 ? (activeData.diesel / activeData.hours).toFixed(1) : 0} L/h</span>
                 </div>
                 {activeData.isMaintenance && (
                   <div className="flex items-center gap-2 bg-[hsl(var(--warning-subtle))] border border-[hsl(var(--warning)/0.2)] p-2 rounded-lg text-[hsl(var(--warning-text))]">

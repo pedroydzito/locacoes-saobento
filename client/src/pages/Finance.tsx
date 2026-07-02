@@ -68,7 +68,7 @@ export default function Finance() {
       if (service && service.additionalCosts) {
         service.additionalCosts = service.additionalCosts.filter((c: any) => c.id !== tx.relatedCostId);
         const totalCosts = service.additionalCosts.reduce((acc: number, curr: any) => acc + curr.value, 0);
-        service.profit = service.value - totalCosts;
+        service.profit = (service.value || 0) - totalCosts;
       }
     }
 

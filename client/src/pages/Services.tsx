@@ -118,15 +118,13 @@ export default function Services() {
     setIsPDFModalOpen(true);
   };
 
-  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+  const handleExportPDF = async (selectedSections: Record<string, boolean>) => {
     if (!pdfTargetService) return;
     setIsGeneratingPDF(true);
-    setTimeout(() => {
-      exportServiceToPDF(pdfTargetService, mockClients, selectedSections as unknown as ServicePDFSections);
-      setIsGeneratingPDF(false);
-      setIsPDFModalOpen(false);
-      setPdfTargetService(null);
-    }, 600);
+    await exportServiceToPDF(pdfTargetService, mockClients, selectedSections as unknown as ServicePDFSections);
+    setIsGeneratingPDF(false);
+    setIsPDFModalOpen(false);
+    setPdfTargetService(null);
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";

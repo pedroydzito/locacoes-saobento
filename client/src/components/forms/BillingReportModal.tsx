@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FileText, Download, Loader2, CheckCircle2 } from "lucide-react";
+import { loadLogoForPDF } from "@/lib/pdf-export";
 
 interface BillingReportModalProps {
   onClose: () => void;
@@ -33,28 +34,40 @@ export function BillingReportModal({ onClose }: BillingReportModalProps) {
     );
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!selectedClient) return;
     setIsGenerating(true);
+
+    const logoData = await loadLogoForPDF();
 
     // Simulate small delay for UX
     setTimeout(() => {
       const doc = new jsPDF();
       
+      const hasLogo = !!logoData;
+      const textX = hasLogo ? 45 : 105;
+      const textAlign = hasLogo ? "left" : "center";
+
+      if (hasLogo) {
+        try {
+          doc.addImage(logoData as string, "PNG", 15, 8, 25, 25);
+        } catch {}
+      }
+      
       // Header
       doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(29, 53, 87); // --primary approximation
-      doc.text("SÃO BENTO LOCAÇÕES", 105, 18, { align: "center" });
+      doc.text("SÃO BENTO LOCAÇÕES E SERVIÇOS LTDA - ME", textX, 18, { align: textAlign as any });
       
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(100);
-      doc.text("CNPJ: XX.XXX.XXX/0001-XX", 105, 25, { align: "center" });
+      doc.text("CNPJ: 44.459.342/0001-40", textX, 25, { align: textAlign as any });
       
       doc.setFontSize(10);
       doc.setTextColor(80);
-      doc.text("Relatório de Cobrança de Serviços", 105, 32, { align: "center" });
+      doc.text("Relatório de Cobrança de Serviços", textX, 32, { align: textAlign as any });
       
       doc.setDrawColor(200);
       doc.line(20, 35, 190, 35);

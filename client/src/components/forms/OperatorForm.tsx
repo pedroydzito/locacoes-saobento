@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { mockMachines } from "@/lib/mock-data";
 
 interface OperatorFormProps {
-  onSave: () => void;
+  onSave: (data: any) => void;
   onCancel: () => void;
   initialData?: any;
 }
@@ -44,6 +44,17 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
       <div className="space-y-2">
         <Label htmlFor="name" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Nome do Operador</Label>
         <Input id="name" name="name" defaultValue={initialData?.name} placeholder="Nome completo" className="h-11 sm:h-10 rounded-xl" required />
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Login / Usuário</Label>
+          <Input id="username" name="username" defaultValue={initialData?.username} placeholder="ex: joao.silva" className="h-11 sm:h-10 rounded-xl" required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Senha</Label>
+          <Input id="password" name="password" type="text" defaultValue={initialData?.password} placeholder="Senha de acesso" className="h-11 sm:h-10 rounded-xl" required />
+        </div>
       </div>
       
       <div className="space-y-4">
@@ -89,7 +100,7 @@ export function OperatorForm({ onSave, onCancel, initialData }: OperatorFormProp
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="commission_per_hour" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Comissão por Hora (R$)</Label>
+              <Label htmlFor="commission_per_hour" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Valor por Hora (R$)</Label>
               <Input id="commission_per_hour" name="commission_per_hour" type="number" defaultValue={initialData?.commission_per_hour} placeholder="0,00" className="h-11 sm:h-10 rounded-xl font-mono" />
             </div>
             <div className="space-y-2">

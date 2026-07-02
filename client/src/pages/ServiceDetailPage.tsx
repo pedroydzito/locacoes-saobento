@@ -77,13 +77,11 @@ export default function ServiceDetailPage() {
     setRefreshKey(k => k + 1);
   };
 
-  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+  const handleExportPDF = async (selectedSections: Record<string, boolean>) => {
     setIsGeneratingPDF(true);
-    setTimeout(() => {
-      exportServiceToPDF(service, mockClients, selectedSections as unknown as ServicePDFSections);
-      setIsGeneratingPDF(false);
-      setIsPDFModalOpen(false);
-    }, 600);
+    await exportServiceToPDF(service, mockClients, selectedSections as unknown as ServicePDFSections);
+    setIsGeneratingPDF(false);
+    setIsPDFModalOpen(false);
   };
 
   return (

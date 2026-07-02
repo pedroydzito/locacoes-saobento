@@ -109,15 +109,19 @@ export default function Freights() {
     setIsPDFModalOpen(true);
   };
 
-  const handleExportPDF = (selectedSections: Record<string, boolean>) => {
+  const handleExportPDF = async (selectedSections: Record<string, boolean>) => {
     if (!pdfTargetFreight) return;
     setIsGeneratingPDF(true);
-    setTimeout(() => {
-      exportFreightToPDF(pdfTargetFreight, selectedSections as unknown as FreightPDFSections);
+    
+    try {
+      await exportFreightToPDF(pdfTargetFreight, selectedSections as unknown as FreightPDFSections);
+    } catch (error) {
+      console.error("Error exporting freight to PDF:", error);
+    } finally {
       setIsGeneratingPDF(false);
       setIsPDFModalOpen(false);
       setPdfTargetFreight(null);
-    }, 600);
+    }
   };
 
   const userRole = localStorage.getItem("userRole") || "operador";
