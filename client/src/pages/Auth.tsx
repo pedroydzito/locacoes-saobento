@@ -220,18 +220,16 @@ export default function Auth() {
             <div className="grid grid-cols-2 gap-3 mt-4">
               <Button 
                 type="button"
-                variant="secondary"
                 onClick={handleTestAdminLogin}
-                className="w-full h-10 text-xs font-bold border border-border bg-card hover:bg-muted"
+                className="w-full h-10 text-xs font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors"
                 disabled={isLoading}
               >
                 Entrar como Admin
               </Button>
               <Button 
                 type="button"
-                variant="secondary"
                 onClick={handleTestOperatorLogin}
-                className="w-full h-10 text-xs font-bold border border-border bg-card hover:bg-muted"
+                className="w-full h-10 text-xs font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors"
                 disabled={isLoading}
               >
                 Entrar como Operador
