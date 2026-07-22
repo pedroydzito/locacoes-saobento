@@ -1,5 +1,5 @@
 import { useLocation, useRoute } from "wouter";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { mockClients, mockServices } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ClientForm } from "@/components/forms/ClientForm";
-import { Edit, Trash2, ChevronRight, ArrowLeft, User, Phone, Mail, MapPin, DollarSign, CalendarDays, FileText, FileDown, Loader2 } from "lucide-react";
+import { Edit, Trash2, ChevronRight, ArrowLeft, User, Phone, Mail, MapPin, DollarSign, CalendarDays, FileText, FileDown, Loader2, ExternalLink, BarChart3 } from "lucide-react";
 import { exportClientToPDF } from "@/lib/pdf-export";
 import { Input } from "@/components/ui/input";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ScatterChart, Scatter, ZAxis } from "recharts";
 
 export default function ClientDetailPage() {
   const [, setLocation] = useLocation();
@@ -41,6 +42,44 @@ export default function ClientDetailPage() {
   const totalProfit = clientServices.reduce((acc, s) => acc + (s.profit || 0), 0);
   const formatCurrency = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   const initials = client.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
+
+  // Chart data: monthly revenue over last 12 months
+  const now = new Date();
+  const chartData = useMemo(() => {
+    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 6 + i, 1);
+      const m = d.getMonth(), y = d.getFullYear();
+      const svcs = clientServices.filter(s => {
+        const sd = new Date(s.date + "T12:00:00");
+        return sd.getMonth() === m && sd.getFullYear() === y;
+      });
+      return {
+        label: months[m],
+        revenue: svcs.reduce((a, s) => a + (s.value || 0), 0),
+        hours: svcs.reduce((a, s) => a + (s.hours || 0), 0),
+        count: svcs.length,
+        isCurrent: i === 6
+      };
+    });
+  }, [clientServices]);
+
+  // Scatter Chart data: timeline of services
+  const scatterData = useMemo(() => {
+    return clientServices.map(s => {
+      const d = new Date(s.date + "T12:00:00");
+      return {
+        id: s.id,
+        date: d.getTime(), // timestamp for X axis
+        dateStr: d.toLocaleDateString('pt-BR'),
+        value: s.value || 0,
+        hours: s.hours || 0,
+        machine: s.machine,
+        operator: s.operator,
+        status: s.status
+      };
+    }).sort((a, b) => a.date - b.date);
+  }, [clientServices]);
 
   return (
     <div className="space-y-6 pb-8" key={refreshKey}>
@@ -99,6 +138,96 @@ export default function ClientDetailPage() {
         ))}
       </div>
 
+      {/* Service Timeline Chart */}
+      <Card className="border-border rounded-2xl p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-primary" />
+          <h3 className="font-bold text-sm">Faturamento (Últimos 7 meses)</h3>
+        </div>
+        <div className="h-[160px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} width={50} />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', fontSize: 12 }}
+                formatter={(v: any, name: string) => [formatCurrency(v as number), 'Faturamento']}
+                labelFormatter={(label) => `Mês: ${label}`}
+              />
+              <Bar dataKey="revenue" radius={[6, 6, 0, 0]} maxBarSize={36}>
+                {chartData.map((d, i) => (
+                  <Cell key={i} fill={d.isCurrent ? 'hsl(var(--primary))' : 'hsl(var(--primary) / 0.4)'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Service Timeline ScatterChart */}
+      {scatterData.length > 0 && (
+        <Card className="border-border rounded-2xl p-5">
+          <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-primary" />
+              <h3 className="font-bold text-sm">Timeline de Serviços</h3>
+            </div>
+            <p className="text-xs text-muted-foreground">Distribuição ao longo do tempo (Valor e Horas)</p>
+          </div>
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="date" 
+                  type="number" 
+                  domain={['dataMin', 'dataMax']} 
+                  tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })} 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} 
+                />
+                <YAxis 
+                  dataKey="value" 
+                  name="Valor" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} 
+                  tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} 
+                  width={50} 
+                />
+                <ZAxis dataKey="hours" range={[50, 400]} name="Horas" />
+                <Tooltip 
+                  cursor={{ strokeDasharray: '3 3', stroke: 'hsl(var(--border))' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', fontSize: 12, padding: '10px' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-popover border border-border shadow-md rounded-xl p-3 text-popover-foreground">
+                          <p className="font-bold mb-1 border-b border-border/50 pb-1">{data.dateStr} - {data.id}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Valor:</span> {formatCurrency(data.value)}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Horas:</span> {data.hours}h</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Máquina:</span> {data.machine}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Operador:</span> {data.operator}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Scatter data={scatterData} fill="hsl(var(--primary))">
+                  {scatterData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.status === 'concluido' ? 'hsl(var(--primary))' : 'hsl(var(--warning))'} />
+                  ))}
+                </Scatter>
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
       {/* Contact & Details */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-5 rounded-2xl bg-card border border-border">
@@ -156,16 +285,20 @@ export default function ClientDetailPage() {
             <CardContent className="p-0">
               <div className="divide-y divide-border">
                 {clientServices.slice(0, 10).map(s => (
-                  <div key={s.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                  <div key={s.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors cursor-pointer group" onClick={() => setLocation(`/servicos/${s.id}`)}>
                     <div>
                       <p className="font-bold text-sm text-primary">{s.id}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{s.machine} · {s.operator} · {new Date(s.date).toLocaleDateString('pt-BR')}</p>
+                      {(s.area || s.serviceType) && <p className="text-xs text-muted-foreground">{s.area || s.serviceType}</p>}
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">{formatCurrency(s.value || 0)}</p>
-                      <Badge variant="outline" className={`text-[9px] font-bold mt-1 ${s.status === 'concluido' ? 'text-[hsl(var(--success-text))] bg-[hsl(var(--success-subtle))]' : 'text-[hsl(var(--warning-text))] bg-[hsl(var(--warning-subtle))]'}`}>
-                        {s.status === 'concluido' ? 'Concluído' : 'Em andamento'}
-                      </Badge>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <p className="font-bold text-sm">{formatCurrency(s.value || 0)}</p>
+                        <Badge variant="outline" className={`text-[9px] font-bold mt-1 ${s.status === 'concluido' ? 'text-emerald-700 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-700 bg-amber-500/10 border-amber-500/20'}`}>
+                          {s.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                        </Badge>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 ))}

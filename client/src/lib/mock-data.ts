@@ -80,6 +80,39 @@ export const mockClients = clientsList.map((name, i) => ({
   machines_used: mockMachines.slice(0, (i % 3) + 1).map(m => m.name)
 }));
 
+// ────────────────────────────────────────────────
+// Payment Details (for service conclusion)
+// ────────────────────────────────────────────────
+export interface PaymentDetails {
+  paymentMethod: "dinheiro" | "pix" | "boleto" | "cartao" | "cheque" | "transferencia";
+  entryAmount?: number;
+  remainingAmount?: number;
+  isInstallment?: boolean;
+  installmentCount?: number;
+  installmentValue?: number;
+  hourlyRate?: number;
+  totalHours?: number;
+  notes?: string;
+}
+
+// ────────────────────────────────────────────────
+// Machine Assignment (for multi-machine services)
+// ────────────────────────────────────────────────
+export interface MachineAssignment {
+  machineName: string;
+  operatorName: string;
+  horaInicial?: number;
+  horaFinal?: number;
+  hours?: number;
+  diesel?: number;
+  dieselSupplier?: "sao_bento" | "cliente";
+  status: "em_andamento" | "concluido";
+  paymentDetails?: PaymentDetails;
+}
+
+// ────────────────────────────────────────────────
+// Service Interface (area replaces serviceType)
+// ────────────────────────────────────────────────
 export interface Service {
   id: string;
   client: string;
@@ -91,7 +124,8 @@ export interface Service {
   hours?: number;
   diesel?: number;
   dieselSupplier?: string;
-  serviceType?: string;
+  area?: string;       // renamed from serviceType
+  serviceType?: string; // legacy alias kept for backwards compat
   safra?: string;
   freight?: number;
   fixedValue?: number;
@@ -107,7 +141,13 @@ export interface Service {
   status: string;
   photos?: any[];
   notes?: string;
+  // New fields
+  paymentDetails?: PaymentDetails;
+  machines?: MachineAssignment[]; // multi-machine support
+  dailyLogs?: any[];
 }
+
+const areaOptions = ["Terraplanagem", "Destoca", "Transporte", "Escavação", "Aterro"];
 
 export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => {
   const client = mockClients[i % mockClients.length];
@@ -127,47 +167,78 @@ export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => 
   const cost_diesel = diesel * 6.50; // preco diesel
 
   const additionalCosts = [
-    { id: `cst-${i}-1`, name: "Custo Máquina", value: cost_machine, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
-    { id: `cst-${i}-2`, name: "Custo Operador", value: cost_operator, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
-    { id: `cst-${i}-3`, name: "Custo Diesel", value: cost_diesel, createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" }
+    { id: `cst-${i}-1`, name: "Custo Máquina", value: cost_machine, type: "saida", createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
+    { id: `cst-${i}-2`, name: "Custo Operador", value: cost_operator, type: "saida", createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" },
+    { id: `cst-${i}-3`, name: "Custo Diesel", value: cost_diesel, type: "saida", createdAt: new Date(2023, 9, 28 - i).toISOString(), createdBy: "admin@saobento.com" }
   ];
 
   const total_costs = additionalCosts.reduce((acc, curr) => acc + curr.value, 0);
   const profit = value - total_costs;
+  const areaValue = areaOptions[i % areaOptions.length];
+
+  const paymentDetails: PaymentDetails | undefined = i >= 5 ? {
+    paymentMethod: (["pix", "dinheiro", "boleto", "transferencia"] as any[])[i % 4],
+    entryAmount: i % 3 === 0 ? value * 0.3 : undefined,
+    remainingAmount: i % 3 === 0 ? value * 0.7 : value,
+    isInstallment: i % 4 === 0,
+    installmentCount: i % 4 === 0 ? 3 : undefined,
+    installmentValue: i % 4 === 0 ? value / 3 : undefined,
+    hourlyRate: hourlyValue,
+    totalHours: hours,
+  } : undefined;
 
   return {
     id: `SRV-${1000 + i}`,
     client: client.name,
     machine: machine.name,
     operator: operator.name,
-    date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
+    date: new Date(2025, i % 12, (i % 28) + 1).toISOString().split('T')[0],
     hora_inicial,
     hora_final,
     hours,
     diesel,
     dieselSupplier: i % 2 === 0 ? "sao_bento" : "cliente",
-    serviceType: ["Terraplanagem", "Destoca", "Transporte"][i % 3],
-    safra: i % 2 === 0 ? "2023/24" : "2024/25",
-    freight: i % 3 === 0 ? 500 : 0,
+    area: areaValue,
+    serviceType: areaValue, // legacy
+    safra: "2023/2024",
+    freight: i % 4 === 0 ? 300 : 0,
     fixedValue,
     hourlyValue,
+    value,
     costs: {
       machine: cost_machine,
       operator: cost_operator,
       diesel: cost_diesel
     },
     additionalCosts,
-    value,
     profit,
-    status: i < 5 ? "em_andamento" : "concluido",
-    photos: i % 5 === 0 ? [
+    status: i < 5 ? "em_andamento" : i < 8 ? "parcialmente_concluido" : "concluido",
+    paymentDetails,
+    machines: [
+      {
+        machineName: machine.name,
+        operatorName: operator.name,
+        horaInicial: hora_inicial,
+        horaFinal: i < 5 ? undefined : hora_final,
+        hours: i < 5 ? undefined : hours,
+        diesel: i < 5 ? undefined : diesel,
+        dieselSupplier: i % 2 === 0 ? "sao_bento" : "cliente",
+        status: i < 5 ? "em_andamento" : "concluido",
+        paymentDetails: i >= 5 ? paymentDetails : undefined
+      }
+    ],
+    photos: i % 3 === 0 ? [
       { url: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400", label: "Horímetro Inicial" },
       { url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400", label: "Horímetro Final" }
     ] : [],
-    notes: ""
+    notes: "",
+    dailyLogs: []
   };
 });
 
+// ────────────────────────────────────────────────
+// Transaction Interface (expanded)
+// ────────────────────────────────────────────────
 export interface Transaction {
   id: string;
   type: string;
@@ -178,6 +249,7 @@ export interface Transaction {
   category: string;
   supplier?: string;
   dueDate?: string;
+  invoiceNumber?: string;
   boletoInfo?: {
     installment: string;
     isPaid: boolean;
@@ -189,30 +261,39 @@ export interface Transaction {
   createdBy: string;
   relatedCostId?: string;
   relatedServiceId?: string;
+  // Payment tracking
+  paymentStatus?: "pendente" | "pago" | "pago_parcial";
+  paidAmount?: number;
+  paidDate?: string;
+  interestAmount?: number;
 }
 
 export let mockTransactions: Transaction[] = Array.from({ length: 20 }).map((_, i) => {
   const isExpense = i % 4 === 0;
   const baseAccount = accountsList[i % accountsList.length];
-  const isBoleto = baseAccount === "Boletos Cobrança" || i === 1 || i === 2; // Force some to be Boletos for testing
+  const isBoleto = baseAccount === "Boletos Cobrança" || i === 1 || i === 2;
   
   const today = new Date();
   const dueDate = isBoleto 
     ? (i % 2 === 0 ? today.toISOString().split('T')[0] : new Date(today.getTime() + 86400000 * 2).toISOString().split('T')[0]) 
-    : (isExpense ? new Date(2023, 9, 30 - i).toISOString().split('T')[0] : undefined);
+    : (isExpense ? new Date(2025, i % 12, 30 - (i % 28)).toISOString().split('T')[0] : undefined);
     
   const amount = isExpense ? 1500 + (i * 100) : 5000 + (i * 500);
+  const paymentStatus: Transaction["paymentStatus"] = isBoleto
+    ? (i % 3 === 0 ? "pago" : i % 5 === 0 ? "pago_parcial" : "pendente")
+    : undefined;
 
   return {
     id: `tx-${i}`,
     type: isExpense ? "saida" : "entrada",
     amount,
-    date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
+    date: new Date(2025, i % 12, (i % 28) + 1).toISOString().split('T')[0],
     description: isExpense ? "Pagamento Diesel" : `Recebimento Serviço ${mockServices[i]?.id || 'N/A'}`,
     account: isBoleto ? "Boletos Cobrança" : baseAccount,
     category: isExpense ? "Diesel" : "Serviços",
     supplier: isExpense ? ["Posto Rodonave", "Oficina do João", "Pneus & Cia"][i % 3] : undefined,
     dueDate,
+    invoiceNumber: i % 3 === 0 ? `NF-${10000 + i}` : undefined,
     boletoInfo: isBoleto ? {
       installment: `${(i % 12) + 1}/12`,
       isPaid: i % 3 === 0,
@@ -220,16 +301,19 @@ export let mockTransactions: Transaction[] = Array.from({ length: 20 }).map((_, 
       interestValue: (i % 3 !== 0 && i % 2 !== 0) ? amount * 0.02 : 0
     } : undefined,
     allocation: isExpense ? (i % 2 === 0 ? "Administrativo" : mockMachines[i % mockMachines.length].name) : undefined,
-    createdAt: new Date(2023, 9, 28 - i).toISOString(),
+    createdAt: new Date(2025, i % 12, (i % 28) + 1).toISOString(),
     createdBy: "admin@saobento.com",
     relatedCostId: undefined as string | undefined,
-    relatedServiceId: undefined as string | undefined
+    relatedServiceId: undefined as string | undefined,
+    paymentStatus,
+    paidAmount: paymentStatus === "pago" ? amount : paymentStatus === "pago_parcial" ? amount * 0.5 : undefined,
+    paidDate: paymentStatus === "pago" ? new Date(2025, i % 12, (i % 28) + 3).toISOString().split('T')[0] : undefined,
   };
 });
 
 export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
   id: `FRT-${1000 + i}`,
-  date: new Date(2023, 9, 28 - i).toISOString().split('T')[0],
+  date: new Date(2025, i % 12, (i % 28) + 1).toISOString().split('T')[0],
   machine: mockMachines[i % mockMachines.length].name,
   origin: ["Pátio Central", "Obra Alpha", "Fazenda Boa Vista", "Pátio Central", "Rio Verde"][i % 5],
   destination: ["Obra Alpha", "Fazenda Boa Vista", "Rio Verde", "Aparecida de Goiânia", "Pátio Central"][i % 5],
@@ -241,6 +325,7 @@ export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
   notes: ""
 }));
 
+// Keep for backward compat (used in some pages)
 export const kpis = {
   revenue: mockTransactions.filter(t => t.type === 'entrada').reduce((acc, curr) => acc + (curr.amount || 0), 0),
   hours: mockServices.reduce((acc, curr) => acc + (curr.hours || 0), 0),
@@ -284,4 +369,216 @@ export const mockOperatorTransactions: OperatorTransaction[] = [
   { id: "otx-1", operatorId: "op-0", date: new Date().toISOString().split('T')[0], type: "Vale", amount: 150, description: "Vale farmácia" },
   { id: "otx-2", operatorId: "op-0", date: new Date().toISOString().split('T')[0], type: "Bonificação", amount: 200, description: "Meta batida" },
   { id: "otx-3", operatorId: "op-1", date: new Date().toISOString().split('T')[0], type: "Adiantamento", amount: 500, description: "Adiantamento salarial" },
+];
+
+// ────────────────────────────────────────────────
+// Monthly Payroll (salary management per month)
+// ────────────────────────────────────────────────
+export interface MonthlyPayroll {
+  id: string;
+  operatorId: string;
+  month: number; // 0-11
+  year: number;
+  baseSalary: number;
+  bonus: number;
+  overtimeHours: number;
+  overtimeRate: number;
+  weekendDays: number;
+  weekendRate: number;
+  commissions: number;
+  deductions: number;
+  totalPay: number;
+  notes?: string;
+}
+
+export let mockMonthlyPayrolls: MonthlyPayroll[] = mockOperators.slice(0, 5).map((op, i) => {
+  const baseSalary = op.salary;
+  const bonus = i % 2 === 0 ? 300 : 0;
+  const overtimeHours = i % 3 === 0 ? 8 : 0;
+  const overtimeRate = 25;
+  const weekendDays = i % 2 === 0 ? 2 : 0;
+  const weekendRate = 150;
+  const commissions = (op.hours_worked || 0) * (op.commission_per_hour || 0);
+  const deductions = 150;
+  const totalPay = baseSalary + bonus + (overtimeHours * overtimeRate) + (weekendDays * weekendRate) + commissions - deductions;
+  const now = new Date();
+  return {
+    id: `pay-${i}`,
+    operatorId: op.id,
+    month: now.getMonth(),
+    year: now.getFullYear(),
+    baseSalary,
+    bonus,
+    overtimeHours,
+    overtimeRate,
+    weekendDays,
+    weekendRate,
+    commissions,
+    deductions,
+    totalPay,
+    notes: ""
+  };
+});
+
+// ────────────────────────────────────────────────
+// Praises / Ocorrências do Operador
+// ────────────────────────────────────────────────
+export interface Praise {
+  id: string;
+  operatorId: string;
+  date: string;
+  type: "elogio" | "advertencia" | "observacao";
+  text: string;
+  author: string;
+}
+
+export let mockPraises: Praise[] = [
+  { id: "pr-1", operatorId: "op-0", date: new Date(2025, 4, 10).toISOString().split('T')[0], type: "elogio", text: "Excelente trabalho na obra do cliente Geovani. Zerou o serviço no prazo e com qualidade.", author: "Admin" },
+  { id: "pr-2", operatorId: "op-0", date: new Date(2025, 5, 3).toISOString().split('T')[0], type: "observacao", text: "Chegou 30 min atrasado na segunda. Conversar sobre pontualidade.", author: "Admin" },
+  { id: "pr-3", operatorId: "op-1", date: new Date(2025, 5, 15).toISOString().split('T')[0], type: "elogio", text: "Superou a meta de horas do mês. Parabéns pelo comprometimento!", author: "Admin" },
+  { id: "pr-4", operatorId: "op-2", date: new Date(2025, 6, 1).toISOString().split('T')[0], type: "advertencia", text: "Não seguiu o procedimento de segurança ao operar a escavadeira. Advertência formal.", author: "Admin" },
+];
+
+// ────────────────────────────────────────────────
+// Maintenance Records (mechanic tab)
+// ────────────────────────────────────────────────
+export interface MaintenanceRecord {
+  id: string;
+  machineId: string;
+  mechanicName: string;
+  mechanicType?: "interno" | "externo";
+  mechanicId?: string;
+  date: string;
+  type: "troca_oleo" | "reparo" | "revisao" | "filtro" | "outro";
+  description: string;
+  partsUsed: { name: string; code: string; quantity: number; unitPrice: number }[];
+  totalCost: number;
+}
+
+export let mockMaintenanceRecords: MaintenanceRecord[] = [
+  {
+    id: "mnt-1",
+    machineId: "maq-0",
+    mechanicName: "José Mecânico",
+    date: new Date(2025, 3, 15).toISOString().split('T')[0],
+    type: "troca_oleo",
+    description: "Troca de óleo motor + filtro de óleo. Verificação geral do sistema hidráulico.",
+    partsUsed: [
+      { name: "Óleo Diesel S10", code: "OD-S10", quantity: 20, unitPrice: 6.50 },
+      { name: "Filtro de Óleo", code: "FO-220", quantity: 1, unitPrice: 85.50 }
+    ],
+    totalCost: 20 * 6.50 + 85.50
+  },
+  {
+    id: "mnt-2",
+    machineId: "maq-0",
+    mechanicName: "José Mecânico",
+    date: new Date(2025, 5, 10).toISOString().split('T')[0],
+    type: "filtro",
+    description: "Troca de filtro de combustível e filtro de ar.",
+    partsUsed: [
+      { name: "Filtro de Combustível", code: "FC-01", quantity: 1, unitPrice: 45.00 },
+      { name: "Filtro de Ar Secundário", code: "FA-S2", quantity: 1, unitPrice: 95.00 }
+    ],
+    totalCost: 45.00 + 95.00
+  },
+  {
+    id: "mnt-3",
+    machineId: "maq-1",
+    mechanicName: "Paulo Mecânico",
+    date: new Date(2025, 4, 20).toISOString().split('T')[0],
+    type: "reparo",
+    description: "Reparo na esteira direita. Tensionamento e lubrificação geral.",
+    partsUsed: [
+      { name: "Graxa", code: "GRX-01", quantity: 5, unitPrice: 35.00 }
+    ],
+    totalCost: 5 * 35.00
+  }
+];
+
+// ────────────────────────────────────────────────
+// Drivers (Portal do Motorista)
+// ────────────────────────────────────────────────
+export interface Driver {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  phone?: string;
+  cnh?: string;
+}
+
+export const mockDrivers: Driver[] = [
+  { id: "drv-0", name: "Roberto Silva", username: "roberto", password: "123", phone: "(62) 99111-2222", cnh: "B" },
+  { id: "drv-1", name: "Carlos Souza", username: "carlos", password: "123", phone: "(62) 99333-4444", cnh: "E" },
+  { id: "drv-2", name: "Juliano Lima", username: "juliano", password: "123", phone: "(62) 99555-6666", cnh: "D" },
+];
+
+// ────────────────────────────────────────────────
+// Mechanics (Portal do Mecânico)
+// ────────────────────────────────────────────────
+export interface Mechanic {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  phone?: string;
+  specialization?: string;
+  isExternal?: boolean;
+}
+
+export const mockMechanics: Mechanic[] = [
+  { id: "mec-0", name: "José Mecânico", username: "jose", password: "123", phone: "(62) 99777-8888", specialization: "Motor e Hidráulico", isExternal: false },
+  { id: "mec-1", name: "Paulo Mecânico", username: "paulo", password: "123", phone: "(62) 99999-0000", specialization: "Esteiras e Estrutura", isExternal: false },
+  { id: "mec-2", name: "Oficina Externa", username: "oficina", password: "123", specialization: "Elétrica", isExternal: true },
+];
+
+// ────────────────────────────────────────────────
+// Helper: get machine performance by month
+// ────────────────────────────────────────────────
+export function getMachinePerformanceByMonth(month: number, year: number) {
+  return mockMachines.map(machine => {
+    const services = mockServices.filter(s => {
+      if (s.machine !== machine.name) return false;
+      const d = new Date(s.date + "T12:00:00");
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+
+    const hours = services.reduce((acc, s) => {
+      if (s.hora_inicial != null && s.hora_final != null) {
+        return acc + (Number(s.hora_final) - Number(s.hora_inicial));
+      }
+      return acc + (s.hours || 0);
+    }, 0);
+
+    const diesel = services.reduce((acc, s) => acc + (s.diesel || 0), 0);
+    const revenue = services.reduce((acc, s) => acc + (s.value || 0), 0);
+    const profit = services.reduce((acc, s) => acc + (s.profit || 0), 0);
+    const avgDiesel = hours > 0 ? diesel / hours : 0;
+
+    return {
+      name: machine.name,
+      shortName: machine.name.length > 12 ? machine.name.substring(0, 12) + "…" : machine.name,
+      hours: Math.round(hours * 10) / 10,
+      diesel: Math.round(diesel),
+      avgDiesel: Math.round(avgDiesel * 10) / 10,
+      revenue,
+      profit,
+      serviceCount: services.length
+    };
+  }).filter(m => m.hours > 0 || m.serviceCount > 0);
+}
+
+// Area options (replaces serviceType)
+export const areaOptionsList = [
+  "Terraplanagem",
+  "Destoca",
+  "Transporte",
+  "Escavação",
+  "Aterro",
+  "Limpeza de Área",
+  "Abertura de Estrada",
+  "Nivelamento",
+  "Corte e Aterro",
+  "Outro"
 ];

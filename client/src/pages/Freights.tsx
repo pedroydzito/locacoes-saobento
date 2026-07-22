@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockFreights, machinesList } from "@/lib/mock-data";
+import { mockFreights, machinesList, mockDrivers } from "@/lib/mock-data";
 import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter, Truck, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -22,6 +22,7 @@ export default function Freights() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [machineFilter, setMachineFilter] = useState("all");
+  const [driverFilter, setDriverFilter] = useState("all");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -38,7 +39,8 @@ export default function Freights() {
   ];
 
   const filteredFreights = mockFreights.filter(f =>
-    machineFilter === "all" || f.machine === machineFilter
+    (machineFilter === "all" || f.machine === machineFilter) &&
+    (driverFilter === "all" || f.driver === driverFilter)
   );
 
   const formatCurrency = (value: number) => {
@@ -348,13 +350,13 @@ export default function Freights() {
       <ActionModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        title="Filtrar por Máquina"
+        title="Filtros de Frete"
       >
         <div className="space-y-4 pt-4">
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Máquina</label>
             <Select value={machineFilter} onValueChange={setMachineFilter}>
-              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm e">
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm">
                 <SelectValue placeholder="Selecione a Máquina" />
               </SelectTrigger>
               <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
@@ -365,9 +367,24 @@ export default function Freights() {
               </SelectContent>
             </Select>
           </div>
-          <Button className="w-full h-12 mt-4 rounded-xl font-bold" onClick={() => setIsFilterModalOpen(false)}>
-            Aplicar Filtros
-          </Button>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Motorista</label>
+            <Select value={driverFilter} onValueChange={setDriverFilter}>
+              <SelectTrigger className="h-11 rounded-xl w-full border-border bg-card text-sm">
+                <SelectValue placeholder="Selecione o Motorista" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl z-50 max-h-[200px] overflow-y-auto">
+                <SelectItem value="all" className="cursor-pointer">Todos os Motoristas</SelectItem>
+                {mockDrivers.map((d) => (
+                  <SelectItem key={d.id} value={d.name} className="cursor-pointer">{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 h-12 rounded-xl" onClick={() => { setMachineFilter("all"); setDriverFilter("all"); setIsFilterModalOpen(false); }}>Limpar</Button>
+            <Button className="flex-1 h-12 rounded-xl font-bold" onClick={() => setIsFilterModalOpen(false)}>Aplicar Filtros</Button>
+          </div>
         </div>
       </ActionModal>
 

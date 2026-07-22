@@ -120,7 +120,10 @@ export default function OperatorPortal() {
   
   // Find active services for this operator
   const [activeServices, setActiveServices] = useState(
-    mockServices.filter(s => s.operator === currentOperator.name && s.status === 'em_andamento')
+    mockServices.filter(s => {
+      const isOp = s.operator === currentOperator.name || s.machines?.some(m => m.operatorName === currentOperator.name);
+      return isOp && s.status === 'em_andamento';
+    })
   );
 
   // New Service State
@@ -134,6 +137,7 @@ export default function OperatorPortal() {
   // Morning Log State
   const [morningLogData, setMorningLogData] = useState({
     date: new Date().toISOString().split('T')[0],
+    machine: "",
     initialHorimeter: "",
     serviceType: "",
     maintenance: "",
@@ -145,6 +149,7 @@ export default function OperatorPortal() {
   // Afternoon Log State
   const [afternoonLogData, setAfternoonLogData] = useState({
     date: new Date().toISOString().split('T')[0],
+    machine: "",
     finalHorimeter: "",
     diesel: "",
     dieselSupplier: "cliente",
@@ -153,6 +158,7 @@ export default function OperatorPortal() {
   // Finish Service State
   const [finishServiceData, setFinishServiceData] = useState({
     date: new Date().toISOString().split('T')[0],
+    machine: "",
     horimeter: ""
   });
 
@@ -228,9 +234,9 @@ export default function OperatorPortal() {
     const srv = mockServices.find(s => s.id === selectedService.id) as any;
     if (srv) {
       if (!srv.dailyLogs) srv.dailyLogs = [];
-      let todayLog = srv.dailyLogs.find((l: any) => l.date === morningLogData.date);
+      let todayLog = srv.dailyLogs.find((l: any) => l.date === morningLogData.date && l.machine === morningLogData.machine);
       if (!todayLog) {
-        todayLog = { date: morningLogData.date };
+        todayLog = { date: morningLogData.date, machine: morningLogData.machine };
         srv.dailyLogs.push(todayLog);
       }
       todayLog.initialHorimeter = Number(morningLogData.initialHorimeter);
@@ -250,6 +256,7 @@ export default function OperatorPortal() {
     setSelectedService(null);
     setMorningLogData({
       date: new Date().toISOString().split('T')[0],
+      machine: "",
       initialHorimeter: "",
       serviceType: "",
       maintenance: "",
@@ -268,9 +275,9 @@ export default function OperatorPortal() {
     const srv = mockServices.find(s => s.id === selectedService.id) as any;
     if (srv) {
       if (!srv.dailyLogs) srv.dailyLogs = [];
-      let todayLog = srv.dailyLogs.find((l: any) => l.date === afternoonLogData.date);
+      let todayLog = srv.dailyLogs.find((l: any) => l.date === afternoonLogData.date && l.machine === afternoonLogData.machine);
       if (!todayLog) {
-        todayLog = { date: afternoonLogData.date };
+        todayLog = { date: afternoonLogData.date, machine: afternoonLogData.machine };
         srv.dailyLogs.push(todayLog);
       }
       
@@ -296,6 +303,7 @@ export default function OperatorPortal() {
     setSelectedService(null);
     setAfternoonLogData({
       date: new Date().toISOString().split('T')[0],
+      machine: "",
       finalHorimeter: "",
       diesel: "",
       dieselSupplier: "cliente",
@@ -310,10 +318,27 @@ export default function OperatorPortal() {
 
     const srv = mockServices.find(s => s.id === selectedService.id);
     if (srv) {
-      srv.status = "concluido";
-      srv.hora_final = Number(finishServiceData.horimeter);
-      if (srv.hora_inicial && !srv.hours) {
-         srv.hours = srv.hora_final - srv.hora_inicial;
+      // For multi-machine, just complete the specific machine
+      const mAssignment = srv.machines?.find(m => m.machineName === finishServiceData.machine);
+      if (mAssignment) {
+        mAssignment.status = "concluido";
+        mAssignment.horaFinal = Number(finishServiceData.horimeter);
+        if (mAssignment.horaInicial && !mAssignment.hours) {
+          mAssignment.hours = mAssignment.horaFinal - mAssignment.horaInicial;
+        }
+        
+        // If all machines are completed, complete the service
+        if (srv.machines?.every(m => m.status === "concluido")) {
+          srv.status = "concluido";
+        } else {
+          srv.status = "parcialmente_concluido";
+        }
+      } else {
+        srv.status = "concluido";
+        srv.hora_final = Number(finishServiceData.horimeter);
+        if (srv.hora_inicial && !srv.hours) {
+           srv.hours = srv.hora_final - srv.hora_inicial;
+        }
       }
     }
 
@@ -478,6 +503,19 @@ export default function OperatorPortal() {
                 <Label>Data do Registro *</Label>
                 <Input type="date" value={morningLogData.date} onChange={e => setMorningLogData({...morningLogData, date: e.target.value})} className="h-12 rounded-xl bg-muted/50" />
               </div>
+              
+              <div className="space-y-2">
+                <Label>Máquina Operada *</Label>
+                <Select value={morningLogData.machine} onValueChange={(v) => setMorningLogData({...morningLogData, machine: v})}>
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/50"><SelectValue placeholder="Selecione a máquina" /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {selectedService?.machines?.filter((m:any) => m.operatorName === currentOperator.name).map((m:any) => (
+                      <SelectItem key={m.machineName} value={m.machineName}>{m.machineName}</SelectItem>
+                    ))}
+                    {!selectedService?.machines && <SelectItem value={selectedService?.machine || ""}>{selectedService?.machine}</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label>Horímetro Inicial (Início do Dia) *</Label>
@@ -541,6 +579,19 @@ export default function OperatorPortal() {
               </div>
 
               <div className="space-y-2">
+                <Label>Máquina Operada *</Label>
+                <Select value={afternoonLogData.machine} onValueChange={(v) => setAfternoonLogData({...afternoonLogData, machine: v})}>
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/50"><SelectValue placeholder="Selecione a máquina" /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {selectedService?.machines?.filter((m:any) => m.operatorName === currentOperator.name).map((m:any) => (
+                      <SelectItem key={m.machineName} value={m.machineName}>{m.machineName}</SelectItem>
+                    ))}
+                    {!selectedService?.machines && <SelectItem value={selectedService?.machine || ""}>{selectedService?.machine}</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Horímetro Final (Fim do Dia) *</Label>
                 <Input type="number" value={afternoonLogData.finalHorimeter} onChange={e => setAfternoonLogData({...afternoonLogData, finalHorimeter: e.target.value})} className="h-12 rounded-xl bg-muted/50 font-mono" placeholder="Ex: 1259.0" />
               </div>
@@ -584,6 +635,19 @@ export default function OperatorPortal() {
               <div className="space-y-2">
                 <Label>Data de Finalização *</Label>
                 <Input type="date" value={finishServiceData.date} onChange={e => setFinishServiceData({...finishServiceData, date: e.target.value})} className="h-12 rounded-xl bg-white" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Máquina a Finalizar *</Label>
+                <Select value={finishServiceData.machine} onValueChange={(v) => setFinishServiceData({...finishServiceData, machine: v})}>
+                  <SelectTrigger className="h-12 rounded-xl bg-white"><SelectValue placeholder="Selecione a máquina" /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {selectedService?.machines?.filter((m:any) => m.operatorName === currentOperator.name && m.status !== "concluido").map((m:any) => (
+                      <SelectItem key={m.machineName} value={m.machineName}>{m.machineName}</SelectItem>
+                    ))}
+                    {!selectedService?.machines && <SelectItem value={selectedService?.machine || ""}>{selectedService?.machine}</SelectItem>}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

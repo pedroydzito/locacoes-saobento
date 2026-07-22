@@ -22,6 +22,7 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
     supplier: initialData?.supplier || "",
     dueDate: initialData?.dueDate || "",
     allocation: initialData?.allocation || "Administrativo",
+    invoiceNumber: initialData?.invoiceNumber || "",
     boletoInfo: initialData?.boletoInfo || {
       installment: "",
       isPaid: false,
@@ -184,6 +185,29 @@ export function FinanceForm({ onSave, onCancel, initialData }: FinanceFormProps)
           </div>
         </div>
       )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="supplier" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fornecedor / Cliente</Label>
+          <Input 
+            id="supplier" 
+            value={formData.supplier}
+            onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+            placeholder="Nome da empresa ou pessoa" 
+            className="h-11 rounded-xl border-border bg-muted/10" 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="invoiceNumber" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Nº Nota Fiscal (Opcional)</Label>
+          <Input 
+            id="invoiceNumber" 
+            value={formData.invoiceNumber}
+            onChange={(e) => setFormData({...formData, invoiceNumber: e.target.value})}
+            placeholder="Ex: NF-10492" 
+            className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
+          />
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="amount" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Valor Total (R$)</Label>

@@ -21,6 +21,8 @@ import Reports from "@/pages/Reports";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/not-found";
 import OperatorPortal from "@/pages/OperatorPortal";
+import DriverPortal from "@/pages/DriverPortal";
+import MechanicPortal from "@/pages/MechanicPortal";
 import Inventory from "@/pages/Inventory";
 import { useEffect } from "react";
 
@@ -35,14 +37,20 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
     } else if (isAuthenticated) {
       if (userRole === 'operador' && location !== '/portal') {
         setLocation('/portal');
+      } else if (userRole === 'motorista' && location !== '/portal/motorista') {
+        setLocation('/portal/motorista');
+      } else if (userRole === 'mecanico' && location !== '/portal/mecanico') {
+        setLocation('/portal/mecanico');
       } else if (allowedRoles && !allowedRoles.includes(userRole)) {
-        setLocation(userRole === 'operador' ? '/portal' : '/');
+        setLocation(userRole === 'operador' ? '/portal' : userRole === 'motorista' ? '/portal/motorista' : userRole === 'mecanico' ? '/portal/mecanico' : '/');
       }
     }
   }, [isAuthenticated, location, setLocation, userRole, allowedRoles]);
 
   if (!isAuthenticated) return null;
   if (userRole === 'operador' && location !== '/portal') return null;
+  if (userRole === 'motorista' && location !== '/portal/motorista') return null;
+  if (userRole === 'mecanico' && location !== '/portal/mecanico') return null;
   if (allowedRoles && !allowedRoles.includes(userRole)) return null;
 
   return <Component />;
@@ -57,6 +65,14 @@ function Router() {
 
   if (location === '/portal') {
     return <Route path="/portal" component={() => <ProtectedRoute component={OperatorPortal} allowedRoles={['operador', 'admin']} />} />;
+  }
+
+  if (location === '/portal/motorista') {
+    return <Route path="/portal/motorista" component={() => <ProtectedRoute component={DriverPortal} allowedRoles={['motorista', 'admin']} />} />;
+  }
+
+  if (location === '/portal/mecanico') {
+    return <Route path="/portal/mecanico" component={() => <ProtectedRoute component={MechanicPortal} allowedRoles={['mecanico', 'admin']} />} />;
   }
 
   return (

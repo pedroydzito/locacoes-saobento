@@ -35,43 +35,60 @@ export default function Operators() {
     return hours + (minutes / 60);
   };
 
-  const filteredOperators = mockOperators.filter(op => {
-    const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const machines = Array.isArray(op.machine_assigned) ? op.machine_assigned : [op.machine_assigned];
-    const matchesMachine = machineFilter === "all" || machines.includes(machineFilter);
-    return matchesSearch && matchesMachine;
-  }).map(op => {
+  const filteredOperators = mockOperators.map(op => {
+    // 1. Get all services for this operator, optionally filtered by date
     const opServices = mockServices.filter(s => {
-      const matchesOperator = s.operator === op.name;
+      // Check if operator is the main operator or one of the operators in machines array
+      const matchesOperator = s.operator === op.name || s.machines?.some(m => m.operatorName === op.name);
       const matchesStart = !startDate || s.date >= startDate;
       const matchesEnd = !endDate || s.date <= endDate;
       return matchesOperator && matchesStart && matchesEnd;
     });
 
-    const calculatedHours = opServices.reduce((acc, curr) => {
-      if (curr.hora_inicial != null && curr.hora_final != null) {
-        const start = typeof curr.hora_inicial === 'number' ? curr.hora_inicial : parseFloat(curr.hora_inicial);
-        const end = typeof curr.hora_final === 'number' ? curr.hora_final : parseFloat(curr.hora_final);
-        if (!isNaN(start) && !isNaN(end)) {
-          return acc + (end - start);
-        }
+    // 2. Extract unique machines worked from these services
+    const workedMachinesSet = new Set<string>();
+    opServices.forEach(s => {
+      if (s.machines) {
+        s.machines.forEach(m => {
+          if (m.operatorName === op.name) workedMachinesSet.add(m.machineName);
+        });
+      } else if (s.operator === op.name) {
+        workedMachinesSet.add(s.machine);
       }
-      return acc + (curr.hours || 0);
+    });
+    const workedMachines = Array.from(workedMachinesSet);
+
+    // 3. Calculate hours and commission
+    const calculatedHours = opServices.reduce((acc, curr) => {
+      let hours = 0;
+      if (curr.machines) {
+        const m = curr.machines.find(m => m.operatorName === op.name);
+        if (m) {
+          if (m.horaInicial != null && m.horaFinal != null) hours = m.horaFinal - m.horaInicial;
+          else if (m.hours) hours = m.hours;
+        }
+      } else if (curr.operator === op.name) {
+        if (curr.hora_inicial != null && curr.hora_final != null) hours = curr.hora_final - curr.hora_inicial;
+        else if (curr.hours) hours = curr.hours;
+      }
+      return acc + hours;
     }, 0);
 
     const calculatedCommission = (calculatedHours * (op.commission_per_hour || 0)) + (opServices.length * (op.fixed_commission || 0));
 
     return { 
       ...op, 
+      workedMachines,
       services_done: opServices.length, 
       hours_worked: Number(calculatedHours.toFixed(1)),
       calculatedCommission
     };
   }).filter(op => {
-    if (startDate || endDate) {
-      return op.services_done > 0;
-    }
-    return true;
+    const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesMachine = machineFilter === "all" || op.workedMachines.includes(machineFilter);
+    const matchesDate = (startDate || endDate) ? op.services_done > 0 : true;
+    
+    return matchesSearch && matchesMachine && matchesDate;
   });
 
   const formatCurrency = (value: number) => {
@@ -213,7 +230,7 @@ export default function Operators() {
             <thead>
               <tr className="border-b border-border bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide font-bold">
                 <th className="p-4">Nome</th>
-                <th className="p-4">Máquinas Designadas</th>
+                <th className="p-4">Máquinas Trabalhadas</th>
                 <th className="p-4 text-center">Horas Trabalhadas</th>
                 <th className="p-4 text-center">Serviços Feitos</th>
                 <th className="p-4 text-right">Salário Total (Est.)</th>
@@ -233,14 +250,16 @@ export default function Operators() {
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      {operator.machine_assigned.slice(0, 2).map((m: any) => (
+                      {operator.workedMachines.length > 0 ? operator.workedMachines.slice(0, 2).map((m: string) => (
                         <Badge key={m} variant="secondary" className="bg-neutral-subtle text-neutral-text border-none text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
                           {m}
                         </Badge>
-                      ))}
-                      {operator.machine_assigned.length > 2 && (
+                      )) : (
+                        <span className="text-xs text-muted-foreground italic">Nenhuma</span>
+                      )}
+                      {operator.workedMachines.length > 2 && (
                         <Badge variant="outline" className="text-[10px] px-2 py-0">
-                          +{operator.machine_assigned.length - 2}
+                          +{operator.workedMachines.length - 2}
                         </Badge>
                       )}
                     </div>
@@ -298,9 +317,11 @@ export default function Operators() {
                 title={operator.name}
                 subtitle={
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {operator.machine_assigned.map((m: any) => (
+                    {operator.workedMachines.length > 0 ? operator.workedMachines.map((m: string) => (
                       <span key={m} className="text-[10px] bg-neutral-subtle text-neutral-text px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{m}</span>
-                    ))}
+                    )) : (
+                      <span className="text-[10px] text-muted-foreground italic">Nenhuma</span>
+                    )}
                   </div>
                 }
               />

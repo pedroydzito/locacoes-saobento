@@ -1,6 +1,6 @@
 import { useLocation, useRoute } from "wouter";
 import { useState, useMemo } from "react";
-import { mockOperators, mockServices, mockOperatorTransactions } from "@/lib/mock-data";
+import { mockOperators, mockServices, mockOperatorTransactions, mockPraises, type Praise } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { OperatorForm } from "@/components/forms/OperatorForm";
-import { Edit, Trash2, ChevronRight, ArrowLeft, Users, Clock, DollarSign, Tractor, CalendarDays, TrendingUp, CalendarCheck, CalendarRange, Palmtree, ChevronLeft, Calendar as CalendarIcon, Info, Plus, X, Receipt } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Edit, Trash2, ChevronRight, ArrowLeft, Users, Clock, DollarSign, Tractor, CalendarDays, TrendingUp, CalendarCheck, CalendarRange, Palmtree, ChevronLeft, Calendar as CalendarIcon, Info, Plus, X, Receipt, Star, AlertTriangle, MessageSquare, Award } from "lucide-react";
 
 type LancamentoType = "Vale" | "Adiantamento" | "Bonificação" | "Desconto";
 interface Lancamento { id: string; type: LancamentoType; description: string; amount: number; date: string; }
@@ -61,9 +62,28 @@ export default function OperatorDetailPage() {
   }, 0);
   const totalRevenue = opServices.reduce((acc, s) => acc + (s.value || 0), 0);
   const commissionTotal = totalHours * (operator.commission_per_hour || 0) + opServices.length * (operator.fixed_commission || 0);
-  const machines = Array.isArray(operator.machine_assigned) ? operator.machine_assigned : [operator.machine_assigned].filter(Boolean);
   const formatCurrency = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   const initials = operator.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
+
+  // Machines actually worked on (from real services)
+  const machinesWorked = useMemo(() => {
+    const machineMap: Record<string, { name: string; hours: number; serviceCount: number }> = {};
+    opServices.forEach(s => {
+      if (!s.machine) return;
+      const hours = s.hora_inicial != null && s.hora_final != null
+        ? Math.abs(Number(s.hora_final) - Number(s.hora_inicial))
+        : (s.hours || 0);
+      if (!machineMap[s.machine]) machineMap[s.machine] = { name: s.machine, hours: 0, serviceCount: 0 };
+      machineMap[s.machine].hours += hours;
+      machineMap[s.machine].serviceCount += 1;
+    });
+    return Object.values(machineMap).sort((a, b) => b.hours - a.hours);
+  }, [opServices]);
+
+  // Praises for this operator
+  const operatorPraises = mockPraises.filter(p => p.operatorId === operator.id);
+  const [newPraise, setNewPraise] = useState<{ type: Praise['type']; text: string; author: string }>({ type: 'elogio', text: '', author: '' });
+  const [isPraiseModalOpen, setIsPraiseModalOpen] = useState(false);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -216,332 +236,374 @@ export default function OperatorDetailPage() {
         </div>
         <div className="p-5 rounded-2xl bg-card border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-4">
-            <Tractor className="w-3.5 h-3.5" /> Máquinas Designadas
+            <Tractor className="w-3.5 h-3.5" /> Máquinas Trabalhadas
           </p>
           <div className="space-y-2">
-            {machines.length > 0 ? machines.map((m: string) => (
-              <div key={m} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/20 border border-border/50">
-                <Tractor className="w-3.5 h-3.5 text-primary" />
-                <span className="font-medium text-sm">{m}</span>
+            {machinesWorked.length > 0 ? machinesWorked.map(m => (
+              <div key={m.name} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/20 border border-border/50">
+                <div className="flex items-center gap-2">
+                  <Tractor className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-medium text-sm truncate max-w-[130px]">{m.name}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-primary">{m.hours.toFixed(1)}h</p>
+                  <p className="text-[10px] text-muted-foreground">{m.serviceCount} OS</p>
+                </div>
               </div>
-            )) : <p className="text-sm text-muted-foreground">Nenhuma máquina designada.</p>}
+            )) : <p className="text-sm text-muted-foreground">Nenhum serviço registrado.</p>}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-3">
-          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
-            <TrendingUp className="w-3 h-3" /> Relatório Detalhado Mensal
-          </h4>
-          
-          <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-sm flex flex-col gap-6 relative overflow-hidden">
-            {/* Background decoration */}
-            <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none transition-colors duration-500
-              ${activeData.isFuture ? 'from-purple-500 to-indigo-500' : activeData.isCurrent ? 'from-primary to-primary/50' : 'from-foreground to-muted-foreground'}`} />
-            
-            {/* Header / Month Navigation */}
-            <div className="flex items-center justify-between border-b border-border/60 pb-5">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="rounded-full w-10 h-10 border-border bg-transparent hover:bg-muted/50"
-                onClick={() => setActiveMonthOffset(prev => Math.max(-12, prev - 1))}
-                disabled={activeMonthOffset === -12}
-              >
-                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-              </Button>
-              
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarIcon className="w-4 h-4 text-primary" />
-                  <span className="font-display font-bold text-lg tracking-tight">
-                    {activeData.monthName} {activeData.year}
-                  </span>
-                </div>
-                <Badge variant="outline" className={`
-                  text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 border-none
-                  ${activeData.isFuture ? 'bg-purple-500/10 text-purple-500' : 
-                    activeData.isCurrent ? 'bg-primary/10 text-primary' : 
-                    'bg-muted text-muted-foreground'}
-                `}>
-                  {activeData.isFuture ? "Projeção Estimada" : activeData.isCurrent ? "Em Andamento (Atual)" : "Fechado"}
-                </Badge>
-              </div>
+      {/* TABS */}
+      <Tabs defaultValue="resumo">
+        <TabsList className="rounded-2xl bg-muted/30 border border-border h-12 p-1">
+          <TabsTrigger value="resumo" className="rounded-xl font-bold flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TrendingUp className="w-4 h-4 mr-1.5" /> Resumo
+          </TabsTrigger>
+          <TabsTrigger value="lancamentos" className="rounded-xl font-bold flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Receipt className="w-4 h-4 mr-1.5" /> Lançamentos
+          </TabsTrigger>
+          <TabsTrigger value="elogios" className="rounded-xl font-bold flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Award className="w-4 h-4 mr-1.5" /> Elogios
+          </TabsTrigger>
+        </TabsList>
 
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="rounded-full w-10 h-10 border-border bg-transparent hover:bg-muted/50"
-                onClick={() => setActiveMonthOffset(prev => Math.min(1, prev + 1))}
-                disabled={activeMonthOffset === 1}
-              >
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </Button>
+        {/* TAB 1: RESUMO */}
+        <TabsContent value="resumo" className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-3">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3" /> Relatório Detalhado Mensal
+              </h4>
+              <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-sm flex flex-col gap-6 relative overflow-hidden">
+                <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none transition-colors duration-500 ${activeData.isFuture ? 'from-purple-500 to-indigo-500' : activeData.isCurrent ? 'from-primary to-primary/50' : 'from-foreground to-muted-foreground'}`} />
+                <div className="flex items-center justify-between border-b border-border/60 pb-5">
+                  <Button variant="outline" size="icon" className="rounded-full w-10 h-10 border-border bg-transparent hover:bg-muted/50"
+                    onClick={() => setActiveMonthOffset(prev => Math.max(-12, prev - 1))} disabled={activeMonthOffset === -12}>
+                    <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+                  </Button>
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CalendarIcon className="w-4 h-4 text-primary" />
+                      <span className="font-display font-bold text-lg tracking-tight">{activeData.monthName} {activeData.year}</span>
+                    </div>
+                    <Badge variant="outline" className={`text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 border-none ${activeData.isFuture ? 'bg-purple-500/10 text-purple-500' : activeData.isCurrent ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                      {activeData.isFuture ? "Projeção Estimada" : activeData.isCurrent ? "Em Andamento (Atual)" : "Fechado"}
+                    </Badge>
+                  </div>
+                  <Button variant="outline" size="icon" className="rounded-full w-10 h-10 border-border bg-transparent hover:bg-muted/50"
+                    onClick={() => setActiveMonthOffset(prev => Math.min(1, prev + 1))} disabled={activeMonthOffset === 1}>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 border-b border-border/40 pb-2">
+                      <Tractor className="w-3 h-3" /> Operacional
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-end"><span className="text-sm text-muted-foreground">Horas Totais</span><span className="font-bold text-foreground text-lg">{activeData.hours}h</span></div>
+                      <div className="flex justify-between items-end"><span className="text-sm text-muted-foreground">Serviços (OSs)</span><span className="font-bold text-foreground text-lg">{activeData.services}</span></div>
+                      <div className="flex justify-between items-end"><span className="text-sm text-muted-foreground">Diesel (Mês)</span><span className="font-bold text-foreground text-lg">{activeData.diesel.toFixed(0)} L</span></div>
+                      {activeData.hasVacation && (<div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg text-amber-700"><Palmtree className="w-4 h-4 shrink-0" /><span className="text-xs font-bold">Mês com período de férias.</span></div>)}
+                      {activeData.isFuture && (<div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 p-2 rounded-lg text-purple-600"><Info className="w-4 h-4 shrink-0" /><span className="text-xs font-bold">Valores baseados na média móvel do operador.</span></div>)}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 border-b border-border/40 pb-2">
+                      <DollarSign className="w-3 h-3" /> Financeiro
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Salário Fixo</span><span className="font-medium text-sm">{formatCurrency(activeData.salary)}</span></div>
+                      <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground flex items-center gap-1">Valor Horas/OS <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-sm">Var</span></span><span className="font-medium text-sm text-emerald-600">+{formatCurrency(activeData.commissions)}</span></div>
+                      {(() => {
+                        const tDate = new Date(activeData.year, months.indexOf(activeData.monthName), 1);
+                        const mIdx = tDate.getMonth(); const yIdx = tDate.getFullYear();
+                        const monthLanc = lancamentos.filter(l => { const d = new Date(l.date); return d.getMonth() === mIdx && d.getFullYear() === yIdx; });
+                        const bonif = monthLanc.filter(l => l.type === "Bonificação").reduce((a,b) => a + b.amount, 0);
+                        const vales = monthLanc.filter(l => l.type === "Vale").reduce((a,b) => a + b.amount, 0);
+                        const adian = monthLanc.filter(l => l.type === "Adiantamento").reduce((a,b) => a + b.amount, 0);
+                        const desc  = monthLanc.filter(l => l.type === "Desconto").reduce((a,b) => a + b.amount, 0);
+                        const finalTotal = activeData.salary + activeData.commissions + bonif - vales - adian - desc;
+                        return (<>
+                          {bonif > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Bonificações</span><span className="font-medium text-sm text-emerald-600">+{formatCurrency(bonif)}</span></div>}
+                          {vales > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Vales</span><span className="font-medium text-sm text-destructive">-{formatCurrency(vales)}</span></div>}
+                          {adian > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Adiantamentos</span><span className="font-medium text-sm text-destructive">-{formatCurrency(adian)}</span></div>}
+                          {desc > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Descontos</span><span className="font-medium text-sm text-destructive">-{formatCurrency(desc)}</span></div>}
+                          <div className="pt-2 mt-1 border-t border-dashed border-border flex justify-between items-center">
+                            <span className="font-bold text-foreground">Total do Mês</span>
+                            <span className="font-bold text-lg text-primary">{formatCurrency(finalTotal)}</span>
+                          </div>
+                        </>);
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Content Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
-              {/* Left Column - Operational */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 border-b border-border/40 pb-2">
-                  <Tractor className="w-3 h-3" /> Operacional
-                </p>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between items-end">
-                    <span className="text-sm text-muted-foreground">Horas Totais</span>
-                    <span className="font-bold text-foreground text-lg">{activeData.hours}h</span>
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                <Palmtree className="w-3 h-3" /> Status de Férias
+              </h4>
+              <div className="p-5 rounded-2xl bg-card border border-border h-[calc(100%-28px)] flex flex-col justify-center space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                    <Palmtree className="w-6 h-6 text-emerald-600" />
                   </div>
-                  <div className="flex justify-between items-end">
-                    <span className="text-sm text-muted-foreground">Serviços (OSs)</span>
-                    <span className="font-bold text-foreground text-lg">{activeData.services}</span>
+                  <div>
+                    <p className="text-lg font-bold font-display">30 dias</p>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Acumulados</p>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <span className="text-sm text-muted-foreground">Diesel (Mês)</span>
-                    <span className="font-bold text-foreground text-lg">{activeData.diesel.toFixed(0)} L</span>
-                  </div>
-                  {activeData.isCurrent && (
-                    <div className="flex justify-between items-end">
-                      <span className="text-sm text-muted-foreground">Serviços Ativos</span>
-                      <span className="font-bold text-primary text-lg">{activeData.activeServices}</span>
-                    </div>
-                  )}
-                  {activeData.hasVacation && (
-                    <div className="flex items-center gap-2 bg-[hsl(var(--warning-subtle))] border border-[hsl(var(--warning)/0.2)] p-2 rounded-lg text-[hsl(var(--warning-text))]">
-                      <Palmtree className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-bold leading-tight">Mês com período de férias / licença.</span>
-                    </div>
-                  )}
-                  {activeData.isFuture && (
-                    <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 p-2 rounded-lg text-purple-600 dark:text-purple-400">
-                      <Info className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-bold leading-tight">Valores baseados na média móvel do operador.</span>
-                    </div>
-                  )}
                 </div>
-              </div>
-
-              {/* Right Column - Financial */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 border-b border-border/40 pb-2">
-                  <DollarSign className="w-3 h-3" /> Financeiro
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Salário Fixo</span>
-                    <span className="font-medium text-sm">{formatCurrency(activeData.salary)}</span>
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><CalendarRange className="w-3.5 h-3.5" /> Últimas Férias</p>
+                    <div className="bg-muted/30 p-2.5 rounded-xl border border-border/50"><p className="text-sm font-bold text-center">15/Dez a 14/Jan</p></div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      Valor Horas/OS <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-sm">Var</span>
-                    </span>
-                    <span className="font-medium text-sm text-[hsl(var(--success))]">+{formatCurrency(activeData.commissions)}</span>
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><CalendarCheck className="w-3.5 h-3.5" /> Próximas Férias</p>
+                    <div className="bg-primary/5 p-2.5 rounded-xl border border-primary/20"><p className="text-sm font-bold text-primary text-center">A partir de 20/Dez</p></div>
                   </div>
-                  {(() => {
-                    const tDate = new Date(activeData.year, months.indexOf(activeData.monthName), 1);
-                    const mIdx = tDate.getMonth(); const yIdx = tDate.getFullYear();
-                    const monthLanc = lancamentos.filter(l => { const d = new Date(l.date); return d.getMonth() === mIdx && d.getFullYear() === yIdx; });
-                    const bonif = monthLanc.filter(l => l.type === "Bonificação").reduce((a,b) => a + b.amount, 0);
-                    const vales = monthLanc.filter(l => l.type === "Vale").reduce((a,b) => a + b.amount, 0);
-                    const adian = monthLanc.filter(l => l.type === "Adiantamento").reduce((a,b) => a + b.amount, 0);
-                    const desc  = monthLanc.filter(l => l.type === "Desconto").reduce((a,b) => a + b.amount, 0);
-                    const finalTotal = activeData.salary + activeData.commissions + bonif - vales - adian - desc;
-                    return (<>
-                      {bonif > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Bonificações</span><span className="font-medium text-sm text-[hsl(var(--success))]">+{formatCurrency(bonif)}</span></div>}
-                      {vales > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Vales</span><span className="font-medium text-sm text-destructive">-{formatCurrency(vales)}</span></div>}
-                      {adian > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Adiantamentos</span><span className="font-medium text-sm text-destructive">-{formatCurrency(adian)}</span></div>}
-                      {desc > 0 && <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Descontos</span><span className="font-medium text-sm text-destructive">-{formatCurrency(desc)}</span></div>}
-                      <div className="pt-2 mt-1 border-t border-border border-dashed flex justify-between items-center">
-                        <span className="font-bold text-foreground">Total do Mês</span>
-                        <span className="font-bold text-lg text-primary">{formatCurrency(finalTotal)}</span>
-                      </div>
-                    </>);
-                  })()}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
-            <Palmtree className="w-3 h-3" /> Status de Férias
-          </h4>
-          <div className="p-5 rounded-2xl bg-card border border-border h-[calc(100%-28px)] flex flex-col justify-center space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--success-subtle))] border border-[hsl(var(--success)/0.2)] flex items-center justify-center shrink-0">
-                <Palmtree className="w-6 h-6 text-[hsl(var(--success-text))]" />
+          {/* Monthly service detail */}
+          {(() => {
+            const tDate = new Date(activeData.year, months.indexOf(activeData.monthName), 1);
+            const mIdx = tDate.getMonth(); const yIdx = tDate.getFullYear();
+            const monthServices = opServices.filter(s => {
+              const d = new Date(s.date);
+              return d.getMonth() === mIdx && d.getFullYear() === yIdx;
+            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            if (monthServices.length === 0) return null;
+            return (
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                  <CalendarDays className="w-3 h-3" /> Detalhamento Diário ({activeData.monthName})
+                </h4>
+                <Card className="rounded-2xl border border-border bg-card overflow-hidden shadow-none">
+                  <CardContent className="p-0">
+                    <div className="divide-y divide-border">
+                      {monthServices.map(s => {
+                        const hStart = typeof s.hora_inicial === 'number' ? s.hora_inicial : parseFloat(s.hora_inicial as any);
+                        const hEnd = typeof s.hora_final === 'number' ? s.hora_final : parseFloat(s.hora_final as any);
+                        const hours = !isNaN(hStart) && !isNaN(hEnd) ? (hEnd - hStart).toFixed(1) : (s.hours || 0).toFixed(1);
+                        return (
+                          <div key={s.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                            <div>
+                              <p className="font-bold text-sm text-primary">{new Date(s.date).toLocaleDateString('pt-BR')} - {s.id}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{s.client} · {s.machine}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-sm">{hours}h</p>
+                              <Badge variant="outline" className={`text-[9px] font-bold mt-1 ${s.status === 'concluido' ? 'text-emerald-700 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-700 bg-amber-500/10 border-amber-500/20'}`}>
+                                {s.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                              </Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div>
-                <p className="text-lg font-bold font-display tracking-tight text-foreground leading-tight">30 dias</p>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Acumulados</p>
-              </div>
+            );
+          })()}
+        </TabsContent>
+
+        {/* TAB 2: LANÇAMENTOS */}
+        <TabsContent value="lancamentos" className="mt-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between ml-1">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                <Receipt className="w-3 h-3" /> Lançamentos do Mês
+              </h4>
+              <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs shadow-none" onClick={() => setIsLancamentoOpen(true)}>
+                <Plus className="w-3.5 h-3.5 mr-1" /> Novo Lançamento
+              </Button>
             </div>
-            
-            <div className="space-y-4 pt-4 border-t border-border">
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                  <CalendarRange className="w-3.5 h-3.5" /> Últimas Férias
-                </p>
-                <div className="bg-muted/30 p-2.5 rounded-xl border border-border/50">
-                  <p className="text-sm font-bold text-foreground text-center">15/Dez a 14/Jan</p>
-                </div>
-              </div>
-              
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                  <CalendarCheck className="w-3.5 h-3.5" /> Próximas Férias (Prev.)
-                </p>
-                <div className="bg-primary/5 p-2.5 rounded-xl border border-primary/20">
-                  <p className="text-sm font-bold text-primary text-center">A partir de 20/Dez</p>
-                </div>
-              </div>
-            </div>
+            <Card className="rounded-2xl border border-border bg-card shadow-none">
+              <CardContent className="p-0">
+                {lancamentos.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <Receipt className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm font-medium">Nenhum lançamento registrado.</p>
+                    <p className="text-xs mt-1">Adicione vales, adiantamentos, bonificações ou descontos.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {lancamentos.map(l => {
+                      const isDebit = l.type === "Vale" || l.type === "Adiantamento" || l.type === "Desconto";
+                      return (
+                        <div key={l.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${l.type === "Bonificação" ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"}`}>
+                              <DollarSign className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm">{l.description}</p>
+                              <p className="text-xs text-muted-foreground">{l.type} · {new Date(l.date).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`font-bold text-sm ${isDebit ? 'text-destructive' : 'text-emerald-600'}`}>
+                              {isDebit ? '-' : '+'}{formatCurrency(l.amount)}
+                            </span>
+                            <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                              onClick={() => setLancamentos(prev => prev.filter(x => x.id !== l.id))}>
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </div>
+        </TabsContent>
 
-      {/* Lançamentos do Mês Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between ml-1">
-          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-            <Receipt className="w-3 h-3" /> Lançamentos do Mês
-          </h4>
-          <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs shadow-none" onClick={() => setIsLancamentoOpen(true)}>
-            <Plus className="w-3.5 h-3.5 mr-1" /> Novo Lançamento
-          </Button>
-        </div>
-        <Card className="rounded-2xl border border-border bg-card shadow-none">
-          <CardContent className="p-0">
-            {lancamentos.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <Receipt className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm font-medium">Nenhum lançamento registrado.</p>
-                <p className="text-xs mt-1">Adicione vales, adiantamentos, bonificações ou descontos.</p>
+        {/* TAB 3: ELOGIOS */}
+        <TabsContent value="elogios" className="mt-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between ml-1">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                <Award className="w-3 h-3" /> Ocorrências e Elogios
+              </h4>
+              <Button size="sm" variant="outline" className="rounded-xl h-8 text-xs shadow-none" onClick={() => setIsPraiseModalOpen(true)}>
+                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
+              </Button>
+            </div>
+            {operatorPraises.length === 0 ? (
+              <div className="p-10 text-center text-muted-foreground rounded-2xl border border-border bg-card">
+                <Star className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm font-medium">Nenhum registro encontrado.</p>
+                <p className="text-xs mt-1">Adicione elogios, advertências ou observações sobre o operador.</p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {lancamentos.map(l => {
-                  const isDebit = l.type === "Vale" || l.type === "Adiantamento" || l.type === "Desconto";
+              <div className="space-y-3">
+                {[...operatorPraises].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(praise => {
+                  const typeInfo = {
+                    elogio: { label: 'Elogio', Icon: Star, color: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-700' },
+                    advertencia: { label: 'Advertência', Icon: AlertTriangle, color: 'border-red-500/20 bg-red-500/5 text-red-700' },
+                    observacao: { label: 'Observação', Icon: MessageSquare, color: 'border-blue-500/20 bg-blue-500/5 text-blue-700' },
+                  }[praise.type];
+                  const Icon = typeInfo.Icon;
                   return (
-                    <div key={l.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                          l.type === "Bonificação" ? "bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))]" : "bg-destructive/10 text-destructive"
-                        }`}>
-                          <DollarSign className="w-3.5 h-3.5" />
+                    <div key={praise.id} className={`p-4 rounded-2xl border ${typeInfo.color}`}>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="font-bold text-sm">{typeInfo.label}</span>
                         </div>
-                        <div>
-                          <p className="font-bold text-sm">{l.description}</p>
-                          <p className="text-xs text-muted-foreground">{l.type} · {new Date(l.date).toLocaleDateString('pt-BR')}</p>
-                        </div>
+                        <span className="text-[10px] text-muted-foreground font-medium shrink-0">{new Date(praise.date).toLocaleDateString('pt-BR')} · {praise.author}</span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold text-sm ${isDebit ? 'text-destructive' : 'text-[hsl(var(--success-text))]'}`}>
-                          {isDebit ? '-' : '+'}{formatCurrency(l.amount)}
-                        </span>
-                        <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-                          onClick={() => setLancamentos(prev => prev.filter(x => x.id !== l.id))}>
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
+                      <p className="text-sm leading-relaxed">{praise.text}</p>
                     </div>
                   );
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <ActionModal isOpen={isLancamentoOpen} onClose={() => setIsLancamentoOpen(false)} title="Novo Lançamento">
+          </div>
+        </TabsContent>
+      </Tabs>
+          
+      <ActionModal isOpen={isPraiseModalOpen} onClose={() => setIsPraiseModalOpen(false)} title="Adicionar Ocorrência">
         <div className="space-y-4 p-1">
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Tipo</label>
-            <Select value={newLanc.type} onValueChange={(v) => setNewLanc(p => ({ ...p, type: v as LancamentoType }))}>
+            <Select value={newPraise.type} onValueChange={(v) => setNewPraise(p => ({ ...p, type: v as Praise['type'] }))}>
               <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="Vale">Vale</SelectItem>
-                <SelectItem value="Adiantamento">Adiantamento</SelectItem>
-                <SelectItem value="Bonificação">Bonificação</SelectItem>
-                <SelectItem value="Desconto">Desconto</SelectItem>
+                <SelectItem value="elogio">Elogio</SelectItem>
+                <SelectItem value="advertencia">Advertência</SelectItem>
+                <SelectItem value="observacao">Observação</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Descrição</label>
-            <Input className="rounded-xl" placeholder="Ex: Vale alimentação, Bônus produtividade..."
-              value={newLanc.description} onChange={e => setNewLanc(p => ({ ...p, description: e.target.value }))} />
+            <Input className="rounded-xl" placeholder="Descreva a ocorrência..."
+              value={newPraise.text} onChange={e => setNewPraise(p => ({ ...p, text: e.target.value }))} />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Autor</label>
+            <Input className="rounded-xl" placeholder="Nome de quem registra"
+              value={newPraise.author} onChange={e => setNewPraise(p => ({ ...p, author: e.target.value }))} />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setIsPraiseModalOpen(false)}>Cancelar</Button>
+            <Button className="flex-1 rounded-xl" onClick={() => {
+              if (!newPraise.text.trim()) return;
+              mockPraises.push({
+                id: `pr-${Date.now()}`,
+                operatorId: operator.id,
+                date: new Date().toISOString().split('T')[0],
+                type: newPraise.type,
+                text: newPraise.text.trim(),
+                author: newPraise.author.trim() || 'Admin',
+              });
+              setNewPraise({ type: 'elogio', text: '', author: '' });
+              setIsPraiseModalOpen(false);
+              setRefreshKey(k => k + 1);
+            }}>Salvar</Button>
+          </div>
+        </div>
+      </ActionModal>
+
+      <ActionModal isOpen={isLancamentoOpen} onClose={() => setIsLancamentoOpen(false)} title="Novo Lançamento">
+        <div className="space-y-4 p-1">
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Tipo</label>
+            <Select value={newLanc.type} onValueChange={(v) => setNewLanc(l => ({ ...l, type: v as LancamentoType }))}>
+              <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Adiantamento">Adiantamento</SelectItem>
+                <SelectItem value="Vale">Vale (Dinheiro/Farmácia)</SelectItem>
+                <SelectItem value="Bonificação">Bonificação (Bônus)</SelectItem>
+                <SelectItem value="Desconto">Desconto Geral</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Valor (R$)</label>
-            <Input className="rounded-xl" type="number" placeholder="0,00"
-              value={newLanc.amount} onChange={e => setNewLanc(p => ({ ...p, amount: e.target.value }))} />
+            <Input type="number" className="rounded-xl" placeholder="0,00"
+              value={newLanc.amount} onChange={e => setNewLanc(l => ({ ...l, amount: e.target.value }))} />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 block">Descrição</label>
+            <Input className="rounded-xl" placeholder="Motivo do lançamento..."
+              value={newLanc.description} onChange={e => setNewLanc(l => ({ ...l, description: e.target.value }))} />
           </div>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setIsLancamentoOpen(false)}>Cancelar</Button>
             <Button className="flex-1 rounded-xl" onClick={() => {
               const amount = parseFloat(newLanc.amount);
-              if (!newLanc.description.trim() || isNaN(amount) || amount <= 0) return;
-              const today = new Date().toISOString().split('T')[0];
-              setLancamentos(prev => [...prev, { id: String(Date.now()), type: newLanc.type, description: newLanc.description.trim(), amount, date: today }]);
+              if (isNaN(amount) || amount <= 0) return;
+              
+              const dateStr = new Date(activeData.year, months.indexOf(activeData.monthName), 15).toISOString().split('T')[0];
+              const novo = {
+                id: `otx-${Date.now()}`,
+                operatorId: operator.id,
+                date: dateStr,
+                type: newLanc.type,
+                amount: amount,
+                description: newLanc.description || newLanc.type
+              };
+              mockOperatorTransactions.push(novo);
+              setLancamentos(prev => [novo, ...prev]);
               setNewLanc({ type: "Vale", description: "", amount: "" });
               setIsLancamentoOpen(false);
-            }}>Salvar Lançamento</Button>
+              setRefreshKey(k => k + 1);
+            }}>Adicionar</Button>
           </div>
         </div>
       </ActionModal>
-
-      {(() => {
-        const tDate = new Date(activeData.year, months.indexOf(activeData.monthName), 1);
-        const mIdx = tDate.getMonth(); const yIdx = tDate.getFullYear();
-        const monthServices = opServices.filter(s => {
-          const d = new Date(s.date);
-          return d.getMonth() === mIdx && d.getFullYear() === yIdx;
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-        if (monthServices.length === 0) return null;
-
-        return (
-          <div className="space-y-3">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1.5">
-              <CalendarDays className="w-3 h-3" /> Detalhamento Diário ({activeData.monthName})
-            </h4>
-            <Card className="rounded-2xl border border-border bg-card overflow-hidden shadow-none">
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  {monthServices.map(s => {
-                    const hStart = typeof s.hora_inicial === 'number' ? s.hora_inicial : parseFloat(s.hora_inicial as any);
-                    const hEnd = typeof s.hora_final === 'number' ? s.hora_final : parseFloat(s.hora_final as any);
-                    const hours = !isNaN(hStart) && !isNaN(hEnd) ? (hEnd - hStart).toFixed(1) : (s.hours || 0).toFixed(1);
-                    return (
-                      <div key={s.id} className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
-                        <div>
-                          <p className="font-bold text-sm text-primary">{new Date(s.date).toLocaleDateString('pt-BR')} - {s.id}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{s.client} · {s.machine}</p>
-                          {(!isNaN(hStart) || !isNaN(hEnd)) && (
-                            <p className="text-[10px] text-muted-foreground mt-1 bg-muted/30 px-1.5 py-0.5 rounded-md inline-block">
-                              H. Inicial: {hStart.toFixed(1)} {hEnd && !isNaN(hEnd) ? `| H. Final: ${hEnd.toFixed(1)}` : ''}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-sm">{hours}h</p>
-                          <Badge variant="outline" className={`text-[9px] font-bold mt-1 ${s.status === 'concluido' ? 'text-[hsl(var(--success-text))] bg-[hsl(var(--success-subtle))]' : 'text-[hsl(var(--warning-text))] bg-[hsl(var(--warning-subtle))]'}`}>
-                            {s.status === 'concluido' ? 'Concluído' : 'Em andamento'}
-                          </Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      })()}
 
       <ActionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Editar Operador">
         <OperatorForm onSave={() => { setIsEditModalOpen(false); setRefreshKey(k => k + 1); }} onCancel={() => setIsEditModalOpen(false)} initialData={operator} />
@@ -556,3 +618,4 @@ export default function OperatorDetailPage() {
     </div>
   );
 }
+

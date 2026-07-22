@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { mockMachines, mockOperators, mockClients, mockServices, mockTransactions } from "@/lib/mock-data";
-import { CheckCircle2 } from "lucide-react";
+import { mockMachines, mockOperators, mockClients, mockServices, mockTransactions, areaOptionsList } from "@/lib/mock-data";
+import { CheckCircle2, Plus, Trash2 } from "lucide-react";
 
 interface ServiceFormProps {
   onSave: () => void;
@@ -14,27 +13,48 @@ interface ServiceFormProps {
 }
 
 export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps) {
+  const initialArea = initialData?.area || initialData?.serviceType || "";
+  const isInitialOther = initialArea && !areaOptionsList.slice(0, -1).includes(initialArea);
+
   const [formData, setFormData] = useState({
     client: initialData?.client || "",
-    machines: initialData?.machine ? initialData.machine.split(', ') : [],
-    operator: initialData?.operator || "",
     date: initialData?.date || new Date().toISOString().split('T')[0],
-    hora_inicial: initialData?.hora_inicial || "",
-    hora_final: initialData?.hora_final || "",
-    diesel: initialData?.diesel || 0,
-    dieselSupplier: initialData?.dieselSupplier || "cliente",
-    serviceType: initialData?.serviceType || "",
+    area: isInitialOther ? "Outro" : initialArea,
+    areaCustom: isInitialOther ? initialArea : "",
     fixedValue: initialData?.fixedValue || 0,
     hourlyValue: initialData?.hourlyValue || 0,
     status: initialData?.status || "em_andamento"
   });
+
+  const [machineAssignments, setMachineAssignments] = useState<any[]>(
+    initialData?.machines && initialData.machines.length > 0
+      ? initialData.machines.map((m: any) => ({
+          machineName: m.machineName,
+          operatorName: m.operatorName,
+          hora_inicial: m.horaInicial?.toString() || "",
+          hora_final: m.horaFinal?.toString() || "",
+          diesel: m.diesel?.toString() || "0",
+          dieselSupplier: m.dieselSupplier || "cliente"
+        }))
+      : [{
+          machineName: "",
+          operatorName: "",
+          hora_inicial: "",
+          hora_final: "",
+          diesel: "0",
+          dieselSupplier: "cliente"
+        }]
+  );
   
   const [photos, setPhotos] = useState<any[]>(initialData?.photos || []);
   const [isUploading, setIsUploading] = useState(false);
 
   const isTimeValid = () => {
-    if (!formData.hora_inicial || !formData.hora_final) return false;
-    return parseFloat(formData.hora_final) > parseFloat(formData.hora_inicial);
+    return machineAssignments.every(ma => {
+      if (!ma.hora_inicial) return false;
+      if (ma.hora_final && parseFloat(ma.hora_final) <= parseFloat(ma.hora_inicial)) return false;
+      return true;
+    });
   };
 
   const handlePhotoUpload = () => {
@@ -42,54 +62,115 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
     setIsUploading(true);
     setTimeout(() => {
       setIsUploading(false);
-      const newPhoto = { url: `painel_maq_${formData.machines.join('_')}_${photos.length + 1}.jpg`, label: "Foto do Painel" };
+      const machineNames = machineAssignments.map(m => m.machineName).join('_');
+      const newPhoto = { url: `painel_maq_${machineNames}_${photos.length + 1}.jpg`, label: "Foto do Painel" };
       setPhotos([...photos, newPhoto]);
     }, 1500);
   };
 
+  const handleAddMachine = () => {
+    setMachineAssignments([...machineAssignments, {
+      machineName: "",
+      operatorName: "",
+      hora_inicial: "",
+      hora_final: "",
+      diesel: "0",
+      dieselSupplier: "cliente"
+    }]);
+  };
+
+  const handleRemoveMachine = (index: number) => {
+    if (machineAssignments.length > 1) {
+      const newArr = [...machineAssignments];
+      newArr.splice(index, 1);
+      setMachineAssignments(newArr);
+    }
+  };
+
+  const updateMachine = (index: number, field: string, value: any) => {
+    const newArr = [...machineAssignments];
+    newArr[index][field] = value;
+    setMachineAssignments(newArr);
+  };
+
   const handleSave = () => {
     if (!isTimeValid()) return;
-    if (!formData.client || formData.machines.length === 0 || !formData.operator) return;
+    if (!formData.client || machineAssignments.some(m => !m.machineName || !m.operatorName)) return;
 
-    const start = parseFloat(formData.hora_inicial);
-    const end = parseFloat(formData.hora_final);
-    let hoursWorked = end - start;
+    let totalHours = 0;
+    let totalMachineCost = 0;
+    let totalOperatorCost = 0;
+    let totalDieselCost = 0;
+    let totalDieselLiters = 0;
 
-    const cost_machine = formData.machines.reduce((total: number, machineName: string) => {
-      const machineObj = mockMachines.find(m => m.name === machineName);
-      return total + (hoursWorked * (machineObj?.hour_cost || 0));
-    }, 0);
+    const machinesData = machineAssignments.map(ma => {
+      const start = parseFloat(ma.hora_inicial);
+      const end = ma.hora_final ? parseFloat(ma.hora_final) : start;
+      const hoursWorked = end > start ? end - start : 0;
+      totalHours += hoursWorked;
 
-    const operatorObj = mockOperators.find(o => o.name === formData.operator);
+      const machineObj = mockMachines.find(m => m.name === ma.machineName);
+      const cost_m = hoursWorked * (machineObj?.hour_cost || 0);
+      totalMachineCost += cost_m;
 
-    const cost_operator = hoursWorked * ((operatorObj?.salary || 0) / 220); // Basic rule, will be handled by dynamic rule engine later
-    const cost_diesel = formData.dieselSupplier === 'sao_bento' ? ((formData.diesel || 0) * 6.50) : 0;
+      const operatorObj = mockOperators.find(o => o.name === ma.operatorName);
+      const cost_o = hoursWorked * ((operatorObj?.salary || 0) / 220);
+      totalOperatorCost += cost_o;
+
+      const diesel = parseFloat(ma.diesel) || 0;
+      totalDieselLiters += diesel;
+      const cost_d = ma.dieselSupplier === 'sao_bento' ? diesel * 6.50 : 0;
+      totalDieselCost += cost_d;
+
+      return {
+        machineName: ma.machineName,
+        operatorName: ma.operatorName,
+        horaInicial: start,
+        horaFinal: ma.hora_final ? end : undefined,
+        hours: hoursWorked > 0 ? hoursWorked : undefined,
+        diesel: diesel,
+        dieselSupplier: ma.dieselSupplier,
+        status: ma.hora_final ? "concluido" : "em_andamento"
+      };
+    });
 
     const additionalCosts = [
-      { id: `cst-${Date.now()}-1`, name: "Custo Máquina", value: cost_machine, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" },
-      { id: `cst-${Date.now()}-2`, name: "Custo Operador", value: cost_operator, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" }
+      { id: `cst-${Date.now()}-1`, name: "Custo Máquina", value: totalMachineCost, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" },
+      { id: `cst-${Date.now()}-2`, name: "Custo Operador", value: totalOperatorCost, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" }
     ];
 
-    if (cost_diesel > 0) {
-      additionalCosts.push({ id: `cst-${Date.now()}-3`, name: "Custo Diesel (São Bento)", value: cost_diesel, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" });
+    if (totalDieselCost > 0) {
+      additionalCosts.push({ id: `cst-${Date.now()}-3`, name: "Custo Diesel (São Bento)", value: totalDieselCost, createdAt: new Date().toISOString(), createdBy: "admin@saobento.com" });
     }
 
     const total_costs = additionalCosts.reduce((acc, curr) => acc + curr.value, 0);
-    const totalRevenue = (formData.fixedValue || 0) + (hoursWorked * (formData.hourlyValue || 0));
-    // If diesel is from Sao Bento, we might add it to the final invoice depending on config
+    const totalRevenue = (formData.fixedValue || 0) + (totalHours * (formData.hourlyValue || 0));
     const profit = totalRevenue - total_costs;
+    const resolvedArea = formData.area === "Outro" ? formData.areaCustom : formData.area;
+    
+    const machineNamesStr = machinesData.map(m => m.machineName).join(', ');
+    const firstMachine = machinesData[0];
+
     const serviceData = {
       ...formData,
-      machine: formData.machines.join(', '),
+      machine: machineNamesStr,
+      operator: machinesData.length === 1 ? firstMachine.operatorName : "Múltiplos",
+      area: resolvedArea,
+      serviceType: resolvedArea, // legacy
       id: initialData?.id || `SRV-${1000 + mockServices.length + 1}`,
-      hours: hoursWorked,
+      hora_inicial: firstMachine.horaInicial,
+      hora_final: machinesData.every(m => m.horaFinal) ? Math.max(...machinesData.map(m => m.horaFinal!)) : undefined,
+      hours: totalHours,
+      diesel: totalDieselLiters,
+      dieselSupplier: firstMachine.dieselSupplier, // legacy flat
       freight: 0,
       notes: "",
       photos: photos,
+      machines: machinesData,
       costs: {
-        machine: cost_machine,
-        operator: cost_operator,
-        diesel: cost_diesel
+        machine: totalMachineCost,
+        operator: totalOperatorCost,
+        diesel: totalDieselCost
       },
       additionalCosts,
       profit
@@ -102,19 +183,19 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
       mockServices.unshift(serviceData as any);
     }
 
-    // Gerar lançamentos financeiros de custo automaticamente
+    // Gerar lançamentos financeiros
     additionalCosts.forEach(cost => {
       mockTransactions.unshift({
         id: `tx-${Date.now()}-${cost.name.replace(/\s/g, '')}-${Math.random().toString(36).substr(2, 5)}`,
         type: "saida",
         amount: cost.value,
         date: formData.date,
-        description: `${cost.name} - ${serviceData.id} (${serviceData.machine})`,
+        description: `${cost.name} - ${serviceData.id} (${machineNamesStr})`,
         account: "Sicoob",
         category: cost.name.includes("Diesel") ? "Diesel" : "Manutenção/Operacional",
-        supplier: "São Bento Logística", // Auto-supplier
+        supplier: "São Bento Logística",
         dueDate: formData.date,
-        allocation: serviceData.machine,
+        allocation: machineNamesStr,
         createdAt: new Date().toISOString(),
         createdBy: "admin@saobento.com",
         relatedCostId: cost.id,
@@ -131,7 +212,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Cliente / Obra</Label>
           <Select 
@@ -157,66 +238,35 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
           />
         </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Tipo de Serviço</Label>
-          <Input 
-            placeholder="Ex: Destoca, Terraplanagem"
-            value={formData.serviceType}
-            onChange={(e) => setFormData({...formData, serviceType: e.target.value})}
-            className="h-11 rounded-xl border-border bg-muted/10" 
-          />
-        </div>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Equipamento / Máquina</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-border bg-muted/10 font-normal truncate">
-                {formData.machines.length > 0 
-                  ? formData.machines.join(', ')
-                  : <span className="text-muted-foreground">Selecione as máquinas</span>}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[300px] rounded-xl z-[100] border-border">
-              {sortedMachines.map((m) => (
-                <DropdownMenuCheckboxItem
-                  key={m.id}
-                  checked={formData.machines.includes(m.name)}
-                  onCheckedChange={(checked) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      machines: checked 
-                        ? [...prev.machines, m.name]
-                        : prev.machines.filter((name: string) => name !== m.name)
-                    }))
-                  }}
-                >
-                  {m.name}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Operador Responsável</Label>
-          <Select 
-            value={formData.operator} 
-            onValueChange={(v) => setFormData({...formData, operator: v})}
+        <div className="space-y-2 sm:col-span-2">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Área</Label>
+          <Select
+            value={formData.area}
+            onValueChange={(v) => setFormData({...formData, area: v, areaCustom: v !== "Outro" ? "" : formData.areaCustom})}
           >
             <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
-              <SelectValue placeholder="Selecione o operador" />
+              <SelectValue placeholder="Selecione a área" />
             </SelectTrigger>
             <SelectContent className="rounded-xl z-[100] border-border">
-              {sortedOperators.map((o) => (
-                <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>
+              {areaOptionsList.map((area) => (
+                <SelectItem key={area} value={area}>{area}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {formData.area === "Outro" && (
+            <Input
+              placeholder="Descreva a área..."
+              value={formData.areaCustom}
+              onChange={(e) => setFormData({...formData, areaCustom: e.target.value})}
+              className="h-11 rounded-xl border-border bg-muted/10 mt-2"
+            />
+          )}
         </div>
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Status da OS</Label>
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Status Geral</Label>
           <Select 
             value={formData.status} 
             onValueChange={(v) => setFormData({...formData, status: v})}
@@ -226,63 +276,125 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             </SelectTrigger>
             <SelectContent className="rounded-xl z-[100] border-border">
               <SelectItem value="em_andamento">Em Andamento</SelectItem>
+              <SelectItem value="parcialmente_concluido">Parcialmente Concluído</SelectItem>
               <SelectItem value="concluido">Concluído</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Inicial</Label>
-          <Input 
-            type="number" 
-            step="0.1"
-            placeholder="1332.6"
-            value={formData.hora_inicial} 
-            onChange={(e) => setFormData({...formData, hora_inicial: e.target.value})} 
-            className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
-          />
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-between">
+          <Label className="text-[12px] font-bold text-foreground uppercase tracking-widest ml-1">Máquinas Alocadas</Label>
+          <Button type="button" variant="outline" size="sm" onClick={handleAddMachine} className="rounded-xl gap-2 h-8">
+            <Plus className="w-3.5 h-3.5" /> Adicionar Máquina
+          </Button>
         </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Final</Label>
-          <Input 
-            type="number" 
-            step="0.1"
-            placeholder="1338.0"
-            value={formData.hora_final} 
-            onChange={(e) => setFormData({...formData, hora_final: e.target.value})} 
-            className={`h-11 rounded-xl border-border bg-muted/10 font-mono ${!isTimeValid() && formData.hora_final ? 'border-destructive text-destructive' : ''}`} 
-          />
-        </div>
+
+        {machineAssignments.map((ma, index) => (
+          <div key={index} className="p-4 rounded-xl border border-border bg-card relative space-y-4">
+            {machineAssignments.length > 1 && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-2 right-2 h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-full"
+                onClick={() => handleRemoveMachine(index)}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            )}
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Equipamento</Label>
+                <Select 
+                  value={ma.machineName} 
+                  onValueChange={(v) => updateMachine(index, "machineName", v)}
+                >
+                  <SelectTrigger className="h-10 rounded-lg border-border bg-muted/10">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg z-[100] border-border">
+                    {sortedMachines.map((m) => (
+                      <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Operador</Label>
+                <Select 
+                  value={ma.operatorName} 
+                  onValueChange={(v) => updateMachine(index, "operatorName", v)}
+                >
+                  <SelectTrigger className="h-10 rounded-lg border-border bg-muted/10">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg z-[100] border-border">
+                    {sortedOperators.map((o) => (
+                      <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Inicial</Label>
+                <Input 
+                  type="number" 
+                  step="0.1"
+                  value={ma.hora_inicial} 
+                  onChange={(e) => updateMachine(index, "hora_inicial", e.target.value)} 
+                  className="h-10 rounded-lg border-border bg-muted/10 font-mono" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horímetro Final</Label>
+                <Input 
+                  type="number" 
+                  step="0.1"
+                  value={ma.hora_final} 
+                  onChange={(e) => updateMachine(index, "hora_final", e.target.value)} 
+                  className="h-10 rounded-lg border-border bg-muted/10 font-mono" 
+                  placeholder="(Opcional)"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Diesel (L)</Label>
+                <Input 
+                  type="number" 
+                  value={ma.diesel} 
+                  onChange={(e) => updateMachine(index, "diesel", e.target.value)}
+                  className="h-10 rounded-lg border-border bg-muted/10 font-mono" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fornec. Diesel</Label>
+                <Select 
+                  value={ma.dieselSupplier} 
+                  onValueChange={(v) => updateMachine(index, "dieselSupplier", v)}
+                >
+                  <SelectTrigger className="h-10 rounded-lg border-border bg-muted/10">
+                    <SelectValue placeholder="Fornecedor" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg z-[100] border-border">
+                    <SelectItem value="cliente">Cliente (Sem Custo)</SelectItem>
+                    <SelectItem value="sao_bento">São Bento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Diesel (L)</Label>
-          <Input 
-            type="number" 
-            value={formData.diesel} 
-            onChange={(e) => setFormData({...formData, diesel: parseFloat(e.target.value) || 0})}
-            placeholder="0" 
-            className="h-11 rounded-xl border-border bg-muted/10 font-mono" 
-          />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fornec. Diesel</Label>
-          <Select 
-            value={formData.dieselSupplier} 
-            onValueChange={(v) => setFormData({...formData, dieselSupplier: v})}
-          >
-            <SelectTrigger className="h-11 rounded-xl border-border bg-muted/10">
-              <SelectValue placeholder="Fornecedor" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl z-[100] border-border">
-              <SelectItem value="cliente">Cliente (Sem Custo)</SelectItem>
-              <SelectItem value="sao_bento">São Bento</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
         <div className="space-y-2">
           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 text-primary">Fixo (R$)</Label>
           <Input 
@@ -306,7 +418,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
       </div>
 
       <div className="space-y-2 mt-4 p-4 border border-dashed border-border rounded-xl bg-card">
-        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Comprovante de Horímetro (Foto do Painel)</Label>
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Comprovante (Fotos do Painel)</Label>
         <div className="flex items-center gap-4 mt-2">
           <Button 
             variant="outline" 
@@ -323,7 +435,7 @@ export function ServiceForm({ onSave, onCancel, initialData }: ServiceFormProps)
             ) : photos.length >= 5 ? (
               <span className="flex items-center gap-2 text-success">
                 <span className="w-2 h-2 rounded-full bg-success" />
-                Limite de 5 fotos atingido
+                Limite atingido
               </span>
             ) : (
               `📸 Anexar Foto (${photos.length}/5)`

@@ -7,7 +7,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-import { mockOperators } from "@/lib/mock-data";
+import { mockOperators, mockDrivers, mockMechanics } from "@/lib/mock-data";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
@@ -25,6 +25,14 @@ export default function Auth() {
       const operator = mockOperators.find(
         (op) => (op.username === email || op.name.toLowerCase() === email.toLowerCase()) && op.password === password
       );
+      
+      const driver = mockDrivers.find(
+        (dr) => (dr.username === email || dr.name.toLowerCase() === email.toLowerCase()) && dr.password === password
+      );
+
+      const mechanic = mockMechanics.find(
+        (mc) => (mc.username === email || mc.name.toLowerCase() === email.toLowerCase()) && mc.password === password
+      );
 
       if (operator) {
         localStorage.setItem("isAuthenticated", "true");
@@ -33,6 +41,20 @@ export default function Auth() {
         localStorage.setItem("operatorName", operator.name);
         setIsLoading(false);
         setLocation("/portal");
+      } else if (driver) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "motorista");
+        localStorage.setItem("driverId", driver.id);
+        localStorage.setItem("driverName", driver.name);
+        setIsLoading(false);
+        setLocation("/portal/motorista");
+      } else if (mechanic) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRole", "mecanico");
+        localStorage.setItem("mechanicId", mechanic.id);
+        localStorage.setItem("mechanicName", mechanic.name);
+        setIsLoading(false);
+        setLocation("/portal/mecanico");
       } else if (email === "admin@saobento.com" || email === "admin" || email.toLowerCase().startsWith("admin")) {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRole", "admin");
@@ -217,22 +239,56 @@ export default function Auth() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
               <Button 
                 type="button"
                 onClick={handleTestAdminLogin}
-                className="w-full h-10 text-xs font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors"
+                className="w-full h-10 text-[11px] font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors px-1"
                 disabled={isLoading}
               >
-                Entrar como Admin
+                Admin
               </Button>
               <Button 
                 type="button"
                 onClick={handleTestOperatorLogin}
-                className="w-full h-10 text-xs font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors"
+                className="w-full h-10 text-[11px] font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors px-1"
                 disabled={isLoading}
               >
-                Entrar como Operador
+                Operador
+              </Button>
+              <Button 
+                type="button"
+                onClick={() => {
+                  setIsLoading(true);
+                  setTimeout(() => {
+                    localStorage.setItem("isAuthenticated", "true");
+                    localStorage.setItem("userRole", "motorista");
+                    localStorage.setItem("driverName", "Carlos Silva");
+                    setIsLoading(false);
+                    setLocation("/portal/motorista");
+                  }, 600);
+                }}
+                className="w-full h-10 text-[11px] font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors px-1"
+                disabled={isLoading}
+              >
+                Motorista
+              </Button>
+              <Button 
+                type="button"
+                onClick={() => {
+                  setIsLoading(true);
+                  setTimeout(() => {
+                    localStorage.setItem("isAuthenticated", "true");
+                    localStorage.setItem("userRole", "mecanico");
+                    localStorage.setItem("mechanicName", "Cláudio Oficina");
+                    setIsLoading(false);
+                    setLocation("/portal/mecanico");
+                  }, 600);
+                }}
+                className="w-full h-10 text-[11px] font-bold bg-[#234b70] hover:bg-[#1b3b59] text-white rounded-xl border-none transition-colors px-1"
+                disabled={isLoading}
+              >
+                Mecânico
               </Button>
             </div>
             {/* Fim: Botões de Teste */}

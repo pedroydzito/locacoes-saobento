@@ -13,7 +13,8 @@ import { FinanceForm } from "@/components/forms/FinanceForm";
 import { FinanceFilter, FinanceFilters } from "@/components/forms/FinanceFilter";
 import { AccountManager } from "@/components/forms/AccountManager";
 import { MobileListControls } from "@/components/shared/MobileListControls";
-import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
+import { PaymentModal } from "@/components/forms/PaymentModal";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 export default function Finance() {
   const [, setLocation] = useLocation();
@@ -24,6 +25,7 @@ export default function Finance() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [payingTransaction, setPayingTransaction] = useState<any>(null);
 
   const [filters, setFilters] = useState<FinanceFilters>({
     category: "",
@@ -140,6 +142,23 @@ export default function Finance() {
     dueDate.setHours(0,0,0,0);
     return dueDate < todayMidnight;
   });
+
+  // Data for the chart
+  const chartData = [...filteredTransactions].reduce((acc, tx) => {
+    const d = new Date(tx.date + "T12:00:00");
+    const monthYear = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+    if (!acc[monthYear]) acc[monthYear] = { month: monthYear, entradas: 0, saidas: 0, saldo: 0, timestamp: d.getTime() };
+    if (tx.type === 'entrada') {
+      acc[monthYear].entradas += tx.amount;
+      acc[monthYear].saldo += tx.amount;
+    } else {
+      acc[monthYear].saidas += tx.amount;
+      acc[monthYear].saldo -= tx.amount;
+    }
+    return acc;
+  }, {} as Record<string, { month: string, entradas: number, saidas: number, saldo: number, timestamp: number }>);
+
+  const sortedChartData = Object.values(chartData).sort((a, b) => a.timestamp - b.timestamp);
 
   return (
     <div className="space-y-6 pb-8">
@@ -278,53 +297,56 @@ export default function Finance() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="border-border rounded-2xl  overflow-hidden bg-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Faturamento (Entradas)</p>
-                <h3 className="text-2xl font-bold mt-1 text-success font-display">
-                  {formatCurrency(totalEntradas)}
-                </h3>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-success-subtle flex items-center justify-center">
-                <ArrowUpRight className="w-6 h-6 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* KPI Cards beside chart */}
+        <div className="flex flex-col gap-4">
+          <Card className="border-border rounded-2xl bg-card">
+            <CardContent className="p-5">
+              <p className="text-sm font-medium text-muted-foreground">Entradas do Período</p>
+              <h3 className="text-2xl font-bold mt-1 text-success font-display">{formatCurrency(totalEntradas)}</h3>
+            </CardContent>
+          </Card>
+          <Card className="border-border rounded-2xl bg-card">
+            <CardContent className="p-5">
+              <p className="text-sm font-medium text-muted-foreground">Saídas do Período</p>
+              <h3 className="text-2xl font-bold mt-1 text-destructive font-display">{formatCurrency(totalSaidas)}</h3>
+            </CardContent>
+          </Card>
+          <Card className="border-border rounded-2xl bg-primary text-primary-foreground hidden sm:block">
+            <CardContent className="p-5">
+              <p className="text-sm font-medium opacity-80">Saldo do Período</p>
+              <h3 className="text-2xl font-bold mt-1 font-display">{formatCurrency(totalEntradas - totalSaidas)}</h3>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="border-border rounded-2xl  overflow-hidden bg-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Custo Operacional (Saídas)</p>
-                <h3 className="text-2xl font-bold mt-1 text-destructive font-display">
-                  {formatCurrency(totalSaidas)}
-                </h3>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                <ArrowDownRight className="w-6 h-6 text-destructive" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border rounded-2xl  overflow-hidden bg-primary text-primary-foreground hidden lg:block">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium opacity-80">Saldo do Período</p>
-                <h3 className="text-2xl font-bold mt-1 font-display">
-                  {formatCurrency(totalEntradas - totalSaidas)}
-                </h3>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <Wallet className="w-6 h-6" />
-              </div>
-            </div>
-          </CardContent>
+        {/* Chart */}
+        <Card className="border-border rounded-2xl p-5 sm:col-span-2">
+          <div className="mb-4">
+            <h3 className="font-bold text-sm">Resumo Financeiro (Por Mês)</h3>
+          </div>
+          <div className="h-[230px]">
+            {sortedChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={sortedChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    cursor={{fill: 'hsl(var(--muted)/0.3)'}}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid hsl(var(--border))', padding: '10px' }}
+                    formatter={(value: number) => [formatCurrency(value), '']}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                  <Bar dataKey="entradas" name="Entradas" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  <Bar dataKey="saidas" name="Saídas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  <Line type="monotone" dataKey="saldo" name="Saldo" stroke="hsl(var(--primary))" strokeWidth={3} dot={{r:4}} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">Nenhum dado no período.</div>
+            )}
+          </div>
         </Card>
       </div>
 
@@ -352,13 +374,14 @@ export default function Finance() {
               <tr className="border-b border-border bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide font-bold">
                 <th className="p-4">Data</th>
                 <th className="p-4">Descrição</th>
+                <th className="p-4">Nº NF</th>
                 <th className="p-4">Fornecedor</th>
                 <th className="p-4">Categoria</th>
                 <th className="p-4">Destino</th>
                 <th className="p-4 text-center">Vencimento</th>
                 <th className="p-4">Conta</th>
                 <th className="p-4 text-right">Valor</th>
-                <th className="p-4">Adicionado em</th>
+                <th className="p-4">Status</th>
                 <th className="p-4 w-[52px]"></th>
               </tr>
             </thead>
@@ -373,9 +396,17 @@ export default function Finance() {
                       <div className={`p-1 rounded ${tx.type === 'entrada' ? 'bg-success-subtle text-success' : 'bg-destructive/10 text-destructive'}`}>
                         {tx.type === 'entrada' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                       </div>
-                      <span className="font-bold text-foreground">{tx.description}</span>
+                      <div>
+                        <span className="font-bold text-foreground block">{tx.description}</span>
+                        {tx.boletoInfo?.installment && (
+                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded font-mono">
+                            Parcela {tx.boletoInfo.installment}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
+                  <td className="p-4 font-mono text-xs text-muted-foreground">{tx.invoiceNumber || '-'}</td>
                   <td className="p-4 text-muted-foreground truncate max-w-[120px]">
                     {tx.supplier || '-'}
                   </td>
@@ -413,15 +444,14 @@ export default function Finance() {
                   <td className={`p-4 text-right font-bold ${tx.type === 'entrada' ? 'text-success' : 'text-destructive'}`}>
                     {tx.type === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </td>
-                  <td className="p-4 text-muted-foreground">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-[10px]">
-                        {tx.createdAt ? new Date(tx.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
-                      </span>
-                      <span className="opacity-70 truncate max-w-[100px] text-[10px]">
-                        por {tx.createdBy?.split('@')[0] || 'sistema'}
-                      </span>
-                    </div>
+                  <td className="p-4">
+                    <Badge variant="outline" className={`text-[10px] font-bold uppercase ${
+                      tx.paymentStatus === 'pago' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                      tx.paymentStatus === 'pago_parcial' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {tx.paymentStatus === 'pago' ? 'Pago' : tx.paymentStatus === 'pago_parcial' ? 'Parcial' : 'Pendente'}
+                    </Badge>
                   </td>
                   <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -432,6 +462,9 @@ export default function Finance() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => setPayingTransaction(tx)} className="rounded-lg cursor-pointer text-emerald-600 font-bold">
+                          <DollarSign className="w-4 h-4 mr-2" /> Registrar Pagamento
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleViewDetails(tx)} className="rounded-lg cursor-pointer">
                           <ArrowUpRight className="w-4 h-4 mr-2" /> Detalhes
                         </DropdownMenuItem>
@@ -544,6 +577,23 @@ export default function Finance() {
         title="Excluir lançamento"
         description="Tem certeza que deseja excluir este lançamento financeiro? Esta ação não pode ser desfeita."
       />
+
+      <ActionModal
+        isOpen={!!payingTransaction}
+        onClose={() => setPayingTransaction(null)}
+        title="Registrar Pagamento"
+      >
+        {payingTransaction && (
+          <PaymentModal
+            transaction={payingTransaction}
+            onConfirm={() => {
+              setPayingTransaction(null);
+              setRefreshKey(k => k + 1);
+            }}
+            onCancel={() => setPayingTransaction(null)}
+          />
+        )}
+      </ActionModal>
     </div>
   );
 }

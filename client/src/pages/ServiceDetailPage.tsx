@@ -19,6 +19,7 @@ const SERVICE_PDF_SECTIONS = [
   { key: "operationDetails", label: "Detalhes da Operação",      description: "Datas, horímetros, máquina, operador e tipo de serviço.", defaultChecked: true },
   { key: "dieselInfo",       label: "Relação de Óleo Diesel",    description: "Quantidade consumida e fornecedor do combustível.", defaultChecked: false },
   { key: "financial",        label: "Detalhamento Financeiro",   description: "Receita, custos, lucro líquido e margem.", defaultChecked: true },
+  { key: "paymentDetails",   label: "Detalhes de Pagamento",     description: "Forma de pagamento, valor de entrada, parcelas e valor restante.", defaultChecked: true },
   { key: "photos",           label: "Anexos e Evidências",       description: "Fotos e documentos anexados ao serviço.", defaultChecked: true },
 ];
 
@@ -126,17 +127,25 @@ export default function ServiceDetailPage() {
               <Badge variant="secondary" className={`cursor-pointer hover:opacity-80 transition-opacity text-[10px] uppercase font-bold tracking-widest px-3 py-1 ${
                 service.status === 'concluido'
                   ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)]'
+                  : service.status === 'parcialmente_concluido'
+                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
                   : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)]'
               }`}>
-                {service.status === 'concluido' ? 'Concluído' : 'Em Andamento'}
+                {service.status === 'concluido' ? 'Concluído' : service.status === 'parcialmente_concluido' ? 'Parcialmente Concluído' : 'Em Andamento'}
               </Badge>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px] rounded-xl">
+            <DropdownMenuContent align="end" className="w-[180px] rounded-xl">
               <DropdownMenuItem 
                 onClick={() => handleUpdateService({ ...service, status: 'em_andamento' })} 
                 className="rounded-lg cursor-pointer flex items-center gap-2"
               >
                 <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Em Andamento
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleUpdateService({ ...service, status: 'parcialmente_concluido' })} 
+                className="rounded-lg cursor-pointer flex items-center gap-2"
+              >
+                <div className="w-2 h-2 rounded-full bg-amber-500" /> Parcialmente Concluído
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => handleUpdateService({ ...service, status: 'concluido' })} 
@@ -186,9 +195,9 @@ export default function ServiceDetailPage() {
         </div>
         <div className="p-4 rounded-2xl bg-muted/20 border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
-            <Pickaxe className="w-3 h-3" /> Tipo de Serviço
+            <Pickaxe className="w-3 h-3" /> Área
           </p>
-          <p className="font-bold text-sm uppercase">{service.serviceType || '-'}</p>
+          <p className="font-bold text-sm uppercase">{service.area || service.serviceType || '-'}</p>
         </div>
         <div className="p-4 rounded-2xl bg-muted/20 border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
@@ -213,26 +222,42 @@ export default function ServiceDetailPage() {
       {/* Equipment & Profit */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-5 rounded-2xl bg-card border border-border">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-4">
-            <Pickaxe className="w-3.5 h-3.5" /> Equipamento e Equipe
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Tipo de Serviço:</span>
-              <span className="font-bold text-sm text-primary">{service.serviceType || '-'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Máquina:</span>
-              <span className="font-bold text-sm">{service.machine}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Operador:</span>
-              <span className="font-bold text-sm">{service.operator}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Cliente/Obra:</span>
-              <span className="font-bold text-sm text-primary">{service.client}</span>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+              <Pickaxe className="w-3.5 h-3.5" /> Equipamento e Equipe
+            </p>
+            <Badge variant="outline" className="text-[10px] bg-muted/50">{service.machines?.length || 1} Máquinas</Badge>
+          </div>
+          <div className="space-y-4">
+            {service.machines ? service.machines.map((m: any, i: number) => (
+              <div key={i} className="pt-2 first:pt-0 border-t first:border-0 border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-foreground">{m.machineName}</span>
+                  <Badge variant="outline" className={`text-[9px] uppercase font-bold ${m.status === 'concluido' ? 'text-success border-success/30' : 'text-warning border-warning/30'}`}>
+                    {m.status === 'concluido' ? 'Concluído' : 'Ativo'}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-muted-foreground">Operador:</span>
+                  <span className="text-xs font-medium">{m.operatorName}</span>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-muted-foreground">Horímetro:</span>
+                  <span className="text-xs font-mono">{m.horaInicial} → {m.horaFinal || '-'}</span>
+                </div>
+              </div>
+            )) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Máquina:</span>
+                  <span className="font-bold text-sm">{service.machine}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Operador:</span>
+                  <span className="font-bold text-sm">{service.operator}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -252,6 +277,37 @@ export default function ServiceDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Payment Details if Concluded */}
+      {service.paymentDetails && (
+        <div className="space-y-3">
+          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Detalhes de Pagamento</h4>
+          <Card className="rounded-2xl border border-success/30 bg-success/5 overflow-hidden shadow-none p-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Forma</p>
+                <p className="font-bold text-sm uppercase text-success">{service.paymentDetails.paymentMethod}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Entrada</p>
+                <p className="font-bold text-sm text-foreground">{service.paymentDetails.entryAmount ? formatCurrency(service.paymentDetails.entryAmount) : '-'}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Restante</p>
+                <p className="font-bold text-sm text-foreground">{formatCurrency(service.paymentDetails.remainingAmount || 0)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Parcelas</p>
+                <p className="font-bold text-sm text-foreground">
+                  {service.paymentDetails.isInstallment 
+                    ? `${service.paymentDetails.installmentCount}x de ${formatCurrency(service.paymentDetails.installmentValue || 0)}` 
+                    : 'À Vista'}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Financial Breakdown */}
       <div className="space-y-3">

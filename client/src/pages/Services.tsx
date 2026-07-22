@@ -12,6 +12,7 @@ import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ServiceForm } from "@/components/forms/ServiceForm";
 import { CostManager } from "@/components/forms/CostManager";
+import { ConcludeServiceModal } from "@/components/forms/ConcludeServiceModal";
 import { exportServiceToPDF, ServicePDFSections } from "@/lib/pdf-export";
 import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
@@ -38,6 +39,8 @@ export default function Services() {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isConcludeModalOpen, setIsConcludeModalOpen] = useState(false);
+  const [concludingService, setConcludingService] = useState<any>(null);
 
   const SERVICE_PDF_SECTIONS = [
     { key: "clientInfo",       label: "Informações do Cliente",    description: "Nome, CPF/CNPJ, telefone e endereço do cliente.", defaultChecked: true },
@@ -73,6 +76,19 @@ export default function Services() {
 
   const handleViewDetails = (service: any) => {
     setLocation(`/servicos/${service.id}`);
+  };
+
+  const handleConcludeService = (service: any) => {
+    setConcludingService(service);
+    setIsConcludeModalOpen(true);
+  };
+
+  const handleConfirmConclude = (paymentDetails: any) => {
+    if (!concludingService) return;
+    const updated = { ...concludingService, status: 'concluido', paymentDetails };
+    handleUpdateService(updated);
+    setIsConcludeModalOpen(false);
+    setConcludingService(null);
   };
 
   const handleUpdateService = (updatedService: any) => {
@@ -243,7 +259,7 @@ export default function Services() {
                 <th className="p-4">OS</th>
                 <th className="p-4">Data</th>
                 <th className="p-4">Cliente / Obra</th>
-                <th className="p-4">Tipo Serviço</th>
+                <th className="p-4">Área</th>
                 <th className="p-4">Máquina</th>
                 <th className="p-4">Operador</th>
                 <th className="p-4 text-right">H. Ini</th>
@@ -269,8 +285,16 @@ export default function Services() {
                   </td>
                   <td className="p-4 text-muted-foreground">{new Date(service.date).toLocaleDateString('pt-BR')}</td>
                   <td className="p-4 font-bold text-foreground">{service.client}</td>
-                  <td className="p-4 text-muted-foreground text-xs">{service.serviceType || '-'}</td>
-                  <td className="p-4 text-muted-foreground">{service.machine}</td>
+                  <td className="p-4 text-muted-foreground text-xs">{service.area || service.serviceType || '-'}</td>
+                  <td className="p-4">
+                    <div className="flex flex-wrap gap-1">
+                      {service.machines ? service.machines.map((m: any) => (
+                        <Badge key={m.machineName} variant="outline" className={`text-[10px] ${m.status === 'concluido' ? 'border-success text-success' : 'border-muted-foreground/30 text-muted-foreground'}`}>
+                          {m.machineName}
+                        </Badge>
+                      )) : <span className="text-muted-foreground">{service.machine}</span>}
+                    </div>
+                  </td>
                   <td className="p-4 text-muted-foreground">{service.operator}</td>
                   <td className="p-4 text-right font-mono text-sm">{service.hora_inicial ?? '-'}</td>
                   <td className="p-4 text-right font-mono text-sm">{service.hora_final ?? '-'}</td>
@@ -278,11 +302,11 @@ export default function Services() {
                   <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="focus:outline-none">
-                        <Badge variant={service.status === 'concluido' ? 'default' : 'secondary'} className={`cursor-pointer hover:opacity-80 transition-opacity ${service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)] e' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)] e'}`}>
-                          {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                        <Badge variant={service.status === 'concluido' ? 'default' : service.status === 'parcialmente_concluido' ? 'outline' : 'secondary'} className={`cursor-pointer hover:opacity-80 transition-opacity ${service.status === 'concluido' ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.3)]' : service.status === 'parcialmente_concluido' ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.3)]'}`}>
+                          {service.status === 'concluido' ? 'Concluído' : service.status === 'parcialmente_concluido' ? 'Parc. Concluído' : 'Em andamento'}
                         </Badge>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="w-[160px] rounded-xl">
+                      <DropdownMenuContent align="center" className="w-[180px] rounded-xl">
                         <DropdownMenuItem 
                           onClick={() => handleUpdateService({ ...service, status: 'em_andamento' })} 
                           className="rounded-lg cursor-pointer flex items-center gap-2"
@@ -290,7 +314,13 @@ export default function Services() {
                           <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Em Andamento
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleUpdateService({ ...service, status: 'concluido' })} 
+                          onClick={() => handleUpdateService({ ...service, status: 'parcialmente_concluido' })} 
+                          className="rounded-lg cursor-pointer flex items-center gap-2"
+                        >
+                          <div className="w-2 h-2 rounded-full bg-amber-500" /> Parcialmente Concluído
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleConcludeService(service)} 
                           className="rounded-lg cursor-pointer flex items-center gap-2"
                         >
                           <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
@@ -358,14 +388,17 @@ export default function Services() {
                 <div className="flex flex-col gap-1 items-start" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="focus:outline-none">
-                      <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity e font-bold text-[10px] uppercase tracking-wider ${service.status === 'concluido'
+                      <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity font-bold text-[10px] uppercase tracking-wider ${
+                        service.status === 'concluido'
                           ? 'bg-[hsl(var(--success-subtle))] text-[hsl(var(--success-text))] border-[hsl(var(--success)/0.2)]'
+                          : service.status === 'parcialmente_concluido'
+                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                           : 'bg-[hsl(var(--warning-subtle))] text-[hsl(var(--warning-text))] border-[hsl(var(--warning)/0.2)]'
                         }`}>
-                        {service.status === 'concluido' ? 'Concluído' : 'Em andamento'}
+                        {service.status === 'concluido' ? 'Concluído' : service.status === 'parcialmente_concluido' ? 'Parc. Concluído' : 'Em andamento'}
                       </Badge>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[160px] rounded-xl">
+                    <DropdownMenuContent align="start" className="w-[180px] rounded-xl">
                       <DropdownMenuItem 
                         onClick={() => handleUpdateService({ ...service, status: 'em_andamento' })} 
                         className="rounded-lg cursor-pointer flex items-center gap-2"
@@ -373,7 +406,13 @@ export default function Services() {
                         <div className="w-2 h-2 rounded-full bg-[hsl(var(--warning))]" /> Em Andamento
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => handleUpdateService({ ...service, status: 'concluido' })} 
+                        onClick={() => handleUpdateService({ ...service, status: 'parcialmente_concluido' })} 
+                        className="rounded-lg cursor-pointer flex items-center gap-2"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-amber-500" /> Parcialmente Concluído
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleConcludeService(service)} 
                         className="rounded-lg cursor-pointer flex items-center gap-2"
                       >
                         <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" /> Concluído
@@ -512,6 +551,21 @@ export default function Services() {
           onClose={() => setIsPDFModalOpen(false)}
           isGenerating={isGeneratingPDF}
         />
+      </ActionModal>
+
+      {/* Conclude Service Modal */}
+      <ActionModal
+        isOpen={isConcludeModalOpen}
+        onClose={() => { setIsConcludeModalOpen(false); setConcludingService(null); }}
+        title={`Concluir OS ${concludingService?.id}`}
+      >
+        {concludingService && (
+          <ConcludeServiceModal
+            service={concludingService}
+            onConfirm={handleConfirmConclude}
+            onCancel={() => { setIsConcludeModalOpen(false); setConcludingService(null); }}
+          />
+        )}
       </ActionModal>
     </div>
   );

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockClients } from "@/lib/mock-data";
+import { mockClients, mockDrivers } from "@/lib/mock-data";
 
 interface FreightFormProps {
   onSave: (data: any) => void;
@@ -66,7 +66,16 @@ export function FreightForm({ onSave, onCancel, initialData }: FreightFormProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="driver" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Motorista</Label>
-          <Input id="driver" name="driver" defaultValue={initialData?.driver} placeholder="Nome do motorista" className="h-11 sm:h-10 rounded-xl" />
+          <Select name="driver" defaultValue={initialData?.driver || mockDrivers[0]?.name || ""}>
+            <SelectTrigger className="h-11 sm:h-10 rounded-xl bg-background border-border">
+              <SelectValue placeholder="Selecione o motorista" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl z-50">
+              {mockDrivers.map((d) => (
+                <SelectItem key={d.id} value={d.name} className="cursor-pointer">{d.name} ({d.vehicle})</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="value" className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Valor (R$)</Label>

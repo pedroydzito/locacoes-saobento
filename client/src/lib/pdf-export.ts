@@ -82,6 +82,7 @@ export interface ServicePDFSections {
   operationDetails: boolean;
   financial: boolean;
   dieselInfo: boolean;
+  paymentDetails: boolean;
   photos: boolean;
 }
 
@@ -92,6 +93,7 @@ export const exportServiceToPDF = async (service: any, mockClients: any[], secti
     operationDetails: true,
     financial: true,
     dieselInfo: true,
+    paymentDetails: true,
     photos: true
   };
 
@@ -141,8 +143,8 @@ export const exportServiceToPDF = async (service: any, mockClients: any[], secti
 
     const leftCol = [
       [`Data do Serviço:`, new Date(service.date).toLocaleDateString("pt-BR")],
-      [`Status:`, service.status === "concluido" ? "Concluído" : "Em Andamento"],
-      [`Tipo de Serviço:`, service.serviceType || "-"],
+      [`Status:`, service.status === "concluido" ? "Concluído" : service.status === "parcialmente_concluido" ? "Parcialmente Concluído" : "Em Andamento"],
+      [`Área:`, service.area || service.serviceType || "-"],
     ];
     const rightCol = [
       [`Máquina(s):`, service.machine],
@@ -218,6 +220,27 @@ export const exportServiceToPDF = async (service: any, mockClients: any[], secti
       ],
       headStyles: { fillColor: PRIMARY_COLOR, textColor: 255, fontStyle: "bold", fontSize: 9 },
       alternateRowStyles: { fillColor: [245, 245, 245] },
+      styles: { fontSize: 9, cellPadding: 4 },
+      columnStyles: { 1: { halign: "right", fontStyle: "bold" } },
+      margin: { left: 20, right: 20 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 6;
+  }
+
+  // Payment Details
+  if (s.paymentDetails && service.paymentDetails) {
+    const pd = service.paymentDetails;
+    autoTable(doc, {
+      startY: y,
+      head: [["Detalhes de Pagamento", "Valor"]],
+      body: [
+        ["Forma de Pagamento", String(pd.paymentMethod).toUpperCase()],
+        ["Valor de Entrada", pd.entryAmount ? `R$ ${Number(pd.entryAmount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Não houve"],
+        ["Valor Restante", pd.remainingAmount ? `R$ ${Number(pd.remainingAmount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "R$ 0,00"],
+        ["Condição", pd.isInstallment ? `Parcelado em ${pd.installmentCount}x de R$ ${Number(pd.installmentValue).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "À Vista"],
+      ],
+      headStyles: { fillColor: [60, 140, 100], textColor: 255, fontStyle: "bold", fontSize: 9 },
+      alternateRowStyles: { fillColor: [245, 252, 248] },
       styles: { fontSize: 9, cellPadding: 4 },
       columnStyles: { 1: { halign: "right", fontStyle: "bold" } },
       margin: { left: 20, right: 20 },
