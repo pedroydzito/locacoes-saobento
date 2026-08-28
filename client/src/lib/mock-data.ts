@@ -151,8 +151,9 @@ const areaOptions = ["Terraplanagem", "Destoca", "Transporte", "Escavação", "A
 
 export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => {
   const client = mockClients[i % mockClients.length];
-  const machine = mockMachines[i % mockMachines.length];
+  const machine = mockMachines[i % 8];
   const operator = mockOperators[i % mockOperators.length];
+  const monthOffset = Math.floor(i / 8) % 4;
 
   const hours = 8 + (i % 5);
   const baseHorimeter = 1200 + (i * 47.3);
@@ -192,7 +193,7 @@ export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => 
     client: client.name,
     machine: machine.name,
     operator: operator.name,
-    date: new Date(new Date().getFullYear(), new Date().getMonth() - (i % 6), (i % 26) + 1).toISOString().split('T')[0],
+    date: new Date(new Date().getFullYear(), new Date().getMonth() - monthOffset, (i % 26) + 1).toISOString().split('T')[0],
     hora_inicial,
     hora_final,
     hours,
