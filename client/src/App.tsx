@@ -24,78 +24,73 @@ import OperatorPortal from "@/pages/OperatorPortal";
 import DriverPortal from "@/pages/DriverPortal";
 import MechanicPortal from "@/pages/MechanicPortal";
 import Inventory from "@/pages/Inventory";
+import InventoryDetailPage from "@/pages/InventoryDetailPage";
 import { useEffect } from "react";
 
-function ProtectedRoute({ component: Component, allowedRoles }: { component: any, allowedRoles?: string[] }) {
-  const [location, setLocation] = useLocation();
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  const userRole = localStorage.getItem("userRole") || "operador";
+function getSession() {
+  return {
+    isAuthenticated: localStorage.getItem("isAuthenticated") === "true",
+    userRole: localStorage.getItem("userRole") || "",
+  };
+}
 
-  useEffect(() => {
-    if (!isAuthenticated && location !== '/login') {
-      setLocation('/login');
-    } else if (isAuthenticated) {
-      if (userRole === 'operador' && location !== '/portal') {
-        setLocation('/portal');
-      } else if (userRole === 'motorista' && location !== '/portal/motorista') {
-        setLocation('/portal/motorista');
-      } else if (userRole === 'mecanico' && location !== '/portal/mecanico') {
-        setLocation('/portal/mecanico');
-      } else if (allowedRoles && !allowedRoles.includes(userRole)) {
-        setLocation(userRole === 'operador' ? '/portal' : userRole === 'motorista' ? '/portal/motorista' : userRole === 'mecanico' ? '/portal/mecanico' : '/');
-      }
-    }
-  }, [isAuthenticated, location, setLocation, userRole, allowedRoles]);
-
-  if (!isAuthenticated) return null;
-  if (userRole === 'operador' && location !== '/portal') return null;
-  if (userRole === 'motorista' && location !== '/portal/motorista') return null;
-  if (userRole === 'mecanico' && location !== '/portal/mecanico') return null;
-  if (allowedRoles && !allowedRoles.includes(userRole)) return null;
-
+function AdminRoute({ component: Component }: { component: any }) {
   return <Component />;
 }
 
 function Router() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { isAuthenticated, userRole } = getSession();
 
-  if (location === '/login') {
+  useEffect(() => {
+    if (!isAuthenticated && location !== "/login") {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, location, setLocation]);
+
+  if (!isAuthenticated || location === "/login") {
     return <Route path="/login" component={Auth} />;
   }
 
-  if (location === '/portal') {
-    return <Route path="/portal" component={() => <ProtectedRoute component={OperatorPortal} allowedRoles={['operador', 'admin']} />} />;
+  if (userRole === "operador") {
+    return <OperatorPortal />;
+  }
+  if (userRole === "motorista") {
+    return <DriverPortal />;
+  }
+  if (userRole === "mecanico") {
+    return <MechanicPortal />;
   }
 
-  if (location === '/portal/motorista') {
-    return <Route path="/portal/motorista" component={() => <ProtectedRoute component={DriverPortal} allowedRoles={['motorista', 'admin']} />} />;
+  if (location === "/portal") {
+    return <OperatorPortal />;
   }
-
-  if (location === '/portal/mecanico') {
-    return <Route path="/portal/mecanico" component={() => <ProtectedRoute component={MechanicPortal} allowedRoles={['mecanico', 'admin']} />} />;
+  if (location === "/portal/motorista") {
+    return <DriverPortal />;
+  }
+  if (location === "/portal/mecanico") {
+    return <MechanicPortal />;
   }
 
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
-        <Route path="/servicos" component={() => <ProtectedRoute component={Services} />} />
-        <Route path="/servicos/:id" component={() => <ProtectedRoute component={ServiceDetailPage} />} />
-        <Route path="/maquinas" component={() => <ProtectedRoute component={Machines} />} />
-        <Route path="/maquinas/:id" component={() => <ProtectedRoute component={MachineDetailPage} />} />
-        <Route path="/fretes" component={() => <ProtectedRoute component={Freights} />} />
-        <Route path="/fretes/:id" component={() => <ProtectedRoute component={FreightDetailPage} />} />
-        <Route path="/clientes" component={() => <ProtectedRoute component={Clients} />} />
-        <Route path="/clientes/:id" component={() => <ProtectedRoute component={ClientDetailPage} />} />
-        
-        {/* Gestão - Apenas Admin */}
-        <Route path="/operadores" component={() => <ProtectedRoute component={Operators} allowedRoles={['admin']} />} />
-        <Route path="/operadores/:id" component={() => <ProtectedRoute component={OperatorDetailPage} allowedRoles={['admin']} />} />
-        <Route path="/financeiro" component={() => <ProtectedRoute component={Finance} allowedRoles={['admin']} />} />
-        <Route path="/financeiro/:id" component={() => <ProtectedRoute component={FinanceDetailPage} allowedRoles={['admin']} />} />
-        <Route path="/estoque" component={() => <ProtectedRoute component={Inventory} allowedRoles={['admin']} />} />
-        <Route path="/relatorios" component={() => <ProtectedRoute component={Reports} allowedRoles={['admin']} />} />
-        
+        <Route path="/" component={() => <AdminRoute component={Dashboard} />} />
+        <Route path="/servicos" component={() => <AdminRoute component={Services} />} />
+        <Route path="/servicos/:id" component={() => <AdminRoute component={ServiceDetailPage} />} />
+        <Route path="/maquinas" component={() => <AdminRoute component={Machines} />} />
+        <Route path="/maquinas/:id" component={() => <AdminRoute component={MachineDetailPage} />} />
+        <Route path="/fretes" component={() => <AdminRoute component={Freights} />} />
+        <Route path="/fretes/:id" component={() => <AdminRoute component={FreightDetailPage} />} />
+        <Route path="/clientes" component={() => <AdminRoute component={Clients} />} />
+        <Route path="/clientes/:id" component={() => <AdminRoute component={ClientDetailPage} />} />
+        <Route path="/operadores" component={() => <AdminRoute component={Operators} />} />
+        <Route path="/operadores/:id" component={() => <AdminRoute component={OperatorDetailPage} />} />
+        <Route path="/financeiro" component={() => <AdminRoute component={Finance} />} />
+        <Route path="/financeiro/:id" component={() => <AdminRoute component={FinanceDetailPage} />} />
+        <Route path="/estoque" component={() => <AdminRoute component={Inventory} />} />
+        <Route path="/estoque/:id" component={() => <AdminRoute component={InventoryDetailPage} />} />
+        <Route path="/relatorios" component={() => <AdminRoute component={Reports} />} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

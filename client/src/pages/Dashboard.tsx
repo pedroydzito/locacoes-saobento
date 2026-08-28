@@ -7,7 +7,7 @@ import {
   ResponsiveContainer, Cell, ComposedChart, Line, Legend
 } from "recharts";
 import { getMachinePerformanceByMonth } from "@/lib/mock-data";
-import { ChevronLeft, ChevronRight, Activity, Fuel, Clock, TrendingUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, Activity, Fuel, Clock } from "lucide-react";
 
 const MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -30,9 +30,6 @@ function CustomTooltip({ active, payload, label }: any) {
   const data = payload[0]?.payload;
   if (!data) return null;
 
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
   return (
     <div className="bg-card border border-border rounded-2xl shadow-lg p-4 min-w-[200px]">
       <p className="font-bold text-sm text-foreground mb-2">{label}</p>
@@ -48,10 +45,6 @@ function CustomTooltip({ active, payload, label }: any) {
         <div className="flex justify-between items-center gap-4">
           <span className="text-xs text-muted-foreground">Média de Consumo</span>
           <span className="font-bold text-xs text-orange-500">{data.avgDiesel} L/h</span>
-        </div>
-        <div className="pt-1.5 mt-1 border-t border-border/50 flex justify-between items-center gap-4">
-          <span className="text-xs text-muted-foreground">Receita</span>
-          <span className="font-bold text-xs text-emerald-500">{formatCurrency(data.revenue)}</span>
         </div>
         {data.serviceCount > 0 && (
           <div className="flex justify-between items-center gap-4">
@@ -79,19 +72,23 @@ export default function Dashboard() {
     return getMachinePerformanceByMonth(targetMonth, targetYear);
   }, [targetMonth, targetYear]);
 
+  const previousDate = useMemo(() => {
+    return new Date(targetYear, targetMonth - 1, 1);
+  }, [targetMonth, targetYear]);
+
+  const previousData = useMemo(() => {
+    return getMachinePerformanceByMonth(previousDate.getMonth(), previousDate.getFullYear());
+  }, [previousDate]);
+
   const totals = useMemo(() => ({
     hours: performanceData.reduce((a, b) => a + b.hours, 0),
     diesel: performanceData.reduce((a, b) => a + b.diesel, 0),
-    revenue: performanceData.reduce((a, b) => a + b.revenue, 0),
     machines: performanceData.length,
   }), [performanceData]);
 
   const avgDieselOverall = totals.hours > 0 ? totals.diesel / totals.hours : 0;
 
   const isCurrent = monthOffset === 0;
-
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
   return (
     <div className="space-y-6 pb-8">
@@ -142,12 +139,11 @@ export default function Dashboard() {
       </div>
 
       {/* Summary KPI Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { icon: Activity, label: "Máquinas Ativas", value: `${totals.machines}`, sub: "com registro no mês", color: "primary" },
           { icon: Clock, label: "Total de Horas", value: `${totals.hours.toFixed(1)}h`, sub: "horas trabalhadas", color: "primary" },
           { icon: Fuel, label: "Diesel Consumido", value: `${totals.diesel}L`, sub: `Média ${avgDieselOverall.toFixed(1)} L/h`, color: "amber" },
-          { icon: TrendingUp, label: "Faturamento", value: formatCurrency(totals.revenue), sub: "receita do período", color: "emerald" },
         ].map(({ icon: Icon, label, value, sub, color }) => (
           <Card key={label} className="border-border rounded-2xl">
             <div className="p-4">
@@ -261,7 +257,11 @@ export default function Dashboard() {
             <Fuel className="w-3 h-3" /> Consumo de Diesel por Máquina
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {performanceData.map((m, idx) => (
+            {performanceData.map((m, idx) => {
+              const prev = previousData.find(p => p.name === m.name);
+              const hoursDelta = prev && prev.hours > 0 ? ((m.hours - prev.hours) / prev.hours) * 100 : null;
+              const dieselDelta = prev && prev.diesel > 0 ? ((m.diesel - prev.diesel) / prev.diesel) * 100 : null;
+              return (
               <div
                 key={m.name}
                 className="p-4 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors"
@@ -282,10 +282,20 @@ export default function Dashboard() {
                   <div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Horas</p>
                     <p className="font-bold text-sm text-primary mt-0.5">{m.hours}h</p>
+                    {hoursDelta !== null && (
+                      <p className={`text-[10px] font-bold mt-0.5 ${hoursDelta >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                        {hoursDelta >= 0 ? "+" : ""}{hoursDelta.toFixed(0)}% vs mês ant.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Diesel</p>
                     <p className="font-bold text-sm text-amber-500 mt-0.5">{m.diesel}L</p>
+                    {dieselDelta !== null && (
+                      <p className={`text-[10px] font-bold mt-0.5 ${dieselDelta >= 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                        {dieselDelta >= 0 ? "+" : ""}{dieselDelta.toFixed(0)}% vs mês ant.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Média</p>
@@ -293,7 +303,8 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         </div>
       )}

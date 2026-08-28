@@ -29,9 +29,6 @@ export default function MechanicPortal() {
     return recordMechanic === storedName || recordMechanic.includes(storedName.split(' ')[0]) || storedName.includes(recordMechanic.split(' ')[0]);
   });
 
-  const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-
   return (
     <div className="min-h-screen bg-background text-foreground pb-20" key={refreshKey}>
       {/* Header Bar */}
@@ -102,7 +99,7 @@ export default function MechanicPortal() {
                         </div>
                         <p className="text-xs text-muted-foreground">{new Date(m.date).toLocaleDateString('pt-BR')}</p>
                       </div>
-                      <span className="font-bold text-sm text-destructive">{formatCurrency(m.totalCost)}</span>
+                      <span className="font-bold text-sm text-muted-foreground">{m.partsUsed.length} peça(s)</span>
                     </div>
 
                     <p className="text-xs text-foreground leading-relaxed">{m.description}</p>
@@ -113,7 +110,7 @@ export default function MechanicPortal() {
                         {m.partsUsed.map((p, i) => (
                           <div key={i} className="flex justify-between text-xs text-muted-foreground">
                             <span>{p.quantity}x {p.name} ({p.code})</span>
-                            <span className="font-mono">{formatCurrency(p.quantity * p.unitPrice)}</span>
+                            <span className="font-mono">{p.quantity} {p.quantity === 1 ? "un" : "un"}</span>
                           </div>
                         ))}
                       </div>
@@ -138,7 +135,7 @@ export default function MechanicPortal() {
                 </div>
                 <div className="text-right">
                   <span className="font-bold text-sm text-primary">{item.quantity} {item.unit || 'un'}</span>
-                  <p className="text-[10px] text-muted-foreground">{formatCurrency(item.unitCost || 0)}/un</p>
+                  <p className="text-[10px] text-muted-foreground">disponível</p>
                 </div>
               </Card>
             ))}
@@ -153,6 +150,7 @@ export default function MechanicPortal() {
         title="Registrar Manutenção"
       >
         <MaintenanceForm
+          hideValues
           onSave={() => {
             setIsMaintenanceModalOpen(false);
             setRefreshKey(k => k + 1);

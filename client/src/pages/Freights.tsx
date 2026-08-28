@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockFreights, machinesList, mockDrivers } from "@/lib/mock-data";
+import { mockFreights, machinesList, mockDrivers, getFreightKmTotal, getFreightTotalValue } from "@/lib/mock-data";
 import { Search, Plus, MoreHorizontal, MapPin, Edit, Trash2, FileDown, Filter, Truck, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -34,7 +34,7 @@ export default function Freights() {
     { key: "routeInfo",   label: "Informações da Rota",  description: "ID, data, origem, destino e status do frete.", defaultChecked: true },
     { key: "vehicleInfo",label: "Veículo e Condutor",   description: "Máquina transportada e motorista responsável.", defaultChecked: true },
     { key: "kmInfo",     label: "Quilometragem",         description: "KM inicial, final e total percorrido.", defaultChecked: true },
-    { key: "financial",  label: "Informação Financeira",description: "Valor total do frete.", defaultChecked: true },
+    { key: "financial",  label: "Informação Financeira",description: "Valor por km e total do frete.", defaultChecked: true },
     { key: "notes",      label: "Observações",          description: "Anotações e observações do frete.", defaultChecked: true },
   ];
 
@@ -212,7 +212,7 @@ export default function Freights() {
                       )}
                     </div>
                   </td>
-                  <td className="p-4 text-right font-bold">{formatCurrency(freight.value)}</td>
+                  <td className="p-4 text-right font-bold">{formatCurrency(getFreightTotalValue(freight))}</td>
                   <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="focus:outline-none">
@@ -297,7 +297,7 @@ export default function Freights() {
                     {freight.km_inicial && freight.km_final && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                         <span className="font-medium text-foreground">KM:</span> {freight.km_inicial} → {freight.km_final} 
-                        <span className="text-primary font-medium ml-auto">{(freight.km_final - freight.km_inicial).toLocaleString('pt-BR')} km</span>
+                        <span className="text-primary font-medium ml-auto">{getFreightKmTotal(freight).toLocaleString('pt-BR')} km</span>
                       </p>
                     )}
                   </div>
@@ -324,7 +324,15 @@ export default function Freights() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <p className="font-bold text-sm text-primary mt-auto">{formatCurrency(freight.value)}</p>
+                <p className="font-bold text-sm text-primary mt-auto">{formatCurrency(getFreightTotalValue(freight))}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full text-muted-foreground"
+                  onClick={(e) => { e.stopPropagation(); handleOpenPDF(freight); }}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
               </MobileCardActions>
             </MobileCard>
           ))}

@@ -11,16 +11,39 @@ let logoBase64Cache: string | null = null;
 export async function loadLogoForPDF(): Promise<string | null> {
   if (logoBase64Cache) return logoBase64Cache;
   try {
-    const response = await fetch("/logo-color.png");
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        logoBase64Cache = reader.result as string;
-        resolve(logoBase64Cache);
+    const response = await fetch("/logo-locacoes.svg");
+    const svgText = await response.text();
+    const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const png = await new Promise<string | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const width = 240;
+        const height = Math.round(width * (2080 / 1920));
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          resolve(null);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const data = canvas.toDataURL("image/png");
+        URL.revokeObjectURL(url);
+        resolve(data);
       };
-      reader.readAsDataURL(blob);
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
     });
+
+    logoBase64Cache = png;
+    return logoBase64Cache;
   } catch {
     return null;
   }
@@ -454,6 +477,7 @@ export const exportFreightToPDF = async (freight: any, sections?: FreightPDFSect
       body: [
         ["ID do Frete", freight.id],
         ["Data", new Date(freight.date).toLocaleDateString("pt-BR")],
+        ["Cliente", freight.client || "-"],
         ["Origem", freight.origin || "-"],
         ["Destino", freight.destination || "-"],
         ["Status", statusLabel[freight.status] || freight.status],
@@ -509,10 +533,19 @@ export const exportFreightToPDF = async (freight: any, sections?: FreightPDFSect
 
   // Financial
   if (s.financial) {
+    const kmTotal = freight.km_inicial != null && freight.km_final != null
+      ? Math.max(0, freight.km_final - freight.km_inicial)
+      : 0;
+    const rate = Number(freight.price_per_km) || 0;
+    const total = kmTotal > 0 && rate > 0 ? kmTotal * rate : (freight.value || 0);
     autoTable(doc, {
       startY: y,
       head: [["Financeiro", "Valor"]],
-      body: [["Valor Total do Frete", fmt(freight.value || 0)]],
+      body: [
+        ["Valor por KM", rate > 0 ? fmt(rate) : "—"],
+        ["KM Percorrido", kmTotal > 0 ? `${kmTotal.toLocaleString("pt-BR")} km` : "—"],
+        ["Valor Total do Frete", fmt(total)],
+      ],
       headStyles: { fillColor: [50, 100, 60], textColor: 255, fontStyle: "bold", fontSize: 9 },
       styles: { fontSize: 9, cellPadding: 4 },
       columnStyles: { 1: { halign: "right", fontStyle: "bold" } },

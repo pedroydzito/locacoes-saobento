@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockMachines, mockMechanics, mockMaintenanceRecords, mockTransactions, mockInventory, type MaintenanceRecord } from "@/lib/mock-data";
+import { mockMachines, mockMechanics, mockMaintenanceRecords, mockTransactions, mockInventory, mockInventoryMovements, type MaintenanceRecord } from "@/lib/mock-data";
 import { Plus, Trash2, Wrench } from "lucide-react";
 
 interface MaintenanceFormProps {
   onSave: () => void;
   onCancel: () => void;
   machineId?: string;
+  hideValues?: boolean;
 }
 
-export function MaintenanceForm({ onSave, onCancel, machineId }: MaintenanceFormProps) {
+export function MaintenanceForm({ onSave, onCancel, machineId, hideValues }: MaintenanceFormProps) {
   const [selectedMachineId, setSelectedMachineId] = useState(machineId || mockMachines[0]?.id || "");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<MaintenanceRecord['type']>('revisao');
@@ -31,7 +32,18 @@ export function MaintenanceForm({ onSave, onCancel, machineId }: MaintenanceForm
   };
 
   const handlePartChange = (index: number, field: string, value: any) => {
-    setParts(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
+    setParts(prev => prev.map((p, i) => {
+      if (i !== index) return p;
+      const next = { ...p, [field]: value };
+      if (field === "code") {
+        const inv = mockInventory.find(item => item.code.toLowerCase() === String(value).toLowerCase());
+        if (inv) {
+          next.name = next.name || inv.name;
+          if (hideValues || !next.unitPrice) next.unitPrice = inv.unitPrice;
+        }
+      }
+      return next;
+    }));
   };
 
   const totalPartsCost = parts.reduce((acc, p) => acc + (p.quantity * p.unitPrice), 0);
@@ -65,6 +77,15 @@ export function MaintenanceForm({ onSave, onCancel, machineId }: MaintenanceForm
         if (invIndex !== -1) {
           mockInventory[invIndex].quantity -= p.quantity;
           if (mockInventory[invIndex].quantity < 0) mockInventory[invIndex].quantity = 0;
+          mockInventoryMovements.push({
+            id: `mov-mnt-${Date.now()}-${invIndex}`,
+            itemId: mockInventory[invIndex].id,
+            date,
+            quantity: p.quantity,
+            destination: machineObj.name,
+            source: "Manutenção",
+            reference: newRecord.id,
+          });
         }
       }
     });
@@ -189,19 +210,23 @@ export function MaintenanceForm({ onSave, onCancel, machineId }: MaintenanceForm
               <div key={index} className="grid grid-cols-12 gap-2 items-center bg-muted/20 p-2.5 rounded-xl border border-border/50">
                 <Input placeholder="Código" value={part.code} onChange={e => handlePartChange(index, 'code', e.target.value)} className="col-span-3 h-9 text-xs rounded-lg font-mono" />
                 <Input placeholder="Nome da Peça" value={part.name} onChange={e => handlePartChange(index, 'name', e.target.value)} className="col-span-4 h-9 text-xs rounded-lg" />
-                <Input type="number" placeholder="Qtd" value={part.quantity} onChange={e => handlePartChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 h-9 text-xs rounded-lg font-mono" />
-                <Input type="number" step="0.01" placeholder="R$ Unit" value={part.unitPrice} onChange={e => handlePartChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="col-span-2 h-9 text-xs rounded-lg font-mono" />
+                <Input type="number" placeholder="Qtd" value={part.quantity} onChange={e => handlePartChange(index, 'quantity', parseFloat(e.target.value) || 0)} className={`${hideValues ? "col-span-4" : "col-span-2"} h-9 text-xs rounded-lg font-mono`} />
+                {!hideValues && (
+                  <Input type="number" step="0.01" placeholder="R$ Unit" value={part.unitPrice} onChange={e => handlePartChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="col-span-2 h-9 text-xs rounded-lg font-mono" />
+                )}
                 <Button type="button" variant="ghost" size="icon" onClick={() => handleRemovePart(index)} className="col-span-1 h-9 w-9 text-destructive hover:bg-destructive/10 rounded-lg">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             ))}
+            {!hideValues && (
             <div className="flex justify-between items-center pt-2 text-sm font-bold">
               <span className="text-muted-foreground">Custo Total em Peças:</span>
               <span className="text-primary">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPartsCost)}
               </span>
             </div>
+            )}
           </div>
         )}
       </div>

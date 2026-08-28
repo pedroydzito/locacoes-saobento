@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LogOut, Play, StopCircle, Clock, Calendar, CheckCircle2, MapPin, Truck, Wrench, Camera, ChevronLeft, ChevronRight } from "lucide-react";
-import { mockClients, mockOperators, mockMachines, mockServices, mockInventory, mockTransactions } from "@/lib/mock-data";
+import { mockClients, mockOperators, mockMachines, mockServices, mockInventory, mockTransactions, mockInventoryMovements } from "@/lib/mock-data";
+import { HoursDailyChart } from "@/components/shared/HoursDailyChart";
 import { toast } from "@/hooks/use-toast";
 
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -36,28 +37,6 @@ function ReportsView({ activeServices, currentOperator, onBack }: { activeServic
         }, 0);
     }, 0);
   }, [allServices, targetMonth, targetYear]);
-
-  // Build last 6 months history
-  const history = useMemo(() => {
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-      const m = d.getMonth();
-      const y = d.getFullYear();
-      const h = allServices.reduce((total, srv) => {
-        const logs: any[] = (srv as any).dailyLogs || [];
-        return total + logs.reduce((acc: number, log: any) => {
-          const ld = new Date(log.date);
-          if (ld.getMonth() === m && ld.getFullYear() === y) {
-            if (log.finalHorimeter && log.initialHorimeter) {
-              return acc + (Number(log.finalHorimeter) - Number(log.initialHorimeter));
-            }
-          }
-          return acc;
-        }, 0);
-      }, 0);
-      return { label: `${MONTHS[m].slice(0, 3)}/${y}`, hours: h, isCurrent: m === now.getMonth() && y === now.getFullYear() };
-    });
-  }, [allServices]);
 
   const isCurrent = monthOffset === 0;
   const isFuture = monthOffset > 0;
@@ -94,15 +73,7 @@ function ReportsView({ activeServices, currentOperator, onBack }: { activeServic
         {monthHours === 0 && <p className="text-white/50 text-xs mt-2">Nenhum registro diário neste mês ainda.</p>}
       </Card>
 
-      <h3 className="font-bold text-gray-800 mt-2 mb-2 px-1">Histórico (6 meses)</h3>
-      <div className="space-y-2">
-        {history.map((m, i) => (
-          <Card key={i} className={`p-4 rounded-xl flex justify-between items-center shadow-sm border-border ${m.isCurrent ? 'border-primary/30 bg-primary/5' : ''}`}>
-            <span className={`font-medium text-sm ${m.isCurrent ? 'text-primary font-bold' : 'text-muted-foreground'}`}>{m.label}</span>
-            <span className="font-bold text-lg">{m.hours.toFixed(1)} h</span>
-          </Card>
-        ))}
-      </div>
+      <HoursDailyChart operatorName={currentOperator.name} month={targetMonth} year={targetYear} compact />
     </div>
   );
 }
@@ -205,6 +176,15 @@ export default function OperatorPortal() {
         const qtyToDeduct = Number(morningLogData.partQuantity);
         if (mockInventory[itemIndex].quantity >= qtyToDeduct) {
           mockInventory[itemIndex].quantity -= qtyToDeduct;
+          mockInventoryMovements.push({
+            id: `mov-op-${Date.now()}`,
+            itemId: mockInventory[itemIndex].id,
+            date: morningLogData.date,
+            quantity: qtyToDeduct,
+            destination: selectedService.machine,
+            source: "Apontamento",
+            reference: selectedService.id,
+          });
           
           const costValue = qtyToDeduct * (mockInventory[itemIndex].unitPrice || 0);
           mockTransactions.push({

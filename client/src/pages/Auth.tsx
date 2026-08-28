@@ -136,7 +136,7 @@ export default function Auth() {
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center md:text-left">
             <h2 className="text-2xl font-bold font-display text-foreground mb-2">Bem-vindo de volta</h2>
-            <p className="text-muted-foreground text-sm">Acesse o sistema de gestão da fazenda.</p>
+            <p className="text-muted-foreground text-sm">Acesse o sistema de gestão da São Bento Locações.</p>
           </div>
 
           <div className="space-y-6">
@@ -263,7 +263,8 @@ export default function Auth() {
                   setTimeout(() => {
                     localStorage.setItem("isAuthenticated", "true");
                     localStorage.setItem("userRole", "motorista");
-                    localStorage.setItem("driverName", "Carlos Silva");
+                    localStorage.setItem("driverId", "drv-1");
+                    localStorage.setItem("driverName", "Carlos Souza");
                     setIsLoading(false);
                     setLocation("/portal/motorista");
                   }, 600);
@@ -280,7 +281,8 @@ export default function Auth() {
                   setTimeout(() => {
                     localStorage.setItem("isAuthenticated", "true");
                     localStorage.setItem("userRole", "mecanico");
-                    localStorage.setItem("mechanicName", "Cláudio Oficina");
+                    localStorage.setItem("mechanicId", "mec-0");
+                    localStorage.setItem("mechanicName", "José Mecânico");
                     setIsLoading(false);
                     setLocation("/portal/mecanico");
                   }, 600);

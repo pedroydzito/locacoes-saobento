@@ -1,19 +1,29 @@
 import { useLocation, useRoute } from "wouter";
 import { useState } from "react";
-import { mockFreights } from "@/lib/mock-data";
+import { mockFreights, getFreightKmTotal, getFreightTotalValue } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ActionModal } from "@/components/ui/action-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FreightForm } from "@/components/forms/FreightForm";
-import { Edit, Trash2, ChevronRight, ArrowLeft, Truck, MapPin, User, DollarSign, Calendar, ArrowRight } from "lucide-react";
+import { Edit, Trash2, ChevronRight, ArrowLeft, Truck, MapPin, User, DollarSign, Calendar, ArrowRight, FileDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { exportFreightToPDF, FreightPDFSections } from "@/lib/pdf-export";
+import { PDFExportModal } from "@/components/shared/PDFExportModal";
 
 const statusMap: Record<string, { label: string; cls: string }> = {
   concluido:    { label: "Concluído",    cls: "text-[hsl(var(--success-text))] bg-[hsl(var(--success-subtle))] border-[hsl(var(--success)/0.3)]" },
   em_andamento: { label: "Em Andamento", cls: "text-[hsl(var(--warning-text))] bg-[hsl(var(--warning-subtle))] border-[hsl(var(--warning)/0.3)]" },
   planejado:    { label: "Planejado",    cls: "text-muted-foreground bg-muted border-border" },
 };
+
+const FREIGHT_PDF_SECTIONS = [
+  { key: "routeInfo",   label: "Informações da Rota",  description: "ID, data, origem, destino e status do frete.", defaultChecked: true },
+  { key: "vehicleInfo", label: "Veículo e Condutor",   description: "Máquina transportada e motorista responsável.", defaultChecked: true },
+  { key: "kmInfo",      label: "Quilometragem",         description: "KM inicial, final e total percorrido.", defaultChecked: true },
+  { key: "financial",   label: "Informação Financeira", description: "Valor por km e total do frete.", defaultChecked: true },
+  { key: "notes",       label: "Observações",          description: "Anotações e observações do frete.", defaultChecked: true },
+];
 
 export default function FreightDetailPage() {
   const [, setLocation] = useLocation();
@@ -22,6 +32,8 @@ export default function FreightDetailPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const freight = mockFreights.find(f => f.id === freightId) as any;
 
@@ -38,6 +50,19 @@ export default function FreightDetailPage() {
 
   const formatCurrency = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   const status = statusMap[freight.status] || statusMap.planejado;
+  const kmTotal = getFreightKmTotal(freight);
+  const totalValue = getFreightTotalValue(freight);
+  const rate = Number(freight.price_per_km) || 0;
+
+  const handleExportPDF = async (selectedSections: Record<string, boolean>) => {
+    setIsGeneratingPDF(true);
+    try {
+      await exportFreightToPDF({ ...freight, value: totalValue }, selectedSections as unknown as FreightPDFSections);
+    } finally {
+      setIsGeneratingPDF(false);
+      setIsPDFModalOpen(false);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-8" key={refreshKey}>
@@ -60,7 +85,7 @@ export default function FreightDetailPage() {
             <p className="text-sm text-muted-foreground mt-0.5">{freight.machine} · {new Date(freight.date).toLocaleDateString('pt-BR')}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger className="focus:outline-none">
               <Badge variant="outline" className={`cursor-pointer hover:opacity-80 transition-opacity e text-[10px] font-bold uppercase tracking-widest px-3 py-1 ${status.cls}`}>
@@ -91,6 +116,10 @@ export default function FreightDetailPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={() => setIsPDFModalOpen(true)}
+            className="rounded-xl h-9 border-border hover:bg-primary/5 hover:text-primary shadow-none">
+            <FileDown className="w-4 h-4 mr-2" /> Exportar PDF
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}
             className="rounded-xl h-9 border-border hover:bg-primary/5 hover:text-primary shadow-none">
             <Edit className="w-4 h-4 mr-2" /> Editar
@@ -102,7 +131,6 @@ export default function FreightDetailPage() {
         </div>
       </div>
 
-      {/* Route Banner */}
       <div className="p-5 rounded-2xl bg-card border border-border flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
         <div className="text-center sm:text-right">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1 justify-center sm:justify-end">
@@ -119,13 +147,12 @@ export default function FreightDetailPage() {
         </div>
       </div>
 
-      {/* Info Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { icon: Calendar, label: "Data", value: new Date(freight.date).toLocaleDateString('pt-BR') },
-          { icon: Truck, label: "Máquina", value: freight.machine },
+          { icon: Truck, label: "Carga", value: freight.machine },
           { icon: User, label: "Motorista", value: freight.driver || "—" },
-          { icon: DollarSign, label: "Valor", value: formatCurrency(freight.value || 0) },
+          { icon: User, label: "Cliente", value: freight.client || "—" },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="p-4 rounded-2xl bg-muted/20 border border-border">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
@@ -136,7 +163,6 @@ export default function FreightDetailPage() {
         ))}
       </div>
 
-      {/* KM Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-4 rounded-2xl bg-card border border-border">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">KM Inicial</p>
@@ -149,9 +175,24 @@ export default function FreightDetailPage() {
         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
           <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Total Percorrido</p>
           <p className="font-bold text-lg text-primary">
-            {(freight.km_inicial && freight.km_final) 
-              ? `${(freight.km_final - freight.km_inicial).toLocaleString('pt-BR')} km` 
-              : "—"}
+            {kmTotal > 0 ? `${kmTotal.toLocaleString('pt-BR')} km` : "—"}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-4 rounded-2xl bg-card border border-border">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Valor por KM</p>
+          <p className="font-bold text-lg">{rate > 0 ? formatCurrency(rate) : "—"}</p>
+        </div>
+        <div className="p-4 rounded-2xl bg-card border border-border sm:col-span-2">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1.5">
+            <DollarSign className="w-3 h-3" /> Valor Total
+          </p>
+          <p className="font-bold text-lg text-primary">
+            {kmTotal > 0 && rate > 0
+              ? `${kmTotal.toLocaleString("pt-BR")} km × ${formatCurrency(rate)} = ${formatCurrency(totalValue)}`
+              : formatCurrency(totalValue)}
           </p>
         </div>
       </div>
@@ -164,7 +205,16 @@ export default function FreightDetailPage() {
       )}
 
       <ActionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Editar Frete">
-        <FreightForm onSave={() => { setIsEditModalOpen(false); setRefreshKey(k => k + 1); }} onCancel={() => setIsEditModalOpen(false)} initialData={freight} />
+        <FreightForm
+          onSave={(data) => {
+            const idx = mockFreights.findIndex(f => f.id === freight.id);
+            if (idx !== -1) mockFreights[idx] = { ...mockFreights[idx], ...data };
+            setIsEditModalOpen(false);
+            setRefreshKey(k => k + 1);
+          }}
+          onCancel={() => setIsEditModalOpen(false)}
+          initialData={freight}
+        />
       </ActionModal>
       <ConfirmDialog isOpen={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={() => {
@@ -173,6 +223,19 @@ export default function FreightDetailPage() {
           setLocation("/fretes");
         }} title="Excluir frete"
         description={`Tem certeza que deseja excluir o frete "${freight.id}"?`} />
+
+      <ActionModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        title={`Exportar Frete — ${freight.id}`}
+      >
+        <PDFExportModal
+          sections={FREIGHT_PDF_SECTIONS}
+          onExport={handleExportPDF}
+          onClose={() => setIsPDFModalOpen(false)}
+          isGenerating={isGeneratingPDF}
+        />
+      </ActionModal>
     </div>
   );
 }

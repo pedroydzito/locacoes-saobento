@@ -192,7 +192,7 @@ export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => 
     client: client.name,
     machine: machine.name,
     operator: operator.name,
-    date: new Date(2025, i % 12, (i % 28) + 1).toISOString().split('T')[0],
+    date: new Date(new Date().getFullYear(), new Date().getMonth() - (i % 6), (i % 26) + 1).toISOString().split('T')[0],
     hora_inicial,
     hora_final,
     hours,
@@ -235,6 +235,65 @@ export const mockServices: Service[] = Array.from({ length: 25 }).map((_, i) => 
     dailyLogs: []
   };
 });
+
+// Seed daily hour logs so operator charts have day-by-day data for the current and previous month
+(() => {
+  const now = new Date();
+  mockOperators.forEach((op, opIdx) => {
+    const service = mockServices.find(s => s.operator === op.name);
+    if (!service) return;
+    if (!service.dailyLogs) service.dailyLogs = [];
+    for (let monthOffset = 0; monthOffset <= 1; monthOffset++) {
+      const workDays = [1, 3, 4, 6, 8, 10, 11, 13, 15, 17, 18, 20, 22, 24, 25];
+      workDays.forEach((day, di) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - monthOffset, day);
+        if (d > now) return;
+        const hours = 6 + ((opIdx + di) % 5) + ((di % 3) * 0.5);
+        const initial = 1000 + opIdx * 80 + di * 9;
+        service.dailyLogs!.push({
+          date: d.toISOString().split("T")[0],
+          machine: op.machine_assigned[0],
+          initialHorimeter: initial,
+          finalHorimeter: Number((initial + hours).toFixed(1)),
+        });
+      });
+    }
+  });
+})();
+
+export function getOperatorDailyHours(operatorName: string, month: number, year: number) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const hoursByDay = Array.from({ length: daysInMonth }, () => 0);
+
+  mockServices
+    .filter(s => s.operator === operatorName || s.machines?.some(m => m.operatorName === operatorName))
+    .forEach(s => {
+      const logs = (s as any).dailyLogs || [];
+      if (logs.length) {
+        logs.forEach((log: any) => {
+          if (!log.date) return;
+          const d = new Date(log.date + "T12:00:00");
+          if (d.getMonth() !== month || d.getFullYear() !== year) return;
+          const h = (Number(log.finalHorimeter) || 0) - (Number(log.initialHorimeter) || 0);
+          if (h > 0) hoursByDay[d.getDate() - 1] += h;
+        });
+        return;
+      }
+      if (!s.date) return;
+      const d = new Date(s.date + "T12:00:00");
+      if (d.getMonth() !== month || d.getFullYear() !== year) return;
+      let h = s.hours || 0;
+      if (s.hora_inicial != null && s.hora_final != null) {
+        h = Number(s.hora_final) - Number(s.hora_inicial);
+      }
+      if (h > 0) hoursByDay[d.getDate() - 1] += h;
+    });
+
+  return hoursByDay.map((hours, i) => ({
+    day: i + 1,
+    hours: Math.round(hours * 10) / 10,
+  }));
+}
 
 // ────────────────────────────────────────────────
 // Transaction Interface (expanded)
@@ -311,19 +370,44 @@ export let mockTransactions: Transaction[] = Array.from({ length: 20 }).map((_, 
   };
 });
 
-export const mockFreights = Array.from({ length: 10 }).map((_, i) => ({
-  id: `FRT-${1000 + i}`,
-  date: new Date(2025, i % 12, (i % 28) + 1).toISOString().split('T')[0],
-  machine: mockMachines[i % mockMachines.length].name,
-  origin: ["Pátio Central", "Obra Alpha", "Fazenda Boa Vista", "Pátio Central", "Rio Verde"][i % 5],
-  destination: ["Obra Alpha", "Fazenda Boa Vista", "Rio Verde", "Aparecida de Goiânia", "Pátio Central"][i % 5],
-  driver: ["Roberto", "Carlos", "Juliano"][i % 3],
-  value: 800 + (i * 150),
-  km_inicial: 10000 + (i * 100),
-  km_final: 10000 + (i * 100) + 150 + (i * 10),
-  status: i < 2 ? "planejado" : i < 4 ? "em_andamento" : "concluido",
-  notes: ""
-}));
+const DRIVER_NAMES = ["Roberto Silva", "Carlos Souza", "Juliano Lima"];
+
+export function getFreightKmTotal(freight: { km_inicial?: number; km_final?: number }) {
+  if (freight.km_inicial == null || freight.km_final == null) return 0;
+  return Math.max(0, Number(freight.km_final) - Number(freight.km_inicial));
+}
+
+export function getFreightTotalValue(freight: { km_inicial?: number; km_final?: number; price_per_km?: number; value?: number }) {
+  const km = getFreightKmTotal(freight);
+  const rate = Number(freight.price_per_km) || 0;
+  if (km > 0 && rate > 0) return km * rate;
+  return Number(freight.value) || 0;
+}
+
+export const mockFreights = Array.from({ length: 10 }).map((_, i) => {
+  const km_inicial = 10000 + (i * 100);
+  const kmRun = 150 + (i * 10);
+  const planned = i < 2;
+  const inProgress = i >= 2 && i < 4;
+  const km_final = planned ? undefined : inProgress ? undefined : km_inicial + kmRun;
+  const price_per_km = planned || inProgress ? 0 : 1.16;
+  const value = km_final && price_per_km ? (km_final - km_inicial) * price_per_km : 0;
+  return {
+    id: `FRT-${1000 + i}`,
+    date: new Date(new Date().getFullYear(), new Date().getMonth() - (i % 4), (i % 26) + 1).toISOString().split('T')[0],
+    machine: mockMachines[i % mockMachines.length].name,
+    client: mockClients[i % mockClients.length].name,
+    origin: ["Pátio Central", "Obra Alpha", "Fazenda Boa Vista", "Pátio Central", "Rio Verde"][i % 5],
+    destination: ["Obra Alpha", "Fazenda Boa Vista", "Rio Verde", "Aparecida de Goiânia", "Pátio Central"][i % 5],
+    driver: DRIVER_NAMES[i % DRIVER_NAMES.length],
+    price_per_km,
+    value,
+    km_inicial,
+    km_final,
+    status: planned ? "planejado" : inProgress ? "em_andamento" : "concluido",
+    notes: ""
+  };
+});
 
 // Keep for backward compat (used in some pages)
 export const kpis = {
@@ -355,6 +439,18 @@ export const mockInventory = [
   { id: "inv-4", name: "Filtro de Ar Secundário", code: "FA-S2", quantity: 3, minQuantity: 5, unit: "unidades", unitPrice: 95.00 },
   { id: "inv-5", name: "Graxa", code: "GRX-01", quantity: 50, minQuantity: 20, unit: "kg", unitPrice: 35.00 }
 ];
+
+export interface InventoryMovement {
+  id: string;
+  itemId: string;
+  date: string;
+  quantity: number;
+  destination: string;
+  source: "Manutenção" | "Apontamento" | "Entrada";
+  reference: string;
+}
+
+export const mockInventoryMovements: InventoryMovement[] = [];
 
 export interface OperatorTransaction {
   id: string;
@@ -460,7 +556,7 @@ export let mockMaintenanceRecords: MaintenanceRecord[] = [
     id: "mnt-1",
     machineId: "maq-0",
     mechanicName: "José Mecânico",
-    date: new Date(2025, 3, 15).toISOString().split('T')[0],
+    date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 15).toISOString().split('T')[0],
     type: "troca_oleo",
     description: "Troca de óleo motor + filtro de óleo. Verificação geral do sistema hidráulico.",
     partsUsed: [
@@ -473,7 +569,7 @@ export let mockMaintenanceRecords: MaintenanceRecord[] = [
     id: "mnt-2",
     machineId: "maq-0",
     mechanicName: "José Mecânico",
-    date: new Date(2025, 5, 10).toISOString().split('T')[0],
+    date: new Date(new Date().getFullYear(), new Date().getMonth(), 10).toISOString().split('T')[0],
     type: "filtro",
     description: "Troca de filtro de combustível e filtro de ar.",
     partsUsed: [
@@ -486,7 +582,7 @@ export let mockMaintenanceRecords: MaintenanceRecord[] = [
     id: "mnt-3",
     machineId: "maq-1",
     mechanicName: "Paulo Mecânico",
-    date: new Date(2025, 4, 20).toISOString().split('T')[0],
+    date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 20).toISOString().split('T')[0],
     type: "reparo",
     description: "Reparo na esteira direita. Tensionamento e lubrificação geral.",
     partsUsed: [
@@ -495,6 +591,31 @@ export let mockMaintenanceRecords: MaintenanceRecord[] = [
     totalCost: 5 * 35.00
   }
 ];
+
+mockMaintenanceRecords.forEach((record) => {
+  const machine = mockMachines.find(m => m.id === record.machineId);
+  record.partsUsed.forEach((part, i) => {
+    const item = mockInventory.find(inv => inv.code === part.code);
+    if (!item) return;
+    mockInventoryMovements.push({
+      id: `mov-${record.id}-${i}`,
+      itemId: item.id,
+      date: record.date,
+      quantity: part.quantity,
+      destination: machine?.name || "Máquina",
+      source: "Manutenção",
+      reference: record.id,
+    });
+  });
+});
+
+const extraAllocations: InventoryMovement[] = [
+  { id: "mov-extra-1", itemId: "inv-0", date: new Date(new Date().getFullYear(), new Date().getMonth(), 4).toISOString().split("T")[0], quantity: 1, destination: "220 NOVA ESCAV", source: "Apontamento", reference: "SRV-1000" },
+  { id: "mov-extra-2", itemId: "inv-2", date: new Date(new Date().getFullYear(), new Date().getMonth(), 8).toISOString().split("T")[0], quantity: 20, destination: "700J novo A", source: "Apontamento", reference: "SRV-1003" },
+  { id: "mov-extra-3", itemId: "inv-3", date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 12).toISOString().split("T")[0], quantity: 2, destination: "SANNY", source: "Manutenção", reference: "mnt-2" },
+  { id: "mov-extra-4", itemId: "inv-5", date: new Date(new Date().getFullYear(), new Date().getMonth(), 16).toISOString().split("T")[0], quantity: 3, destination: "Trator 7D1", source: "Apontamento", reference: "SRV-1008" },
+];
+mockInventoryMovements.push(...extraAllocations);
 
 // ────────────────────────────────────────────────
 // Drivers (Portal do Motorista)

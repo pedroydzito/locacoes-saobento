@@ -218,7 +218,7 @@ export default function AppLayout({ children, title, showBack, backTo }: AppLayo
         <header className="h-16 lg:hidden bg-white border-b border-border items-center px-4 gap-4 flex shrink-0 sticky top-0 z-[40]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 overflow-hidden">
-              <img src="/logo-verde.svg" alt="Logo" className="w-full h-full object-contain" />
+              <img src="/logo-locacoes.svg" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-base font-bold font-display text-primary leading-none">Locações</h1>

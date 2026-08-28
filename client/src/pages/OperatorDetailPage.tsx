@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { OperatorForm } from "@/components/forms/OperatorForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Trash2, ChevronRight, ArrowLeft, Users, Clock, DollarSign, Tractor, CalendarDays, TrendingUp, CalendarCheck, CalendarRange, Palmtree, ChevronLeft, Calendar as CalendarIcon, Info, Plus, X, Receipt, Star, AlertTriangle, MessageSquare, Award } from "lucide-react";
+import { HoursDailyChart } from "@/components/shared/HoursDailyChart";
 
 type LancamentoType = "Vale" | "Adiantamento" | "Bonificação" | "Desconto";
 interface Lancamento { id: string; type: LancamentoType; description: string; amount: number; date: string; }
@@ -297,6 +298,7 @@ export default function OperatorDetailPage() {
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </Button>
                 </div>
+                <HoursDailyChart operatorName={operator.name} month={months.indexOf(activeData.monthName)} year={activeData.year} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
                   <div className="space-y-4">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 border-b border-border/40 pb-2">

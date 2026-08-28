@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { MobileListControls } from "@/components/shared/MobileListControls";
 import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 
 export default function Inventory() {
+  const [, setLocation] = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -55,6 +57,10 @@ export default function Inventory() {
       setIsDeleteDialogOpen(false);
       setRefreshKey(k => k + 1);
     }
+  };
+
+  const handleViewDetails = (item: any) => {
+    setLocation(`/estoque/${item.id}`);
   };
 
   const handleSave = (data: any) => {
@@ -135,7 +141,7 @@ export default function Inventory() {
               {filteredInventory.map((item) => {
                 const isLowStock = item.quantity < item.minQuantity;
                 return (
-                  <tr key={item.id} className="hover:bg-muted/30 transition-colors group">
+                  <tr key={item.id} className="hover:bg-muted/30 transition-colors group cursor-pointer" onClick={() => handleViewDetails(item)}>
                     <td className="p-4 font-bold text-foreground">{item.name}</td>
                     <td className="p-4 text-muted-foreground">{item.code}</td>
                     <td className={`p-4 text-right font-bold ${isLowStock ? "text-destructive" : "text-foreground"}`}>
@@ -155,7 +161,7 @@ export default function Inventory() {
                         </Badge>
                       )}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="group-hover:opacity-100 transition-opacity rounded-full text-muted-foreground hover:text-foreground">
@@ -190,7 +196,7 @@ export default function Inventory() {
           {filteredInventory.map((item) => {
             const isLowStock = item.quantity < item.minQuantity;
             return (
-              <MobileCard key={item.id}>
+              <MobileCard key={item.id} onClick={() => handleViewDetails(item)}>
                 <MobileCardContent
                   title={item.name}
                   subtitle={
