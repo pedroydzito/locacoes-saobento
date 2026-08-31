@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { getOperatorDailyHours } from "@/lib/mock-data";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -34,26 +35,22 @@ interface HoursDailyChartProps {
 }
 
 export function HoursDailyChart({ operatorName, month, year, compact }: HoursDailyChartProps) {
-  const [compareKey, setCompareKey] = useState("none");
+  const [compareOffset, setCompareOffset] = useState(0);
 
-  const compareOptions = useMemo(() => {
-    return Array.from({ length: 11 }, (_, i) => {
-      const d = new Date(year, month - (i + 1), 1);
-      return {
-        key: `${d.getFullYear()}-${d.getMonth()}`,
-        label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
-        month: d.getMonth(),
-        year: d.getFullYear(),
-      };
-    });
+  useEffect(() => {
+    setCompareOffset(0);
   }, [month, year]);
+
+  const compareMeta = useMemo(() => {
+    if (compareOffset >= 0) return null;
+    const d = new Date(year, month + compareOffset, 1);
+    return { month: d.getMonth(), year: d.getFullYear() };
+  }, [compareOffset, month, year]);
 
   const currentDays = useMemo(
     () => getOperatorDailyHours(operatorName, month, year),
     [operatorName, month, year]
   );
-
-  const compareMeta = compareOptions.find(o => o.key === compareKey);
 
   const compareDays = useMemo(() => {
     if (!compareMeta) return null;
@@ -83,17 +80,34 @@ export function HoursDailyChart({ operatorName, month, year, compact }: HoursDai
             {compareMeta ? ` · ${compareLabel}: ${compareTotal.toFixed(1)}h` : ""}
           </p>
         </div>
-        <Select value={compareKey} onValueChange={setCompareKey}>
-          <SelectTrigger className="h-10 rounded-xl w-full sm:w-[200px] border-border bg-card text-sm">
-            <SelectValue placeholder="Comparar com..." />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl z-50">
-            <SelectItem value="none" className="cursor-pointer">Sem comparativo</SelectItem>
-            {compareOptions.map(opt => (
-              <SelectItem key={opt.key} value={opt.key} className="cursor-pointer">{opt.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1.5 bg-muted/30 rounded-2xl p-1.5 border border-border shrink-0 self-start sm:self-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-xl hover:bg-background"
+            onClick={() => setCompareOffset(o => o - 1)}
+            disabled={compareOffset <= -12}
+            aria-label="Mês anterior para comparar"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="text-center min-w-[128px] px-1">
+            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Comparar</p>
+            <p className="font-bold text-xs leading-tight">
+              {compareMeta ? `${MONTHS[compareMeta.month]} ${compareMeta.year}` : "Sem comparativo"}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-xl hover:bg-background"
+            onClick={() => setCompareOffset(o => Math.min(0, o + 1))}
+            disabled={compareOffset >= 0}
+            aria-label="Próximo mês para comparar"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
       <div className={compact ? "h-[220px] w-full" : "h-[280px] w-full"}>
         <ResponsiveContainer width="100%" height="100%">

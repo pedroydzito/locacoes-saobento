@@ -13,6 +13,7 @@ import { FinanceForm } from "@/components/forms/FinanceForm";
 import { FinanceFilter, FinanceFilters } from "@/components/forms/FinanceFilter";
 import { AccountManager } from "@/components/forms/AccountManager";
 import { MobileListControls } from "@/components/shared/MobileListControls";
+import { MobileCard, MobileCardContent, MobileCardActions } from "@/components/shared/MobileCard";
 import { PaymentModal } from "@/components/forms/PaymentModal";
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 

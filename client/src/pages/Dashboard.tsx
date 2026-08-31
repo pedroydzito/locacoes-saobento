@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { getMachinePerformanceByMonth } from "@/lib/mock-data";
 import { ChevronLeft, ChevronRight, Activity, Fuel, Clock } from "lucide-react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 const MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -25,14 +26,14 @@ const COLORS = [
   "hsl(45, 93%, 47%)",
 ];
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload }: any) {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
 
   return (
     <div className="bg-card border border-border rounded-2xl shadow-lg p-4 min-w-[200px]">
-      <p className="font-bold text-sm text-foreground mb-2">{label}</p>
+      <p className="font-bold text-sm text-foreground mb-2">{data.name}</p>
       <div className="space-y-1.5">
         <div className="flex justify-between items-center gap-4">
           <span className="text-xs text-muted-foreground">Horas Trabalhadas</span>
@@ -57,9 +58,31 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
+function MachineAxisTick({ x, y, payload, maxChars }: { x?: number; y?: number; payload?: { value: string }; maxChars: number }) {
+  const raw = payload?.value || "";
+  const text = raw.length > maxChars ? `${raw.slice(0, maxChars - 1)}…` : raw;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        dy={12}
+        textAnchor="end"
+        transform="rotate(-28)"
+        fill="hsl(var(--muted-foreground))"
+        fontSize={11}
+        fontFamily="var(--font-sans)"
+      >
+        {text}
+      </text>
+    </g>
+  );
+}
+
 export default function Dashboard() {
   const now = new Date();
   const [monthOffset, setMonthOffset] = useState(0);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isTablet = useMediaQuery("(min-width: 768px)");
+  const axisMaxChars = isDesktop ? 28 : isTablet ? 18 : 12;
 
   const targetDate = useMemo(() => {
     return new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
@@ -181,22 +204,20 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="h-[320px] w-full">
+          <div className={`w-full ${isDesktop ? "h-[360px]" : "h-[320px]"}`}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart
                 data={performanceData}
-                margin={{ top: 5, right: 20, left: 0, bottom: 60 }}
+                margin={{ top: 5, right: 20, left: 0, bottom: isDesktop ? 88 : 70 }}
               >
                 <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
-                  dataKey="shortName"
+                  dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontFamily: 'var(--font-sans)' }}
-                  angle={-35}
-                  textAnchor="end"
-                  dy={10}
                   interval={0}
+                  height={isDesktop ? 90 : 72}
+                  tick={<MachineAxisTick maxChars={axisMaxChars} />}
                 />
                 <YAxis
                   yAxisId="hours"
@@ -266,15 +287,15 @@ export default function Dashboard() {
                 key={m.name}
                 className="p-4 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div
-                      className="w-2.5 h-2.5 rounded-full"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ background: COLORS[idx % COLORS.length] }}
                     />
-                    <p className="font-bold text-sm text-foreground truncate max-w-[130px]">{m.name}</p>
+                    <p className="font-bold text-sm text-foreground truncate" title={m.name}>{m.name}</p>
                   </div>
-                  <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-muted/30">
+                  <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-muted/30 shrink-0">
                     {m.serviceCount} OS
                   </Badge>
                 </div>
